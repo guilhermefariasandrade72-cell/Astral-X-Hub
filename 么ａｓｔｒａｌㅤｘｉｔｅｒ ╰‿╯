@@ -1,1 +1,40 @@
-aaaa
+-- ===========================================
+-- 🌐 ASTRAL X HUB · INTERFACE LIMPA
+-- ✅ PROTEÇÃO: NÃO ABRE 2 JANELAS
+-- ===========================================
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
+
+-- 🛡️ SE JÁ TIVER ABERTO → FECHA ANTES DE CRIAR NOVAMENTE
+local NomeJanela = "ASTRAL X Hub"
+if game.CoreGui:FindFirstChild(NomeJanela) then
+    game.CoreGui[NomeJanela]:Destroy()
+end
+if player.PlayerGui:FindFirstChild(NomeJanela) then
+    player.PlayerGui[NomeJanela]:Destroy()
+end
+
+-- 🪟 CRIA A JANELA
+local Window = WindUI:CreateWindow({
+    Title = "ASTRAL X Hub",
+    Author = "Seu Nome",
+    Size = UDim2.fromOffset(520, 380),
+    Background = "",
+    Theme = "Dark"
+})
+
+-- ABAS 
+local Aba_Main = Window:Tab({Title = "Main"})
+
+local Aba_ESP = Window:Tab({Title = "ESP"})
+
+local Aba_Local = Window:Tab({Title = "Local Player"})
+
+local Aba_ConfigUI = Window:Tab({Title = "Config UI"})
+
