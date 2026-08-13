@@ -1,0 +1,246 @@
+-- ===========================================
+-- 🌐 ASTRAL X HUB · ESTRUTURA VAZIA
+-- ===========================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local player = Players.LocalPlayer
+
+-- 🛡️ PROTEÇÃO
+local NomeJanela = "ASTRAL_X_HUB"
+if CoreGui:FindFirstChild(NomeJanela) then CoreGui[NomeJanela]:Destroy() end
+
+-- 📦 INTERFACE
+local Gui = Instance.new("ScreenGui")
+Gui.Name = NomeJanela
+Gui.ResetOnSpawn = false
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.Parent = CoreGui
+
+local Janela = Instance.new("Frame")
+Janela.Size = UDim2.fromOffset(240, 300)
+Janela.Position = UDim2.new(0.5, -120, 0.5, -150)
+Janela.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
+Janela.BorderSizePixel = 2
+Janela.BorderColor3 = Color3.fromRGB(80, 80, 110)
+Janela.ClipsDescendants = true
+Janela.Parent = Gui
+Instance.new("UICorner", Janela).CornerRadius = UDim.new(0, 10)
+
+-- ✨ ESTRELAS NO FUNDO
+local Estrelas = Instance.new("Frame")
+Estrelas.Size = UDim2.new(1, 0, 1, 0)
+Estrelas.BackgroundTransparency = 1
+Estrelas.Parent = Janela
+local ListaEstrelas = {}
+for i = 1, 35 do
+    local E = Instance.new("Frame")
+    E.Size = UDim2.new(0, math.random(2, 4), 0, math.random(2, 4))
+    E.Position = UDim2.new(math.random(), 0, math.random(), 0)
+    E.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    E.BackgroundTransparency = math.random(4, 7)/10
+    E.Parent = Estrelas
+    table.insert(ListaEstrelas, {Frame=E, Vx=(math.random()-0.5)*0.0006, Vy=(math.random()-0.5)*0.0006})
+end
+RunService.RenderStepped:Connect(function()
+    for _,e in ipairs(ListaEstrelas) do
+        local x = e.Frame.Position.X.Scale + e.Vx
+        local y = e.Frame.Position.Y.Scale + e.Vy
+        e.Frame.Position = UDim2.new(x<0 and 1 or x>1 and 0 or x,0, y<0 and 1 or y>1 and 0 or y,0)
+    end
+end)
+
+-- 📍 BARRA SUPERIOR
+local Barra = Instance.new("Frame")
+Barra.Size = UDim2.new(1, 0, 0, 35)
+Barra.BackgroundColor3 = Color3.fromRGB(40, 40, 60)
+Barra.ZIndex = 10
+Barra.Parent = Janela
+Instance.new("UICorner", Barra).CornerRadius = UDim.new(0, 10)
+
+local Titulo = Instance.new("TextLabel")
+Titulo.Size = UDim2.new(1, -70, 1, 0)
+Titulo.Position = UDim2.new(0, 12, 0, 0)
+Titulo.BackgroundTransparency = 1
+Titulo.Text = "ASTRAL X Hub / Grátis"
+Titulo.TextColor3 = Color3.fromRGB(255, 255, 255)
+Titulo.Font = Enum.Font.GothamBold
+Titulo.TextSize = 14
+Titulo.TextXAlignment = Enum.TextXAlignment.Left
+Titulo.ZIndex = 11
+Titulo.Parent = Barra
+
+local BtnMin = Instance.new("TextButton")
+BtnMin.Size = UDim2.new(0, 28, 0, 28)
+BtnMin.Position = UDim2.new(1, -58, 0.5, -14)
+BtnMin.BackgroundTransparency = 1
+BtnMin.Text = "—"
+BtnMin.TextColor3 = Color3.fromRGB(255, 255, 255)
+BtnMin.Font = Enum.Font.GothamBold
+BtnMin.TextSize = 18
+BtnMin.ZIndex = 12
+BtnMin.Parent = Barra
+
+local BtnFechar = Instance.new("TextButton")
+BtnFechar.Size = UDim2.new(0, 28, 0, 28)
+BtnFechar.Position = UDim2.new(1, -28, 0.5, -14)
+BtnFechar.BackgroundTransparency = 1
+BtnFechar.Text = "✖"
+BtnFechar.TextColor3 = Color3.fromRGB(255, 50, 50)
+BtnFechar.Font = Enum.Font.GothamBold
+BtnFechar.TextSize = 15
+BtnFechar.ZIndex = 12
+BtnFechar.Parent = Barra
+
+local Conteudo = Instance.new("Frame")
+Conteudo.Size = UDim2.new(1, -20, 1, -55)
+Conteudo.Position = UDim2.new(0, 10, 0, 45)
+Conteudo.BackgroundTransparency = 1
+Conteudo.ZIndex = 5
+Conteudo.Parent = Janela
+
+-- ===========================================
+-- 📌 COLOQUE SUAS VARIÁVEIS AQUI
+-- ===========================================
+
+
+
+
+
+
+
+
+
+-- ===========================================
+-- 🔧 FUNÇÃO PARA CRIAR BOTÕES TOGGLE
+-- ===========================================
+local function CriarToggle(NomeTexto, PosicaoY, Callback)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(1, 0, 0, 45)
+    Container.Position = UDim2.new(0, 0, 0, PosicaoY)
+    Container.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    Container.Parent = Conteudo
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, -55, 1, 0)
+    Texto.Position = UDim2.new(0, 12, 0, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = NomeTexto
+    Texto.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Texto.Font = Enum.Font.GothamBold
+    Texto.TextSize = 13
+    Texto.TextXAlignment = Enum.TextXAlignment.Left
+    Texto.Parent = Container
+
+    local Botao = Instance.new("TextButton")
+    Botao.Size = UDim2.new(0, 42, 0, 24)
+    Botao.Position = UDim2.new(1, -47, 0.5, -12)
+    Botao.BackgroundColor3 = Color3.fromRGB(85, 85, 110)
+    Botao.Text = ""
+    Botao.Parent = Container
+    Instance.new("UICorner", Botao).CornerRadius = UDim.new(1, 0)
+
+    local Bola = Instance.new("Frame")
+    Bola.Size = UDim2.new(0, 18, 0, 18)
+    Bola.Position = UDim2.new(0, 3, 0.5, -9)
+    Bola.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Bola.Parent = Botao
+    Instance.new("UICorner", Bola).CornerRadius = UDim.new(1, 0)
+
+    local Ligado = false
+    Botao.MouseButton1Click:Connect(function()
+        Ligado = not Ligado
+        Callback(Ligado)
+        if Ligado then
+            TweenService:Create(Botao, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(50, 170, 90)}):Play()
+            TweenService:Create(Bola, TweenInfo.new(0.18), {Position = UDim2.new(1, -21, 0.5, -9)}):Play()
+        else
+            TweenService:Create(Botao, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(85, 85, 110)}):Play()
+            TweenService:Create(Bola, TweenInfo.new(0.18), {Position = UDim2.new(0, 3, 0.5, -9)}):Play()
+        end
+    end)
+end
+
+-- ===========================================
+-- 🔘 COLOQUE SEUS BOTÕES AQUI
+-- ===========================================
+
+
+
+
+
+
+
+
+
+-- ===========================================
+-- ⚙️ COLOQUE SEUS SISTEMAS / FUNÇÕES AQUI
+-- ===========================================
+
+
+
+
+
+
+
+
+
+-- ===========================================
+-- 🔄 LOOP PRINCIPAL (NÃO MEXER AQUI)
+-- ===========================================
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        
+        
+        
+    end
+end)
+
+-- ===========================================
+-- 🔧 SISTEMA DE ARRASTAR E MINIMIZAR (NÃO MEXER)
+-- ===========================================
+local TamanhoNormal = UDim2.fromOffset(240, 300)
+local TamanhoMinimo = UDim2.fromOffset(240, 35)
+local Minimizado = false
+local Arrastando = false
+local InicioPos, InicioMouse
+
+Barra.InputBegan:Connect(function(i)
+    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+        Arrastando = true
+        InicioPos = Janela.Position
+        InicioMouse = UserInputService:GetMouseLocation()
+    end
+end)
+
+UserInputService.InputChanged:Connect(function(i)
+    if Arrastando and i.UserInputType == Enum.UserInputType.MouseMovement then
+        local D = i.Position - InicioMouse
+        Janela.Position = UDim2.new(InicioPos.X.Scale, InicioPos.X.Offset+D.X, InicioPos.Y.Scale, InicioPos.Y.Offset+D.Y)
+    end
+end)
+
+Barra.InputEnded:Connect(function(i) Arrastando = false end)
+
+BtnMin.MouseButton1Click:Connect(function()
+    if not Minimizado then
+        TweenService:Create(Janela, TweenInfo.new(0.3), {Size = TamanhoMinimo}):Play()
+        Conteudo.Visible = false
+        BtnMin.Text = "+"
+        Minimizado = true
+    else
+        TweenService:Create(Janela, TweenInfo.new(0.3), {Size = TamanhoNormal}):Play()
+        Conteudo.Visible = true
+        BtnMin.Text = "—"
+        Minimizado = false
+    end
+end)
+
+BtnFechar.MouseButton1Click:Connect(function() Gui:Destroy() end)
