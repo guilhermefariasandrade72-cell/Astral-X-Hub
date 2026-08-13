@@ -1,0 +1,163 @@
+-- ===========================================
+-- ✅ ASTRAL X HUB · ABA FARM COM ABAS MENORES
+-- ===========================================
+
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+
+-- 🛡️ PROTEÇÃO
+local NomeJanela = "ASTRAL X Hub"
+if game.CoreGui:FindFirstChild(NomeJanela) then game.CoreGui[NomeJanela]:Destroy() end
+if player.PlayerGui:FindFirstChild(NomeJanela) then player.PlayerGui[NomeJanela]:Destroy() end
+
+-- ===========================================
+-- ⚙️ VARIÁVEIS
+-- ===========================================
+local CONFIG_FARM = {
+    velocidade = 24,
+    limite = 40,
+    alcance_maximo = 999
+}
+local AutoFarmAtivo = false
+local collectedCoins = {}
+
+-- ===========================================
+-- 🧩 FUNÇÕES AUXILIARES
+-- ===========================================
+local function EmPartida()
+    local c = player.Character
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+            return true
+        end
+    end
+    return false
+end
+
+local function QuantidadeMochila()
+    local ok, n = pcall(function()
+        local g = player.PlayerGui:WaitForChild("MainGUI", 2)
+        return tonumber(g.Game.CoinBags.Container.SnowToken.CurrencyFrame.Icon.Coins.Text) or 0
+    end)
+    return ok and n or 0
+end
+
+local function getNearestCoin(minhaPos)
+    local melhor, menorDist = nil, math.huge
+    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    if not CoinContainer then return end
+    for _, v in ipairs(CoinContainer:GetChildren()) do
+        if v:IsA("BasePart") and v.Name == "Coin_Server"
+        and v:FindFirstChild("TouchInterest") and v:FindFirstChild("CoinVisual")
+        and not collectedCoins[v] and not v:GetAttribute("Collected") then
+            local dist = (minhaPos - v.Position).Magnitude
+            if dist < CONFIG_FARM.alcance_maximo and dist < menorDist then
+                menorDist = dist
+                melhor = v
+            end
+        end
+    end
+    return melhor
+end
+
+-- ===========================================
+-- 🖥️ JANELA COM ABAS MENORES
+-- ===========================================
+local Window = WindUI:CreateWindow({
+    Title = "ASTRAL X Hub",
+    Folder = "AstralX",
+    Size = UDim2.fromOffset(420, 300),
+    MinSize = Vector2.new(380, 280),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 120, -- ← ✅ LARGURA DAS ABAS (menor = mais fino)
+    HideSearchBar = true,
+})
+
+-- =====================
+-- 📋 ABAS
+-- =====================
+local Aba_Farm = Window:Tab({Title = "Auto Farm"})
+
+-- ===========================================
+-- 🔄 SISTEMA DO FARM
+-- ===========================================
+task.spawn(function()
+    while true do
+        if AutoFarmAtivo then
+            if not EmPartida() then
+                table.clear(collectedCoins)
+                RunService.Heartbeat:Wait()
+                continue
+            end
+
+            local atual = QuantidadeMochila()
+            if atual >= CONFIG_FARM.limite then
+                repeat
+                    RunService.Heartbeat:Wait()
+                    atual = QuantidadeMochila()
+                until atual < CONFIG_FARM.limite or not AutoFarmAtivo or not EmPartida()
+                table.clear(collectedCoins)
+                continue
+            end
+
+            local c = player.Character
+            if not c or not c.PrimaryPart then
+                RunService.Heartbeat:Wait()
+                continue
+            end
+
+            local minhaPos = c.PrimaryPart.Position
+            local alvo = getNearestCoin(minhaPos)
+
+            if alvo then
+                local ini = minhaPos
+                local destino = alvo.Position
+                local distTotal = (ini - destino).Magnitude
+                local tempo = distTotal / CONFIG_FARM.velocidade
+                local tIni = os.clock()
+
+                while AutoFarmAtivo and EmPartida() and alvo.Parent and QuantidadeMochila() < CONFIG_FARM.limite do
+                    local progresso = math.min((os.clock() - tIni) / tempo, 1)
+                    c:PivotTo(CFrame.new(ini:Lerp(destino, progresso)))
+                    if progresso >= 1 then break end
+                    RunService.Heartbeat:Wait()
+                end
+                collectedCoins[alvo] = true
+            else
+                table.clear(collectedCoins)
+                RunService.Heartbeat:Wait()
+            end
+        else
+            RunService.Heartbeat:Wait()
+        end
+    end
+end)
+
+-- =====================
+-- BOTOES DA ABA AUTO FARM
+-- =====================
+local Sec_Farm = Aba_Farm:Section({Title = "Configurações do Farm"})
+
+Sec_Farm:Toggle({
+    Title = "Ativar Auto Farm",
+    Default = false,
+    Callback = function(estado)
+        AutoFarmAtivo = estado
+        table.clear(collectedCoins)
+    end
+})
+
+Sec_Farm:Button({
+    Title = "🛡️ Ativar Anti-AFK",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn", true))()
+        end)
+    end
+})
