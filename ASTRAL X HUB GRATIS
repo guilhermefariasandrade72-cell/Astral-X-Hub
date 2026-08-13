@@ -1,14 +1,8 @@
--- ===========================================
--- 🌐 ASTRAL X HUB · ESTRUTURA VAZIA
--- ===========================================
-
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
 local CoreGui = game:GetService("CoreGui")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
 -- 🛡️ PROTEÇÃO
@@ -23,8 +17,8 @@ Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Gui.Parent = CoreGui
 
 local Janela = Instance.new("Frame")
-Janela.Size = UDim2.fromOffset(240, 300)
-Janela.Position = UDim2.new(0.5, -120, 0.5, -150)
+Janela.Size = UDim2.fromOffset(240, 340)
+Janela.Position = UDim2.new(0.5, -120, 0.5, -170)
 Janela.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 Janela.BorderSizePixel = 2
 Janela.BorderColor3 = Color3.fromRGB(80, 80, 110)
@@ -105,7 +99,7 @@ Conteudo.ZIndex = 5
 Conteudo.Parent = Janela
 
 -- ===========================================
--- 📌 COLOQUE SUAS VARIÁVEIS AQUI
+-- 📍 ÁREA VAZIA — COLOQUE TUDO AQUI
 -- ===========================================
 
 
@@ -116,97 +110,11 @@ Conteudo.Parent = Janela
 
 
 
--- ===========================================
--- 🔧 FUNÇÃO PARA CRIAR BOTÕES TOGGLE
--- ===========================================
-local function CriarToggle(NomeTexto, PosicaoY, Callback)
-    local Container = Instance.new("Frame")
-    Container.Size = UDim2.new(1, 0, 0, 45)
-    Container.Position = UDim2.new(0, 0, 0, PosicaoY)
-    Container.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
-    Container.Parent = Conteudo
-    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
-
-    local Texto = Instance.new("TextLabel")
-    Texto.Size = UDim2.new(1, -55, 1, 0)
-    Texto.Position = UDim2.new(0, 12, 0, 0)
-    Texto.BackgroundTransparency = 1
-    Texto.Text = NomeTexto
-    Texto.TextColor3 = Color3.fromRGB(240, 240, 240)
-    Texto.Font = Enum.Font.GothamBold
-    Texto.TextSize = 13
-    Texto.TextXAlignment = Enum.TextXAlignment.Left
-    Texto.Parent = Container
-
-    local Botao = Instance.new("TextButton")
-    Botao.Size = UDim2.new(0, 42, 0, 24)
-    Botao.Position = UDim2.new(1, -47, 0.5, -12)
-    Botao.BackgroundColor3 = Color3.fromRGB(85, 85, 110)
-    Botao.Text = ""
-    Botao.Parent = Container
-    Instance.new("UICorner", Botao).CornerRadius = UDim.new(1, 0)
-
-    local Bola = Instance.new("Frame")
-    Bola.Size = UDim2.new(0, 18, 0, 18)
-    Bola.Position = UDim2.new(0, 3, 0.5, -9)
-    Bola.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    Bola.Parent = Botao
-    Instance.new("UICorner", Bola).CornerRadius = UDim.new(1, 0)
-
-    local Ligado = false
-    Botao.MouseButton1Click:Connect(function()
-        Ligado = not Ligado
-        Callback(Ligado)
-        if Ligado then
-            TweenService:Create(Botao, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(50, 170, 90)}):Play()
-            TweenService:Create(Bola, TweenInfo.new(0.18), {Position = UDim2.new(1, -21, 0.5, -9)}):Play()
-        else
-            TweenService:Create(Botao, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(85, 85, 110)}):Play()
-            TweenService:Create(Bola, TweenInfo.new(0.18), {Position = UDim2.new(0, 3, 0.5, -9)}):Play()
-        end
-    end)
-end
 
 -- ===========================================
--- 🔘 COLOQUE SEUS BOTÕES AQUI
+-- 🔧 SISTEMA DE ARRASTAR E MINIMIZAR
 -- ===========================================
-
-
-
-
-
-
-
-
-
--- ===========================================
--- ⚙️ COLOQUE SEUS SISTEMAS / FUNÇÕES AQUI
--- ===========================================
-
-
-
-
-
-
-
-
-
--- ===========================================
--- 🔄 LOOP PRINCIPAL (NÃO MEXER AQUI)
--- ===========================================
-task.spawn(function()
-    while true do
-        task.wait(0.2)
-        
-        
-        
-    end
-end)
-
--- ===========================================
--- 🔧 SISTEMA DE ARRASTAR E MINIMIZAR (NÃO MEXER)
--- ===========================================
-local TamanhoNormal = UDim2.fromOffset(240, 300)
+local TamanhoNormal = UDim2.fromOffset(240, 340)
 local TamanhoMinimo = UDim2.fromOffset(240, 35)
 local Minimizado = false
 local Arrastando = false
