@@ -117,7 +117,7 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA MAIN
 -- ==================================
--- SISTEMA AUTO FARM
+-- SISTEMA AUTO FARM — CORRIGIDO ✅
 local function EmPartida()
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
@@ -137,24 +137,32 @@ local function QuantidadeMochila()
     return ok and n or 0
 end
 
+-- ✅ CORRIGIDO: SEMPRE RETORNA A MAIS PRÓXIMA
 local function getNearestCoin(minhaPos)
-    local melhor, menorDist = nil, math.huge
+    local melhorMoeda, menorDistancia = nil, math.huge
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
-    if not CoinContainer then return end
-    for _, v in ipairs(CoinContainer:GetChildren()) do
-        if v:IsA("BasePart") and v.Name == "Coin_Server"
-        and v:FindFirstChild("TouchInterest") and v:FindFirstChild("CoinVisual")
-        and not collectedCoins[v] and not v:GetAttribute("Collected") then
-            local dist = (minhaPos - v.Position).Magnitude
-            if dist < CONFIG_FARM.alcance_maximo and dist < menorDist then
-                menorDist = dist
-                melhor = v
+    if not CoinContainer then return nil end
+
+    for _, moeda in ipairs(CoinContainer:GetChildren()) do
+        if moeda:IsA("BasePart") 
+        and moeda.Name == "Coin_Server"
+        and moeda:FindFirstChild("TouchInterest") 
+        and moeda:FindFirstChild("CoinVisual")
+        and not collectedCoins[moeda] 
+        and not moeda:GetAttribute("Collected") then
+            
+            local distancia = (minhaPos - moeda.Position).Magnitude
+            -- ✅ SÓ ESCOLHA SE FOR MAIS PRÓXIMA QUE A ATUAL
+            if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
+                menorDistancia = distancia
+                melhorMoeda = moeda
             end
         end
     end
-    return melhor
+    return melhorMoeda
 end
 
+-- 📌 LOOP PRINCIPAL CORRIGIDO
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -180,24 +188,44 @@ task.spawn(function()
                 continue
             end
 
+            -- ✅ SEMPRE BUSCA A MAIS PRÓXIMA A CADA PASSO
             local minhaPos = c.PrimaryPart.Position
             local alvo = getNearestCoin(minhaPos)
 
             if alvo then
-                local ini = minhaPos
-                local destino = alvo.Position
-                local distTotal = (ini - destino).Magnitude
-                local tempo = distTotal / CONFIG_FARM.velocidade
-                local tIni = os.clock()
+                local posInicial = minhaPos
+                local posAlvo = alvo.Position
+                local distanciaTotal = (posInicial - posAlvo).Magnitude
+                local tempoPercurso = distanciaTotal / CONFIG_FARM.velocidade
+                local tempoInicio = os.clock()
 
-                while AutoFarmAtivo and EmPartida() and alvo.Parent and QuantidadeMochila() < CONFIG_FARM.limite do
-                    local progresso = math.min((os.clock() - tIni) / tempo, 1)
-                    c:PivotTo(CFrame.new(ini:Lerp(destino, progresso)))
-                    if progresso >= 1 then break end
+                -- ✅ VERIFICA A CADA INSTANTE SE A MOEDA AINDA EXISTE
+                while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
+                and QuantidadeMochila() < CONFIG_FARM.limite 
+                and not alvo:GetAttribute("Collected") do
+                    
+                    -- Se alguém pegou ou desapareceu → PARA E BUSCA OUTRA
+                    if not alvo:IsDescendantOf(Workspace) or collectedCoins[alvo] then
+                        break
+                    end
+
+                    local progresso = math.min((os.clock() - tempoInicio) / tempoPercurso, 1)
+                    c:PivotTo(CFrame.new(posInicial:Lerp(posAlvo, progresso)))
+
+                    -- ✅ CHEGOU OU ALGUÉM PEGOU → PARA
+                    if progresso >= 1 or alvo:GetAttribute("Collected") then
+                        break
+                    end
+
                     RunService.Heartbeat:Wait()
                 end
-                collectedCoins[alvo] = true
+
+                -- ✅ MARCA COMO COLETADA
+                if alvo and not alvo:GetAttribute("Collected") then
+                    collectedCoins[alvo] = true
+                end
             else
+                -- Nenhuma moeda → limpa lista e espera
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
             end
@@ -206,6 +234,7 @@ task.spawn(function()
         end
     end
 end)
+
 -- ==================================
 
 -- ==================================
