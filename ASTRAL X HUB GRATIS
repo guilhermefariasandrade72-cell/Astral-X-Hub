@@ -3,6 +3,9 @@ local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
 local RunService = game:GetService("RunService")
 local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local Stats = game:GetService("Stats")
 local player = Players.LocalPlayer
 
 -- 🛡️ PROTEÇÃO
@@ -17,8 +20,8 @@ Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
 Gui.Parent = CoreGui
 
 local Janela = Instance.new("Frame")
-Janela.Size = UDim2.fromOffset(240, 340)
-Janela.Position = UDim2.new(0.5, -120, 0.5, -170)
+Janela.Size = UDim2.fromOffset(250, 310)
+Janela.Position = UDim2.new(0.5, -125, 0.5, -155)
 Janela.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
 Janela.BorderSizePixel = 2
 Janela.BorderColor3 = Color3.fromRGB(80, 80, 110)
@@ -61,7 +64,7 @@ local Titulo = Instance.new("TextLabel")
 Titulo.Size = UDim2.new(1, -70, 1, 0)
 Titulo.Position = UDim2.new(0, 12, 0, 0)
 Titulo.BackgroundTransparency = 1
-Titulo.Text = "ASTRAL X Hub / Grátis"
+Titulo.Text = "ASTRAL X Hub / GRÁTIS"
 Titulo.TextColor3 = Color3.fromRGB(255, 255, 255)
 Titulo.Font = Enum.Font.GothamBold
 Titulo.TextSize = 14
@@ -95,60 +98,519 @@ local Conteudo = Instance.new("Frame")
 Conteudo.Size = UDim2.new(1, -20, 1, -55)
 Conteudo.Position = UDim2.new(0, 10, 0, 45)
 Conteudo.BackgroundTransparency = 1
-Conteudo.ZIndex = 5
 Conteudo.Parent = Janela
 
 -- ===========================================
--- 📍 ÁREA VAZIA — COLOQUE TUDO AQUI
+-- 📌 VARIÁVEIS DE CONTROLE
 -- ===========================================
-
-
-
-
-
-
-
-
-
-
--- ===========================================
--- 🔧 SISTEMA DE ARRASTAR E MINIMIZAR
--- ===========================================
-local TamanhoNormal = UDim2.fromOffset(240, 340)
-local TamanhoMinimo = UDim2.fromOffset(240, 35)
+local ESPPlayerAtivo = false
+local AutoShoot = false
+local AutoGrabGun = false
+local KillAura = false
+local KillAuraDistancia = 99999999999999167
+local ShootPredictMultiplier = 1
+local MagicBullet = false
+local Highlights = {}
+local DadosCargos = {}
+local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
+local TamanhoNormal = UDim2.fromOffset(250, 310)
+local TamanhoMinimo = UDim2.fromOffset(250, 35)
 local Minimizado = false
 local Arrastando = false
-local InicioPos, InicioMouse
+local InicioPos, InicioToque
 
+-- ✅ VELOCIDADE FIXA EM 24
+local CONFIG_FARM = {
+    velocidade = 24,
+    limite = 40,
+    alcance_maximo = 999
+}
+local AutoFarmAtivo = false
+local collectedCoins = {}
+
+-- ===========================================
+-- 🔧 FUNÇÃO CRIAR BOTÃO
+-- ===========================================
+local function CriarToggle(NomeTexto, PosicaoY, Callback)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(1, 0, 0, 40)
+    Container.Position = UDim2.new(0, 0, 0, PosicaoY)
+    Container.BackgroundColor3 = Color3.fromRGB(45, 45, 65)
+    Container.Parent = Conteudo
+    Instance.new("UICorner", Container).CornerRadius = UDim.new(0, 8)
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, -55, 1, 0)
+    Texto.Position = UDim2.new(0, 12, 0, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = NomeTexto
+    Texto.TextColor3 = Color3.fromRGB(240, 240, 240)
+    Texto.Font = Enum.Font.GothamBold
+    Texto.TextSize = 13
+    Texto.TextXAlignment = Enum.TextXAlignment.Left
+    Texto.Parent = Container
+
+    local Botao = Instance.new("TextButton")
+    Botao.Size = UDim2.new(0, 42, 0, 24)
+    Botao.Position = UDim2.new(1, -47, 0.5, -12)
+    Botao.BackgroundColor3 = Color3.fromRGB(85, 85, 110)
+    Botao.Text = ""
+    Botao.Parent = Container
+    Instance.new("UICorner", Botao).CornerRadius = UDim.new(1, 0)
+
+    local Bola = Instance.new("Frame")
+    Bola.Size = UDim2.new(0, 18, 0, 18)
+    Bola.Position = UDim2.new(0, 3, 0.5, -9)
+    Bola.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Bola.Parent = Botao
+    Instance.new("UICorner", Bola).CornerRadius = UDim.new(1, 0)
+
+    local Ligado = false
+    Botao.MouseButton1Click:Connect(function()
+        Ligado = not Ligado
+        Callback(Ligado)
+        if Ligado then
+            TweenService:Create(Botao, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(50, 170, 90)}):Play()
+            TweenService:Create(Bola, TweenInfo.new(0.18), {Position = UDim2.new(1, -21, 0.5, -9)}):Play()
+        else
+            TweenService:Create(Botao, TweenInfo.new(0.18), {BackgroundColor3 = Color3.fromRGB(85, 85, 110)}):Play()
+            TweenService:Create(Bola, TweenInfo.new(0.18), {Position = UDim2.new(0, 3, 0.5, -9)}):Play()
+        end
+    end)
+end
+
+-- ===========================================
+-- ⚙️ SISTEMA ESP
+-- ===========================================
+local function PegarCargos()
+    local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not R then return end
+    local ok, d = pcall(function() return R:InvokeServer() end)
+    if ok and d then DadosCargos = d end
+end
+
+local function EstaVivo(Nome)
+    local Info = DadosCargos[Nome]
+    return Info and not Info.Killed and not Info.Dead
+end
+
+local function CriarHighlight(Alvo, Cor, Tabela)
+    if not Alvo then return end
+    if not Tabela[Alvo] then
+        local H = Instance.new("Highlight")
+        H.Name = "ESP_Astral"
+        H.Adornee = Alvo
+        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        H.OutlineTransparency = 0
+        H.Parent = Alvo
+        Tabela[Alvo] = H
+    end
+    Tabela[Alvo].FillColor = Cor
+    Tabela[Alvo].OutlineColor = Cor
+    Tabela[Alvo].Enabled = true
+end
+
+local function LimparESP(Tabela)
+    for _,h in pairs(Tabela) do if h then h:Destroy() end end
+    table.clear(Tabela)
+end
+
+-- ===========================================
+-- 🎯 SILENT AIM
+-- ===========================================
+local function GetPing()
+    local ok, value = pcall(function()
+        return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    return ok and value or 100
+end
+
+local function GetMurderer()
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return nil end
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return nil end
+    for _, Player in next, Players:GetPlayers() do
+        if Player ~= player and Player:GetAttribute("Alive") then
+            local Info = Data[Player.Name]
+            if Info and Info.Role == "Murderer" then return Player end
+        end
+    end
+    return nil
+end
+
+local function ShootMurderer()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
+    if not Gun then return end
+    if Gun.Parent ~= Char then Gun.Parent = Char task.wait(0.05) end
+    local Murderer = GetMurderer()
+    if not Murderer or not Murderer.Character then return end
+    local TargetHRP = Murderer.Character:FindFirstChild("HumanoidRootPart")
+    local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
+    if not TargetHRP or not TargetTorso then return end
+    local Ping = GetPing()
+    local PredictionTime = (Ping / 1000) * ShootPredictMultiplier
+    local Velocity = TargetHRP.Velocity
+    local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * PredictionTime)
+    local OriginCFrame = MagicBullet and CFrame.new(TargetTorso.Position, PredictedPos) or CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
+    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true)
+    if ShootEvent then ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos)) end
+end
+
+-- ===========================================
+-- 🧲 GRAB GUN
+-- ===========================================
+local function FindMap()
+    for _, child in ipairs(Workspace:GetChildren()) do
+        if child:GetAttribute("MapID") then return child end
+    end
+    return nil
+end
+
+local function GetPlayerRole()
+    local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not R then return nil end
+    local ok, D = pcall(function() return R:InvokeServer() end)
+    if not ok or not D then return nil end
+    return D[player.Name] and D[player.Name].Role or nil
+end
+
+local function IsMurderer() return GetPlayerRole() == "Murderer" end
+
+local function GetGun()
+    if not AutoGrabGun then return end
+    pcall(function()
+        if not player:GetAttribute("Alive") then return end
+        if IsMurderer() then return end
+        local map = FindMap()
+        local char = player.Character
+        if not map or not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        local gunDrop = map:FindFirstChild("GunDrop")
+        if gunDrop then gunDrop.CFrame = char.HumanoidRootPart.CFrame end
+    end)
+end
+
+-- ===========================================
+-- 🗡️ KILL AURA
+-- ===========================================
+local function CalcularDistancia(Alvo)
+    local MeuChar = player.Character
+    if not MeuChar or not MeuChar:FindFirstChild("HumanoidRootPart") then return 99999999999999167 end
+    if not Alvo or not Alvo.Character or not Alvo.Character:FindFirstChild("HumanoidRootPart") then return 99999999999999167 end
+    return (MeuChar.HumanoidRootPart.Position - Alvo.Character.HumanoidRootPart.Position).Magnitude
+end
+
+local function KillAuraFuncao()
+    if not KillAura then return end
+    local Char = player.Character
+    if not Char then return end
+    local Faca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    if not Faca then return end
+    if Faca.Parent ~= Char then Faca.Parent = Char task.wait(0.05) end
+    local Eventos = Faca:FindFirstChild("Events")
+    if not Eventos then return end
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            if CalcularDistancia(Alvo) <= KillAuraDistancia then
+                pcall(function()
+                    Eventos.KnifeStabbed:FireServer()
+                    Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+                end)
+                task.wait(0.05)
+            end
+        end
+    end
+end
+
+-- ===========================================
+-- 🎯 BOTÃO FLUTUANTE
+-- ===========================================
+local function CreateShootButton()
+    if ShootButtonGui then return end
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "XerifeTiro"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = CoreGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 140, 0, 50)
+    Btn.Position = UDim2.new(0.5, -70, 0.6, -25)
+    Btn.BackgroundTransparency = 1
+    Btn.Parent = GuiBtn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.new(0,0,0)
+    Borda.Thickness = 2
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1,0,1,0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "🔫 Shoot Murderer"
+    Texto.TextColor3 = Color3.new(1,1,1)
+    Texto.TextSize = 18
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDragging = true
+            buttonStartPos = Btn.Position
+            dragStartPos = Input.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then isDragging = false end
+            end)
+        end
+    end)
+    Btn.InputChanged:Connect(function(Input)
+        if isDragging and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Btn.Position = buttonStartPos + UDim2.fromOffset(Input.Position.X - dragStartPos.X, Input.Position.Y - dragStartPos.Y)
+        end
+    end)
+    Btn.MouseButton1Click:Connect(function() if not isDragging then ShootMurderer() end end)
+
+    ShootButtonGui = GuiBtn
+end
+
+local function RemoveShootButton()
+    if ShootButtonGui then ShootButtonGui:Destroy() ShootButtonGui = nil end
+end
+
+-- ===========================================
+-- 🔘 BOTÕES
+-- ===========================================
+CriarToggle("ESP Jogadores", 5, function(ligado)
+    ESPPlayerAtivo = ligado
+    if not ligado then LimparESP(Highlights) end
+end)
+
+CriarToggle("Auto Farm Moedas", 50, function(ligado)
+    AutoFarmAtivo = ligado
+    if not ligado then table.clear(collectedCoins) end
+end)
+
+CriarToggle("Botão Atirar (Xerife)", 95, function(On)
+    AutoShoot = On
+    if On then CreateShootButton() else RemoveShootButton() end
+end)
+
+CriarToggle("Auto Grab Gun", 140, function(On) AutoGrabGun = On end)
+
+CriarToggle("Kill Aura (Assassino)", 185, function(On) KillAura = On end)
+
+-- ===========================================
+-- 🌐 AUTO FARM — FUNÇÕES AUXILIARES
+-- ===========================================
+local function EmPartida()
+    local c = player.Character
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    for _, p in pairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
+            return true
+        end
+    end
+    return false
+end
+
+local function QuantidadeMochila()
+    local ok, n = pcall(function()
+        local g = player.PlayerGui:WaitForChild("MainGUI", 2)
+        return tonumber(g.Game.CoinBags.Container.SnowToken.CurrencyFrame.Icon.Coins.Text) or 0
+    end)
+    return ok and n or 0
+end
+
+local function getNearestCoin(minhaPos)
+    local melhor, menorDist = nil, math.huge
+    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    if not CoinContainer then return end
+    for _, v in ipairs(CoinContainer:GetChildren()) do
+        if v:IsA("BasePart") and v.Name == "Coin_Server"
+        and v:FindFirstChild("TouchInterest") and v:FindFirstChild("CoinVisual")
+        and not collectedCoins[v] and not v:GetAttribute("Collected") then
+            local dist = (minhaPos - v.Position).Magnitude
+            if dist < CONFIG_FARM.alcance_maximo and dist < menorDist then
+                menorDist = dist
+                melhor = v
+            end
+        end
+    end
+    return melhor
+end
+
+local function MoedaValida(alvo)
+    if not alvo then return false end
+    if not alvo.Parent then return false end
+    if alvo:GetAttribute("Collected") then return false end
+    if not alvo:FindFirstChild("TouchInterest") then return false end
+    if not alvo:FindFirstChild("CoinVisual") then return false end
+    if collectedCoins[alvo] then return false end
+    return true
+end
+
+-- ===========================================
+-- 🔄 LOOP PRINCIPAL — AUTO FARM INTELIGENTE
+-- ===========================================
+task.spawn(function()
+    while true do
+        RunService.Heartbeat:Wait()
+
+        -- ✅ ESP — SÓ RODA SE LIGADO
+        if ESPPlayerAtivo then
+            PegarCargos()
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character and EstaVivo(p.Name) then
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(60, 200, 80)
+                    if Info then
+                        if Info.Role == "Murderer" then Cor = Color3.fromRGB(220, 50, 50)
+                        elseif Info.Role == "Sheriff" then Cor = Color3.fromRGB(0, 0, 225)
+                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0) end
+                    end
+                    CriarHighlight(p.Character, Cor, Highlights)
+                elseif Highlights[p.Character] then
+                    Highlights[p.Character].Enabled = false
+                end
+            end
+        else
+            if next(Highlights) then LimparESP(Highlights) end
+        end
+
+        -- ✅ AUTO FARM INTELIGENTE
+        if AutoFarmAtivo then
+            -- 🔴 FORA DA PARTIDA → LIMPA E ESPERA
+            if not EmPartida() then
+                table.clear(collectedCoins)
+                RunService.Heartbeat:Wait()
+                continue
+            end
+
+            local atual = QuantidadeMochila()
+
+            -- 🟡 BOLSA CHEIA → ESPERA A PARTIDA REINICIAR
+            if atual >= CONFIG_FARM.limite then
+                repeat
+                    RunService.Heartbeat:Wait()
+                    atual = QuantidadeMochila()
+                    if not EmPartida() then
+                        table.clear(collectedCoins)
+                        break
+                    end
+                until atual < CONFIG_FARM.limite or not AutoFarmAtivo
+                table.clear(collectedCoins)
+                continue
+            end
+
+            local c = player.Character
+            if not c or not c.PrimaryPart then
+                RunService.Heartbeat:Wait()
+                continue
+            end
+
+            -- ✅ PEGA MOEDA MAIS PRÓXIMA
+            local minhaPos = c.PrimaryPart.Position
+            local alvo = getNearestCoin(minhaPos)
+
+            -- ❌ SEM MOEDA → ESPERA
+            if not alvo then
+                table.clear(collectedCoins)
+                RunService.Heartbeat:Wait()
+                continue
+            end
+
+            -- ✅ VAI ATÉ A MOEDA
+            local ini = minhaPos
+            local destino = alvo.Position
+            local distTotal = (ini - destino).Magnitude
+            local tempo = distTotal / CONFIG_FARM.velocidade
+            local tIni = os.clock()
+
+            -- 🔄 A CADA PASSO → TROCA SE APARECER MOEDA MAIS PERTO
+            while AutoFarmAtivo and EmPartida() 
+            and QuantidadeMochila() < CONFIG_FARM.limite 
+            and MoedaValida(alvo) do
+
+                -- ⚡ APARECEU MOEDA MAIS PRÓXIMA? TROCA AGORA!
+                local posAtual = c.PrimaryPart.Position
+                local melhorNova = getNearestCoin(posAtual)
+                if melhorNova and melhorNova ~= alvo then
+                    local distAtual = (posAtual - destino).Magnitude
+                    local distNova = (posAtual - melhorNova.Position).Magnitude
+                    if distNova < distAtual then
+                        alvo = melhorNova
+                        ini = posAtual
+                        destino = alvo.Position
+                        distTotal = (ini - destino).Magnitude
+                        tempo = distTotal / CONFIG_FARM.velocidade
+                        tIni = os.clock()
+                    end
+                end
+
+                -- 🚀 CONTINUA ANDANDO
+                local progresso = math.min((os.clock() - tIni) / tempo, 0,1)
+                c:PivotTo(CFrame.new(ini:Lerp(destino, progresso)))
+
+                -- ✅ CHEGOU
+                if progresso >= 1 then break end
+
+                RunService.Heartbeat:Wait()
+            end
+
+            -- ✅ MARCA COMO COLETADA
+            if MoedaValida(alvo) then
+                collectedCoins[alvo] = true
+            end
+        end
+    end
+end)
+
+task.spawn(function() while true do RunService.Heartbeat:Wait() GetGun() end end)
+task.spawn(function() while true do task.wait(0.4) if KillAura and IsMurderer() then KillAuraFuncao() end end end)
+
+-- ===========================================
+-- 🔧 ARRASTAR, MINIMIZAR, FECHAR
+-- ===========================================
 Barra.InputBegan:Connect(function(i)
-    if i.UserInputType == Enum.UserInputType.MouseButton1 then
+    if i.UserInputType == Enum.UserInputType.Touch then
         Arrastando = true
         InicioPos = Janela.Position
-        InicioMouse = UserInputService:GetMouseLocation()
+        InicioToque = i.Position
+    elseif i.UserInputType == Enum.UserInputType.MouseButton1 then
+        Arrastando = true
+        InicioPos = Janela.Position
+        InicioToque = UserInputService:GetMouseLocation()
     end
 end)
 
 UserInputService.InputChanged:Connect(function(i)
-    if Arrastando and i.UserInputType == Enum.UserInputType.MouseMovement then
-        local D = i.Position - InicioMouse
-        Janela.Position = UDim2.new(InicioPos.X.Scale, InicioPos.X.Offset+D.X, InicioPos.Y.Scale, InicioPos.Y.Offset+D.Y)
+    if Arrastando and (i.UserInputType == Enum.UserInputType.Touch or i.UserInputType == Enum.UserInputType.MouseMovement) then
+        local PosicaoAtual = (i.UserInputType == Enum.UserInputType.Touch) and i.Position or UserInputService:GetMouseLocation()
+        local Diferenca = PosicaoAtual - InicioToque
+        Janela.Position = UDim2.new(
+            InicioPos.X.Scale, InicioPos.X.Offset + Diferenca.X,
+            InicioPos.Y.Scale, InicioPos.Y.Offset + Diferenca.Y
+        )
     end
 end)
 
-Barra.InputEnded:Connect(function(i) Arrastando = false end)
+Barra.InputEnded:Connect(function() Arrastando = false end)
 
 BtnMin.MouseButton1Click:Connect(function()
     if not Minimizado then
         TweenService:Create(Janela, TweenInfo.new(0.3), {Size = TamanhoMinimo}):Play()
+        task.wait(0.15)
         Conteudo.Visible = false
         BtnMin.Text = "+"
         Minimizado = true
     else
-        TweenService:Create(Janela, TweenInfo.new(0.3), {Size = TamanhoNormal}):Play()
         Conteudo.Visible = true
+        TweenService:Create(Janela, TweenInfo.new(0.3), {Size = TamanhoNormal}):Play()
         BtnMin.Text = "—"
         Minimizado = false
     end
 end)
 
-BtnFechar.MouseButton1Click:Connect(function() Gui:Destroy() end)
+BtnFechar.MouseButton1Click:Connect(function() Gui:Destroy() RemoveShootButton() end)
