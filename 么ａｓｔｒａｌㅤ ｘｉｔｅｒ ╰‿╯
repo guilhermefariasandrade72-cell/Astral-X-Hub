@@ -85,6 +85,55 @@ local UIS = game:GetService("UserInputService")
 -- ==================================
 -- VARIÁVEIS DA ABA 
 -- ==================================
+RunService.Heartbeat:Connect(function()
+    local Char = player.Character
+    if not Char then return end
+    local Humanoid = Char:FindFirstChild("Humanoid")
+    local Root = Char:FindFirstChild("HumanoidRootPart")
+    if not Humanoid or not Root then return end
+
+    if NoclipAtivo then
+        for _, Parte in ipairs(Char:GetChildren()) do
+            if Parte:IsA("BasePart") then
+                Parte.CanCollide = false
+            end
+        end
+    end
+
+    if SpeedJumpAtivo then
+        if Humanoid.FloorMaterial == Enum.Material.Air then
+            Humanoid.WalkSpeed = 100
+        else
+            Humanoid.WalkSpeed = VelocidadePadrao
+        end
+    end
+
+    if AntiFlingAtivo then
+        Root.AssemblyLinearVelocity = Vector3.new(
+            Root.AssemblyLinearVelocity.X * 0.2,
+            Root.AssemblyLinearVelocity.Y,
+            Root.AssemblyLinearVelocity.Z * 0.2
+        )
+    end
+end)
+
+UIS.InputBegan:Connect(function(Input)
+    if InfJumpAtivo and Input.UserInputType == Enum.UserInputType.Keyboard then
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            if Char.Humanoid.FloorMaterial ~= Enum.Material.Air then
+                Char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            end
+        end
+    end
+end)
+
+player.CharacterAdded:Connect(function(Char)
+    Char:WaitForChild("Humanoid")
+    task.wait(0.1)
+    Char.Humanoid.WalkSpeed = VelocidadePadrao
+    Char.Humanoid.JumpPower = ForcaPuloPadrao
+end)
 
 
 
