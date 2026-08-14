@@ -61,7 +61,35 @@ Window:EditOpenButton({
 })
 
 -- ==================================
--- VARIÁVEIS
+-- VARIÁVEIS DA ABA LOCAL PLAYER 
+-- ==================================
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
+local NoclipAtivo = false
+local InfJumpAtivo = false
+local AntiFlingAtivo = false
+local SpeedJumpAtivo = false
+local UIS = game:GetService("UserInputService")
+-- ==================================
+-- VARIÁVEIS DA ABA 
+-- ==================================
+
+
+
+-- ==================================
+-- VARIÁVEIS DA ABA 
+-- ==================================
+
+
+
+-- ==================================
+-- VARIÁVEIS DA ABA 
+-- ==================================
+
+
+
+-- ==================================
+-- VARIÁVEIS DA ABA 
 -- ==================================
 local JogadorSelecionadoTP = nil
 local DropdownJogadores = nil
@@ -76,8 +104,16 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 -- ==================================
--- SISTEMAS / FUNÇÕES
+-- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
+
+
+
+
+-- ==================================
+-- SISTEMAS DA ABA LOCAL PLAYER
+-- ==================================
+
 local function PegarListaJogadores()
     local lista = {}
 
@@ -120,8 +156,88 @@ Players.PlayerRemoving:Connect(function()
     CriarDropdownJogadores()
 end)
 
+
+
 -- ==================================
--- BOTÕES
+-- BOTOES DA ABA 
+-- ==================================
+
+-- ==================================
+-- BOTOES DA ABA 
+-- ==================================
+
+
+-- ==================================
+-- BOTÕES DA ABA LOCAL PLAYER 
+-- ==================================
+local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
+
+Sec_Movimento:Slider({
+    Title = "Velocidade",
+    Min = 16,
+    Max = 30,
+    Default = 16,
+    Callback = function(Valor)
+        VelocidadePadrao = Valor
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = Valor
+        end
+    end
+})
+
+Sec_Movimento:Slider({
+    Title = "Força de Pulo",
+    Min = 5,
+    Max = 60,
+    Default = 50,
+    Callback = function(Valor)
+        ForcaPuloPadrao = Valor
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.JumpPower = Valor
+        end
+    end
+})
+
+local Sec_Extra = Aba_Local:Section({Title = "Extra"})
+
+Sec_Extra:Toggle({
+    Title = "Noclip",
+    Default = false,
+    Callback = function(Estado)
+        NoclipAtivo = Estado
+    end
+})
+
+Sec_Extra:Toggle({
+    Title = "Infinite Jump",
+    Default = false,
+    Callback = function(Estado)
+        InfJumpAtivo = Estado
+    end
+})
+
+Sec_Extra:Toggle({
+    Title = "Anti Fling",
+    Default = false,
+    Callback = function(Estado)
+        AntiFlingAtivo = Estado
+    end
+})
+
+Sec_Extra:Toggle({
+    Title = "Speed Jump",
+    Default = false,
+    Callback = function(Estado)
+        SpeedJumpAtivo = Estado
+    end
+})
+
+
+
+
+
+-- ==================================
+-- BOTOES DA ABA 
 -- ==================================
 CriarDropdownJogadores()
 
