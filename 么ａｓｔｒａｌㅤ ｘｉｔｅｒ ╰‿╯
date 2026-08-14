@@ -117,7 +117,7 @@ local player = Players.LocalPlayer
 
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
-local VelocidadeNoPulo = 32
+local VelocidadeNoPulo = 180
 
 local function AplicarValoresBase()
     local Char = player.Character
