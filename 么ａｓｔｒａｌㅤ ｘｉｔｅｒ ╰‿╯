@@ -68,6 +68,8 @@ Window:EditOpenButton({
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
 
 
 -- ==================================
@@ -103,6 +105,13 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
+player.CharacterAdded:Connect(function(Char)
+    Char:WaitForChild("Humanoid")
+    task.wait(0.1)
+    Char.Humanoid.WalkSpeed = VelocidadePadrao
+    Char.Humanoid.JumpPower = ForcaPuloPadrao
+end)
+
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
@@ -181,6 +190,33 @@ end)
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
+local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
+
+Sec_Movimento:Slider({
+    Title = "Velocidade",
+    Min = 16,
+    Max = 30,
+    Default = 16,
+    Callback = function(Valor)
+        VelocidadePadrao = Valor
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.WalkSpeed = Valor
+        end
+    end
+})
+
+Sec_Movimento:Slider({
+    Title = "Força de Pulo",
+    Min = 5,
+    Max = 60,
+    Default = 50,
+    Callback = function(Valor)
+        ForcaPuloPadrao = Valor
+        if player.Character and player.Character:FindFirstChild("Humanoid") then
+            player.Character.Humanoid.JumpPower = Valor
+        end
+    end
+})
 
 
 
