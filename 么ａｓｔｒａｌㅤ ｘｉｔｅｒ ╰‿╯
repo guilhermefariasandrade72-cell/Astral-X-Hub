@@ -217,7 +217,7 @@ Sec_Movimento:Slider({
 
 Sec_Movimento:Slider({
     Title = "Força de Pulo",
-    Value = {Min = 5, Max = 60, Default = 50, Step = 1},
+    Value = {Min = 50, Max = 75, Default = 50, Step = 1},
     Callback = function(Valor)
         ForcaPuloPadrao = Valor
         local Char = player.Character
