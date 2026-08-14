@@ -168,26 +168,37 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+-- SERVIÇOS
+local RunService = game:GetService("RunService")
+local Cam = workspace.CurrentCamera
+
+-- VALORES ORIGINAIS (para restaurar depois)
+local ZoomOriginal = {Min = Cam.MinZoomDistance, Max = Cam.MaxZoomDistance}
+local ModoOriginal = Cam.CameraMode
+
+-- ⚙️ SISTEMA CORRIGIDO
 RunService.RenderStepped:Connect(function()
-    local Cam = workspace.CurrentCamera
     if not Cam then return end
 
-    -- ✅ Câmera Infinita (distância ilimitada)
+    -- 📷 CÂMERA INFINITA (CORRIGIDO)
     if _G.CameraInfinita then
-        Cam.CameraSubject = Cam.CameraSubject
-        Cam:ZoomTo(0, math.huge)
+        Cam.MinZoomDistance = 0.5
+        Cam.MaxZoomDistance = math.huge  -- Sem limite de distância
+    else
+        Cam.MinZoomDistance = ZoomOriginal.Min
+        Cam.MaxZoomDistance = ZoomOriginal.Max
     end
 
-    -- ✅ Câmera Sem Bloqueio (atravessa paredes)
+    -- 👁️ NOCLIP DE CÂMERA (CORRIGIDO PARA MÓBILE)
     if _G.CameraNoClip then
-        Cam.CameraMode = Enum.CameraMode.LockFirstPerson
-        Cam.CameraMode = Enum.CameraMode.Classic
-        Cam.NoCameraOcclusion = true
+        Cam.NoCameraOcclusion = true  -- Atravessa paredes
+        -- NÃO troca CameraMode toda hora → causa bug no celular
     else
         Cam.NoCameraOcclusion = false
+        Cam.CameraMode = ModoOriginal  -- Volta ao normal
     end
 
-    -- ✅ FOV aplicado
+    -- 🔧 FOV
     if FOV_Padrao then
         Cam.FieldOfView = FOV_Padrao
     end
