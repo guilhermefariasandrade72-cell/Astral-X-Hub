@@ -168,6 +168,33 @@ RunService.Stepped:Connect(function()
     end
 end)
 
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+RunService.RenderStepped:Connect(function()
+    local cam = Workspace.CurrentCamera
+    
+    -- 📷 Zoom Infinito
+    if ZoomInifinitoAtivo then
+        player.CameraMaxZoomDistance = 999999
+    else
+        player.CameraMaxZoomDistance = 128  -- Valor padrão do Roblox
+    end
+
+    -- 👁️ Câmera atravessa paredes
+    if CameraAtravessaParede then
+        player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
+    else
+        player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Zoom
+    end
+
+    -- 🔧 Campo de visão
+    if FovValor then
+        cam.FieldOfView = FovValor
+    end
+end)
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
