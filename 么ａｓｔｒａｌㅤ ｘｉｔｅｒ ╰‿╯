@@ -76,6 +76,11 @@ local VelocidadeNoPulo = 300
 _G.PuloInfinito = false
 _G.SpeedNoPulo = false
 
+-- ==========================
+_G.CameraInfinita = false
+_G.CameraNoClip = false
+local FOV_Padrao = 70
+
 -- ==================================
 -- VARIÁVEIS DA ABA TELEPORTE 
 -- ==================================
@@ -160,6 +165,31 @@ RunService.Stepped:Connect(function()
         else
             Hum.WalkSpeed = VelocidadePadrao
         end
+    end
+end)
+
+RunService.RenderStepped:Connect(function()
+    local Cam = workspace.CurrentCamera
+    if not Cam then return end
+
+    -- ✅ Câmera Infinita (distância ilimitada)
+    if _G.CameraInfinita then
+        Cam.CameraSubject = Cam.CameraSubject
+        Cam:ZoomTo(0, math.huge)
+    end
+
+    -- ✅ Câmera Sem Bloqueio (atravessa paredes)
+    if _G.CameraNoClip then
+        Cam.CameraMode = Enum.CameraMode.LockFirstPerson
+        Cam.CameraMode = Enum.CameraMode.Classic
+        Cam.NoCameraOcclusion = true
+    else
+        Cam.NoCameraOcclusion = false
+    end
+
+    -- ✅ FOV aplicado
+    if FOV_Padrao then
+        Cam.FieldOfView = FOV_Padrao
     end
 end)
 
@@ -283,6 +313,32 @@ Sec_Movimento:Toggle({
     end
 })
 
+local Sec_Camera = Aba_Local:Section({Title = "Câmera"})
+
+Sec_Camera:Toggle({
+    Title = "Câmera Infinita",
+    Default = false,
+    Callback = function(Ativo)
+        _G.CameraInfinita = Ativo
+    end
+})
+
+Sec_Camera:Toggle({
+    Title = "Câmera Sem Bloqueio",
+    Default = false,
+    Callback = function(Ativo)
+        _G.CameraNoClip = Ativo
+    end
+})
+
+Sec_Camera:Slider({
+    Title = "Campo de Visão (FOV)",
+    Value = {Min = 70, Max = 130, Default = 70, Step = 1},
+    Callback = function(Valor)
+        FOV_Padrao = Valor
+        workspace.CurrentCamera.FieldOfView = Valor
+    end
+})
 
 -- ==================================
 -- BOTOES DA ABA 
