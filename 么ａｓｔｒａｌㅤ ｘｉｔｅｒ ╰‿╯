@@ -111,6 +111,51 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
+local function AplicarValoresBase()
+    local Char = player.Character
+    if Char and Char:FindFirstChild("Humanoid") then
+        Char.Humanoid.WalkSpeed = VelocidadePadrao
+        Char.Humanoid.UseJumpPower = true
+        Char.Humanoid.JumpPower = ForcaPuloPadrao
+    end
+end
+
+task.wait(1)
+AplicarValoresBase()
+
+player.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    AplicarValoresBase()
+end)
+
+RunService.Stepped:Connect(function()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("Humanoid") then return end
+    local Hum = Char.Humanoid
+
+    -- NoClip
+    if _G.NoClipAtivo then
+        for _, Parte in ipairs(Char:GetChildren()) do
+            if Parte:IsA("BasePart") then
+                Parte.CanCollide = false
+            end
+        end
+    end
+
+    -- Pulo Infinito
+    if _G.PuloInfinito and Hum.FloorMaterial == Enum.Material.Air then
+        Hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    end
+
+    -- Velocidade no Pulo (300 no ar / 16 no chão)
+    if _G.SpeedNoPulo then
+        if Hum.FloorMaterial == Enum.Material.Air then
+            Hum.WalkSpeed = VelocidadeNoPulo
+        else
+            Hum.WalkSpeed = VelocidadePadrao
+        end
+    end
+end)
 
 
 -- ==================================
