@@ -5,6 +5,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 -- ==================================
@@ -73,13 +74,17 @@ Window:EditOpenButton({
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
+local FOV_Padrao = 70
+
+-- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
 _G.PuloInfinito = false
 _G.SpeedNoPulo = false
-
--- ==========================
 _G.CameraInfinita = false
 _G.CameraNoClip = false
-local FOV_Padrao = 70
 
 -- ==================================
 -- VARIÁVEIS DA ABA TELEPORTE 
@@ -114,15 +119,6 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
-local UserInputService = game:GetService("UserInputService")
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
--- ⚙️ CONFIGURAÇÕES
-local VelocidadePadrao = 16
-local ForcaPuloPadrao = 50
-local VelocidadeNoPulo = 150
 
 -- 🟢 APLICAR VALORES INICIAIS
 local function AplicarValoresBase()
@@ -140,9 +136,15 @@ AplicarValoresBase()
 player.CharacterAdded:Connect(function()
     task.wait(0.5)
     AplicarValoresBase()
+    -- ✅ FORÇA ZOOM VOLTAR AO RENASCER
+    task.wait(1)
+    if not _G.CameraInfinita then
+        player.CameraMaxZoomDistance = ZoomMaxOriginal
+        player.CameraMinZoomDistance = ZoomMinOriginal
+    end
 end)
 
--- 🟢 PULO INFINITO (Ativa apenas ao pressionar o botão de pular)
+-- 🟢 PULO INFINITO
 UserInputService.JumpRequest:Connect(function()
     if _G.PuloInfinito then
         local Char = player.Character
@@ -152,13 +154,13 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- 🟢 LOOP PRINCIPAL (Speed no Pulo)
+-- 🟢 LOOP PRINCIPAL (Velocidade no Pulo + Câmera Sem Bloqueio + FOV)
 RunService.Stepped:Connect(function()
     local Char = player.Character
     if not Char or not Char:FindFirstChild("Humanoid") then return end
     local Hum = Char.Humanoid
 
-    -- ✅ Velocidade Adaptativa no Pulo
+    -- ✅ Velocidade no Pulo
     if _G.SpeedNoPulo then
         if Hum.FloorMaterial == Enum.Material.Air then
             Hum.WalkSpeed = VelocidadeNoPulo
@@ -168,47 +170,32 @@ RunService.Stepped:Connect(function()
     end
 end)
 
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local player = Players.LocalPlayer
-
+-- ✅ CÂMERA SEM BLOQUEIO E FOV (sem mexer no zoom!)
 RunService.RenderStepped:Connect(function()
-    local cam = Workspace.CurrentCamera
-    
-    -- 📷 Zoom Infinito
-    if ZoomInifinitoAtivo then
-        player.CameraMaxZoomDistance = 999999
-    else
-        player.CameraMaxZoomDistance = 128  -- Valor padrão do Roblox
-    end
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
 
-    -- 👁️ Câmera atravessa paredes
-    if CameraAtravessaParede then
+    -- 👁️ Câmera Sem Bloqueio
+    if _G.CameraNoClip then
         player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
     else
-        player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Zoom
+        player.DevCameraOcclusionMode = BloqueioOriginal
     end
 
-    -- 🔧 Campo de visão
-    if FovValor then
-        cam.FieldOfView = FovValor
-    end
+    -- 🔧 Campo de Visão
+    Cam.FieldOfView = FOV_Padrao
 end)
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
 -- ==================================
-
 local function PegarListaJogadores()
     local lista = {}
-
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player then
             table.insert(lista, p.Name)
         end
     end
-
     table.sort(lista)
     return lista
 end
@@ -217,11 +204,8 @@ local Sec_Teleporte = Aba_Tele:Section({Title = "Teleporte para Player"})
 
 local function CriarDropdownJogadores()
     if DropdownJogadores then
-        pcall(function()
-            DropdownJogadores:Destroy()
-        end)
+        pcall(function() DropdownJogadores:Destroy() end)
     end
-
     DropdownJogadores = Sec_Teleporte:Dropdown({
         Title = "Escolha um jogador",
         Values = PegarListaJogadores(),
@@ -232,27 +216,11 @@ local function CriarDropdownJogadores()
     })
 end
 
-Players.PlayerAdded:Connect(function()
-    task.wait(0.3)
-    CriarDropdownJogadores()
-end)
-
-Players.PlayerRemoving:Connect(function()
-    task.wait(0.3)
-    CriarDropdownJogadores()
-end)
+Players.PlayerAdded:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
+Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
 
 -- ==================================
 -- SISTEMAS DA ABA CONFIG UI
--- ==================================
-
-
-
-
--- ==================================
--- ==================================
--- ==================================
--- ==================================
 -- ==================================
 
 
@@ -318,11 +286,20 @@ Sec_Movimento:Toggle({
 
 local Sec_Camera = Aba_Local:Section({Title = "Câmera"})
 
+-- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
 Sec_Camera:Toggle({
     Title = "Câmera Infinita",
     Default = false,
     Callback = function(Ativo)
         _G.CameraInfinita = Ativo
+        if Ativo then
+            -- ✅ LIGADO → ZOOM GRANDE
+            player.CameraMaxZoomDistance = 1000000
+        else
+            -- ❌ DESLIGADO → VOLTA EXATAMENTE AO ORIGINAL
+            player.CameraMaxZoomDistance = ZoomMaxOriginal
+            player.CameraMinZoomDistance = ZoomMinOriginal
+        end
     end
 })
 
@@ -344,7 +321,7 @@ Sec_Camera:Slider({
 })
 
 -- ==================================
--- BOTOES DA ABA 
+-- BOTOES DA ABA TELEPORTE
 -- ==================================
 CriarDropdownJogadores()
 
@@ -352,18 +329,10 @@ Sec_Teleporte:Button({
     Title = "Teleportar",
     Callback = function()
         if not JogadorSelecionadoTP then return end
-
         local alvo = Players:FindFirstChild(JogadorSelecionadoTP)
-
-        if alvo
-        and alvo.Character
-        and alvo.Character:FindFirstChild("HumanoidRootPart")
-        and player.Character
-        and player.Character:FindFirstChild("HumanoidRootPart") then
-
-            player.Character:PivotTo(
-                alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
-            )
+        if alvo and alvo.Character and alvo.Character:FindFirstChild("HumanoidRootPart")
+        and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
+            player.Character:PivotTo(alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0))
         end
     end
 })
