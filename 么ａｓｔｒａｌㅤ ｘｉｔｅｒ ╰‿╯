@@ -118,7 +118,7 @@ local player = Players.LocalPlayer
 -- ⚙️ CONFIGURAÇÕES
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
-local VelocidadeNoPulo = 180
+local VelocidadeNoPulo = 32
 
 -- 🟢 APLICAR VALORES INICIAIS
 local function AplicarValoresBase()
@@ -148,31 +148,11 @@ UserInputService.JumpRequest:Connect(function()
     end
 end)
 
--- 🟢 LOOP PRINCIPAL (NoClip + Speed no Pulo)
+-- 🟢 LOOP PRINCIPAL (Speed no Pulo)
 RunService.Stepped:Connect(function()
     local Char = player.Character
     if not Char or not Char:FindFirstChild("Humanoid") then return end
     local Hum = Char.Humanoid
-
-    -- ✅ NoClip Inteligente (Suporta escadas e desativa instantaneamente)
-    if _G.NoClipAtivo then
-        if Hum:GetState() ~= Enum.HumanoidStateType.Climbing then
-            for _, Parte in ipairs(Char:GetChildren()) do
-                if Parte:IsA("BasePart") and Parte.Name ~= "HumanoidRootPart" then
-                    Parte.CanCollide = false
-                end
-            end
-        end
-    else
-        -- Restaura a colisão imediatamente ao desligar o NoClip
-        if Char:FindFirstChild("Head") and not Char.Head.CanCollide then
-            for _, Parte in ipairs(Char:GetChildren()) do
-                if Parte:IsA("BasePart") and Parte.Name ~= "HumanoidRootPart" then 
-                    Parte.CanCollide = true
-                end
-            end
-        end
-    end
 
     -- ✅ Velocidade Adaptativa no Pulo
     if _G.SpeedNoPulo then
