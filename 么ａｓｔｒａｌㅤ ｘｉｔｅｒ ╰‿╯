@@ -1,10 +1,6 @@
 -- ==================================
 -- 🌐 ASTRAL X HUB V1
 -- ==================================
-
--- ==================================
--- SERVIÇOS
--- ==================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -61,87 +57,29 @@ Window:EditOpenButton({
 })
 
 -- ==================================
--- VARIÁVEIS DA ABA LOCAL PLAYER 
--- ==================================
-local VelocidadePadrao = 16
-local ForcaPuloPadrao = 50
-local NoclipAtivo = false
-local InfJumpAtivo = false
-local AntiFlingAtivo = false
-local SpeedJumpAtivo = false
-local UIS = game:GetService("UserInputService")
--- ==================================
--- VARIÁVEIS DA ABA 
+-- VARIÁVEIS DA ABA MAIN
 -- ==================================
 
 
+-- ==================================
+-- VARIÁVEIS DA ABA ESP
+-- ==================================
 
 -- ==================================
--- VARIÁVEIS DA ABA 
+-- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
-
-
-
--- ==================================
--- VARIÁVEIS DA ABA 
--- ==================================
-RunService.Heartbeat:Connect(function()
-    local Char = player.Character
-    if not Char then return end
-    local Humanoid = Char:FindFirstChild("Humanoid")
-    local Root = Char:FindFirstChild("HumanoidRootPart")
-    if not Humanoid or not Root then return end
-
-    if NoclipAtivo then
-        for _, Parte in ipairs(Char:GetChildren()) do
-            if Parte:IsA("BasePart") then
-                Parte.CanCollide = false
-            end
-        end
-    end
-
-    if SpeedJumpAtivo then
-        if Humanoid.FloorMaterial == Enum.Material.Air then
-            Humanoid.WalkSpeed = 100
-        else
-            Humanoid.WalkSpeed = VelocidadePadrao
-        end
-    end
-
-    if AntiFlingAtivo then
-        Root.AssemblyLinearVelocity = Vector3.new(
-            Root.AssemblyLinearVelocity.X * 0.2,
-            Root.AssemblyLinearVelocity.Y,
-            Root.AssemblyLinearVelocity.Z * 0.2
-        )
-    end
-end)
-
-UIS.InputBegan:Connect(function(Input)
-    if InfJumpAtivo and Input.UserInputType == Enum.UserInputType.Keyboard then
-        local Char = player.Character
-        if Char and Char:FindFirstChild("Humanoid") then
-            if Char.Humanoid.FloorMaterial ~= Enum.Material.Air then
-                Char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
-            end
-        end
-    end
-end)
-
-player.CharacterAdded:Connect(function(Char)
-    Char:WaitForChild("Humanoid")
-    task.wait(0.1)
-    Char.Humanoid.WalkSpeed = VelocidadePadrao
-    Char.Humanoid.JumpPower = ForcaPuloPadrao
-end)
-
 
 
 -- ==================================
--- VARIÁVEIS DA ABA 
+-- VARIÁVEIS DA ABA TELEPORTE 
 -- ==================================
 local JogadorSelecionadoTP = nil
 local DropdownJogadores = nil
+
+-- ==================================
+-- VARIÁVEIS DA ABA CONFIG UI
+-- ==================================
+
 
 -- ==================================
 -- ABAS
@@ -153,14 +91,21 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 -- ==================================
--- SISTEMAS DA ABA LOCAL PLAYER
+-- SISTEMAS DA ABA MAIN
 -- ==================================
 
 
+-- ==================================
+-- SISTEMAS DA ABA ESP
+-- ==================================
 
 
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
+-- ==================================
+
+-- ==================================
+-- SISTEMAS DA ABA TELEPORTE 
 -- ==================================
 
 local function PegarListaJogadores()
@@ -205,83 +150,37 @@ Players.PlayerRemoving:Connect(function()
     CriarDropdownJogadores()
 end)
 
+-- ==================================
+-- SISTEMAS DA ABA CONFIG UI
+-- ==================================
+
+
+
+
+-- ==================================
+-- ==================================
+-- ==================================
+-- ==================================
+-- ==================================
+
+
 
 
 -- ==================================
 -- BOTOES DA ABA 
 -- ==================================
 
+
+
 -- ==================================
 -- BOTOES DA ABA 
 -- ==================================
+
 
 
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
-local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
-
-Sec_Movimento:Slider({
-    Title = "Velocidade",
-    Min = 16,
-    Max = 30,
-    Default = 16,
-    Callback = function(Valor)
-        VelocidadePadrao = Valor
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.WalkSpeed = Valor
-        end
-    end
-})
-
-Sec_Movimento:Slider({
-    Title = "Força de Pulo",
-    Min = 5,
-    Max = 60,
-    Default = 50,
-    Callback = function(Valor)
-        ForcaPuloPadrao = Valor
-        if player.Character and player.Character:FindFirstChild("Humanoid") then
-            player.Character.Humanoid.JumpPower = Valor
-        end
-    end
-})
-
-local Sec_Extra = Aba_Local:Section({Title = "Extra"})
-
-Sec_Extra:Toggle({
-    Title = "Noclip",
-    Default = false,
-    Callback = function(Estado)
-        NoclipAtivo = Estado
-    end
-})
-
-Sec_Extra:Toggle({
-    Title = "Infinite Jump",
-    Default = false,
-    Callback = function(Estado)
-        InfJumpAtivo = Estado
-    end
-})
-
-Sec_Extra:Toggle({
-    Title = "Anti Fling",
-    Default = false,
-    Callback = function(Estado)
-        AntiFlingAtivo = Estado
-    end
-})
-
-Sec_Extra:Toggle({
-    Title = "Speed Jump",
-    Default = false,
-    Callback = function(Estado)
-        SpeedJumpAtivo = Estado
-    end
-})
-
-
 
 
 
