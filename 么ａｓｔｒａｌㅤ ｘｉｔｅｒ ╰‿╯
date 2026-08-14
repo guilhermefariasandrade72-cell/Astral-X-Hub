@@ -132,7 +132,7 @@ RunService.Stepped:Connect(function()
     if not Char or not Char:FindFirstChild("Humanoid") then return end
     local Hum = Char.Humanoid
 
-    -- NoClip
+    -- ✅ NoClip — desliga na hora
     if _G.NoClipAtivo then
         for _, Parte in ipairs(Char:GetChildren()) do
             if Parte:IsA("BasePart") then
@@ -141,12 +141,14 @@ RunService.Stepped:Connect(function()
         end
     end
 
-    -- Pulo Infinito
-    if _G.PuloInfinito and Hum.FloorMaterial == Enum.Material.Air then
-        Hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    -- ✅ Pulo Infinito — só pula enquanto estiver no ar
+    if _G.PuloInfinito then
+        if Hum.FloorMaterial == Enum.Material.Air then
+            Hum:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
     end
 
-    -- Velocidade no Pulo (300 no ar / 16 no chão)
+    -- ✅ Velocidade no Pulo
     if _G.SpeedNoPulo then
         if Hum.FloorMaterial == Enum.Material.Air then
             Hum.WalkSpeed = VelocidadeNoPulo
@@ -155,7 +157,6 @@ RunService.Stepped:Connect(function()
         end
     end
 end)
-
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
