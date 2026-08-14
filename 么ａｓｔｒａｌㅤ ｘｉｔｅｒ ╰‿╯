@@ -110,6 +110,15 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
+local VelocidadeNoPulo = 32
+
 local function AplicarValoresBase()
     local Char = player.Character
     if Char and Char:FindFirstChild("Humanoid") then
@@ -127,24 +136,37 @@ player.CharacterAdded:Connect(function()
     AplicarValoresBase()
 end)
 
+-- 🟢 PULO INFINITO CORRIGIDO (Roda apenas quando você APERTA para pular)
+UserInputService.JumpRequest:Connect(function()
+    if _G.PuloInfinito then
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+-- 🟢 LOOP DE STEEDED (Para NoClip e Speed no Pulo)
 RunService.Stepped:Connect(function()
     local Char = player.Character
     if not Char or not Char:FindFirstChild("Humanoid") then return end
     local Hum = Char.Humanoid
 
-    -- ✅ NoClip — desliga na hora
+    -- ✅ NoClip Corrigido
     if _G.NoClipAtivo then
         for _, Parte in ipairs(Char:GetChildren()) do
             if Parte:IsA("BasePart") then
                 Parte.CanCollide = false
             end
         end
-    end
-
-    -- ✅ Pulo Infinito — só pula enquanto estiver no ar
-    if _G.PuloInfinito then
-        if Hum.FloorMaterial == Enum.Material.Air then
-            Hum:ChangeState(Enum.HumanoidStateType.Jumping)
+    else
+        -- Garante que se desligar, reseta a colisão da Head e Torso/HumanoidRootPart
+        if Char:FindFirstChild("Head") and not Char.Head.CanCollide then
+            for _, Parte in ipairs(Char:GetChildren()) do
+                if Parte:IsA("BasePart") and Parte.Name ~= "HumanoidRootPart" then 
+                    Parte.CanCollide = true
+                end
+            end
         end
     end
 
@@ -157,6 +179,7 @@ RunService.Stepped:Connect(function()
         end
     end
 end)
+
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
