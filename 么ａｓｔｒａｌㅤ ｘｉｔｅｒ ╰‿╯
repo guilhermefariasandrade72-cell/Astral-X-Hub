@@ -70,6 +70,12 @@ Window:EditOpenButton({
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
+local VelocidadeNoPulo = 300
+_G.NoClipAtivo = false
+_G.PuloInfinito = false
+_G.SpeedNoPulo = false
 
 -- ==================================
 -- VARIÁVEIS DA ABA TELEPORTE 
@@ -183,9 +189,56 @@ end)
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
+local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
+Sec_Movimento:Slider({
+    Title = "Velocidade",
+    Value = {Min = 16, Max = 30, Default = 16, Step = 1},
+    Callback = function(Valor)
+        VelocidadePadrao = Valor
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.WalkSpeed = Valor
+        end
+    end
+})
 
+Sec_Movimento:Slider({
+    Title = "Força de Pulo",
+    Value = {Min = 50, Max = 75, Default = 50, Step = 1},
+    Callback = function(Valor)
+        ForcaPuloPadrao = Valor
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.UseJumpPower = true
+            Char.Humanoid.JumpPower = Valor
+        end
+    end
+})
 
+Sec_Movimento:Toggle({
+    Title = "NoClip",
+    Default = false,
+    Callback = function(Ativo)
+        _G.NoClipAtivo = Ativo
+    end
+})
+
+Sec_Movimento:Toggle({
+    Title = "Pulo Infinito",
+    Default = false,
+    Callback = function(Ativo)
+        _G.PuloInfinito = Ativo
+    end
+})
+
+Sec_Movimento:Toggle({
+    Title = "Velocidade no Pulo",
+    Default = false,
+    Callback = function(Ativo)
+        _G.SpeedNoPulo = Ativo
+    end
+})
 
 
 -- ==================================
