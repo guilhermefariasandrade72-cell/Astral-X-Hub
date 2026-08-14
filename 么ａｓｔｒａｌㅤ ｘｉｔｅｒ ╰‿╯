@@ -73,7 +73,6 @@ Window:EditOpenButton({
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
-_G.NoClipAtivo = false
 _G.PuloInfinito = false
 _G.SpeedNoPulo = false
 
@@ -118,7 +117,7 @@ local player = Players.LocalPlayer
 -- ⚙️ CONFIGURAÇÕES
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
-local VelocidadeNoPulo = 32
+local VelocidadeNoPulo = 150
 
 -- 🟢 APLICAR VALORES INICIAIS
 local function AplicarValoresBase()
@@ -265,14 +264,6 @@ Sec_Movimento:Slider({
             Char.Humanoid.UseJumpPower = true
             Char.Humanoid.JumpPower = Valor
         end
-    end
-})
-
-Sec_Movimento:Toggle({
-    Title = "NoClip",
-    Default = false,
-    Callback = function(Ativo)
-        _G.NoClipAtivo = Ativo
     end
 })
 
