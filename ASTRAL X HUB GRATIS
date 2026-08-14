@@ -550,7 +550,7 @@ task.spawn(function()
                 end
 
                 -- 🚀 CONTINUA ANDANDO
-                local progresso = math.min((os.clock() - tIni) / tempo, 0,1)
+                local progresso = math.min((os.clock() - tIni) / tempo, 1)
                 c:PivotTo(CFrame.new(ini:Lerp(destino, progresso)))
 
                 -- ✅ CHEGOU
