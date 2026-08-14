@@ -168,41 +168,6 @@ RunService.Stepped:Connect(function()
     end
 end)
 
--- SERVIÇOS
-local RunService = game:GetService("RunService")
-local Cam = workspace.CurrentCamera
-
--- VALORES ORIGINAIS (para restaurar depois)
-local ZoomOriginal = {Min = Cam.MinZoomDistance, Max = Cam.MaxZoomDistance}
-local ModoOriginal = Cam.CameraMode
-
--- ⚙️ SISTEMA CORRIGIDO
-RunService.RenderStepped:Connect(function()
-    if not Cam then return end
-
-    -- 📷 CÂMERA INFINITA (CORRIGIDO)
-    if _G.CameraInfinita then
-        Cam.MinZoomDistance = 0.5
-        Cam.MaxZoomDistance = math.huge  -- Sem limite de distância
-    else
-        Cam.MinZoomDistance = ZoomOriginal.Min
-        Cam.MaxZoomDistance = ZoomOriginal.Max
-    end
-
-    -- 👁️ NOCLIP DE CÂMERA (CORRIGIDO PARA MÓBILE)
-    if _G.CameraNoClip then
-        Cam.NoCameraOcclusion = true  -- Atravessa paredes
-        -- NÃO troca CameraMode toda hora → causa bug no celular
-    else
-        Cam.NoCameraOcclusion = false
-        Cam.CameraMode = ModoOriginal  -- Volta ao normal
-    end
-
-    -- 🔧 FOV
-    if FOV_Padrao then
-        Cam.FieldOfView = FOV_Padrao
-    end
-end)
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
