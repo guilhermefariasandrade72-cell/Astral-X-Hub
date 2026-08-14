@@ -1,1 +1,146 @@
-ASTRAL X HUB PAGO !!
+-- ==================================
+-- 🌐 ASTRAL X HUB V1
+-- ==================================
+
+-- ==================================
+-- SERVIÇOS
+-- ==================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local player = Players.LocalPlayer
+
+-- ==================================
+-- CARREGAR INTERFACE
+-- ==================================
+local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
+
+-- ==================================
+-- FUNÇÃO DE COR GRADIENTE
+-- ==================================
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
+        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
+        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+        result = result .. "<font color=\"rgb("..r..", "..g..", "..b..")\">"..text:sub(i, i).."</font>"
+    end
+    return result
+end
+
+-- ==================================
+-- INTERFACE (JANELA E BOTÃO)
+-- ==================================
+local Window = WindUI:CreateWindow({
+    Title = gradient("Astral X Hub V1", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
+    Icon = "star",
+    Author = gradient("MM2 · PREMIUM", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 120,
+    HasOutline = true,
+    HideSearchBar = true,
+})
+
+Window:EditOpenButton({
+    Title = "Astral",
+    Icon = "star",
+    CornerRadius = UDim.new(0, 12),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("#ffcc00"),
+        Color3.fromHex("#ff6600")
+    ),
+    Draggable = true,
+})
+
+-- ==================================
+-- VARIÁVEIS
+-- ==================================
+local JogadorSelecionadoTP = nil
+local DropdownJogadores = nil
+
+-- ==================================
+-- ABAS
+-- ==================================
+local Aba_Main = Window:Tab({Title = gradient("Main", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "monitor"})
+local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "eye"})
+local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "user"})
+local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
+local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
+
+-- ==================================
+-- SISTEMAS / FUNÇÕES
+-- ==================================
+local function PegarListaJogadores()
+    local lista = {}
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+
+    table.sort(lista)
+    return lista
+end
+
+local Sec_Teleporte = Aba_Tele:Section({Title = "Teleporte para Player"})
+
+local function CriarDropdownJogadores()
+    if DropdownJogadores then
+        pcall(function()
+            DropdownJogadores:Destroy()
+        end)
+    end
+
+    DropdownJogadores = Sec_Teleporte:Dropdown({
+        Title = "Escolha um jogador",
+        Values = PegarListaJogadores(),
+        Default = "",
+        Callback = function(nome)
+            JogadorSelecionadoTP = nome
+        end
+    })
+end
+
+Players.PlayerAdded:Connect(function()
+    task.wait(0.3)
+    CriarDropdownJogadores()
+end)
+
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.3)
+    CriarDropdownJogadores()
+end)
+
+-- ==================================
+-- BOTÕES
+-- ==================================
+CriarDropdownJogadores()
+
+Sec_Teleporte:Button({
+    Title = "Teleportar",
+    Callback = function()
+        if not JogadorSelecionadoTP then return end
+
+        local alvo = Players:FindFirstChild(JogadorSelecionadoTP)
+
+        if alvo
+        and alvo.Character
+        and alvo.Character:FindFirstChild("HumanoidRootPart")
+        and player.Character
+        and player.Character:FindFirstChild("HumanoidRootPart") then
+
+            player.Character:PivotTo(
+                alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+            )
+        end
+    end
+})
