@@ -258,6 +258,170 @@ task.spawn(function()
 end)
 
 -- ==================================
+-- LÓGICA DO XERIFE / COMBATE
+-- ==================================
+
+-- 🔍 Busca o Murderer utilizando a Remote de dados oficial
+local function GetMurderer()
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return nil end
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return nil end
+
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player ~= player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+            local Info = Data[Player.Name]
+            if Info and not Info.Killed and not Info.Dead and Info.Role == "Murderer" then
+                return Player
+            end
+        end
+    end
+    return nil
+end
+
+-- 🔫 Executa o disparo com cálculo de predição
+local function ShootMurderer()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
+    if not Gun then return end
+
+    if Gun.Parent ~= Char then
+        Gun.Parent = Char
+        task.wait(0.05)
+    end
+
+    local Murderer = GetMurderer()
+    if not Murderer or not Murderer.Character then return end
+
+    local TargetHRP = Murderer.Character:FindFirstChild("HumanoidRootPart")
+    local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
+    if not TargetHRP or not TargetTorso then return end
+
+    -- Predição de movimento baseada na velocidade do alvo
+    local Velocity = TargetHRP.Velocity
+    local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * 0.13)
+    local OriginCFrame = CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
+
+    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
+    if ShootEvent then
+        if ShootEvent:IsA("RemoteEvent") then
+            ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos))
+        elseif ShootEvent:IsA("RemoteFunction") then
+            ShootEvent:InvokeServer(OriginCFrame, CFrame.new(PredictedPos))
+        end
+    end
+end
+
+-- 🧲 Coleta/Equipa a arma caso esteja solta ou na mochila
+local function GrabGun()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+    -- Se a arma estiver no chão (GunDrop)
+    local Map = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
+    if Map then
+        local gunDrop = Map:FindFirstChild("GunDrop") or Workspace:FindFirstChild("GunDrop", true)
+        if gunDrop and gunDrop:IsA("BasePart") then
+            gunDrop.CFrame = Char.HumanoidRootPart.CFrame
+        end
+    end
+
+    -- Se a arma estiver na mochila
+    local BackpackGun = player.Backpack and player.Backpack:FindFirstChild("Gun")
+    if BackpackGun then
+        BackpackGun.Parent = Char
+    end
+end
+
+-- 🎯 Criação do Botão Flutuante (Arrastável)
+local function CreateShootButton()
+    if ShootButtonGui then return end
+
+    local CoreTarget = nil
+    pcall(function() CoreTarget = game:GetService("CoreGui") end)
+    if not CoreTarget then CoreTarget = player:FindFirstChild("PlayerGui") end
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "Astral_XerifeTiro"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = CoreTarget
+
+    local Btn = Instance.new("TextButton")
+    Btn.Name = "ShootBtn"
+    Btn.Size = UDim2.new(0, 150, 0, 48)
+    Btn.Position = UDim2.new(0.05, 0, 0.4, 0)
+    Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
+    Btn.BackgroundTransparency = 0.1
+    Btn.Text = "🔫 Shoot Murderer"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 14
+    Btn.Font = Enum.Font.GothamBold
+    Btn.Active = true
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = Btn
+
+    local Border = Instance.new("UIStroke")
+    Border.Color = Color3.fromRGB(255, 50, 50)
+    Border.Thickness = 1.5
+    Border.Parent = Btn
+
+    -- Lógica de arrastar para Mobile e PC
+    Btn.InputBegan:Connect(function(input)
+        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+            isDraggingShoot = true
+            dragStartShoot = input.Position
+            startPosShoot = Btn.Position
+            
+            input.Changed:Connect(function()
+                if input.UserInputState == Enum.UserInputState.End then
+                    isDraggingShoot = false
+                end
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(input)
+        if isDraggingShoot and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+            local delta = input.Position - dragStartShoot
+            Btn.Position = UDim2.new(
+                startPosShoot.X.Scale,
+                startPosShoot.X.Offset + delta.X,
+                startPosShoot.Y.Scale,
+                startPosShoot.Y.Offset + delta.Y
+            )
+        end
+    end)
+
+    Btn.MouseButton1Click:Connect(function()
+        if not isDraggingShoot then
+            ShootMurderer()
+        end
+    end)
+
+    ShootButtonGui = GuiBtn
+end
+
+local function RemoveShootButton()
+    if ShootButtonGui then
+        ShootButtonGui:Destroy()
+        ShootButtonGui = nil
+    end
+end
+
+-- Loop para manter o Grab Gun ativo quando ligado
+RunService.Heartbeat:Connect(function()
+    if GrabGunAtivo then
+        GrabGun()
+    end
+end)
+
+-- ==================================
 -- SISTEMA DA ABA COMBATE / XERIFE
 -- ==================================
 
