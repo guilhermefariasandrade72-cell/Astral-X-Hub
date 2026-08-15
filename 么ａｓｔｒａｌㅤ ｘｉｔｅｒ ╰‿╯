@@ -261,108 +261,31 @@ task.spawn(function()
 end)
 
 -- ==================================
--- SISTEMA — FUNÇÕES DO XERIFE ✅
+-- SISTEMA — GRAB GUN
 -- ==================================
-local function GetMurderer()
-    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-    if not DataRemote then return nil end
-    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
-    if not ok or not Data then return nil end
-    for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= player and Player:GetAttribute("Alive") then
-            local Info = Data[Player.Name]
-            if Info and Info.Role == "Murderer" then
-                return Player
-            end
-        end
-    end
-    return nil
-end
-
--- ✅ ATIRAR NO ASSASSINO
-local function ShootMurderer()
-    local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-
-    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
-    if not Gun then return end
-    
-    if Gun.Parent ~= Char then
-        Gun.Parent = Char
-        task.wait(0.05)
-    end
-
-    local Alvo = GetMurderer()
-    if not Alvo or not Alvo.Character then return end
-
-    local HRP = Alvo.Character:FindFirstChild("HumanoidRootPart")
-    if not HRP then return end
-
-    Gun.Fire:FireServer(HRP.Position)
-end
-
--- ✅ PEGAR ARMA
 local function GrabGun()
     local Char = player.Character
     if not Char then return end
-    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
-    if Gun and Gun.Parent ~= Char then
-        Gun.Parent = Char
+
+    -- Tenta pegar a arma do corpo primeiro
+    local Gun = Char:FindFirstChild("Gun")
+    if Gun then return end -- Já tem equipada → não faz nada
+
+    -- Se não tiver, pega da mochila
+    if player.Backpack then
+        Gun = player.Backpack:FindFirstChild("Gun")
+        if Gun then
+            Gun.Parent = Char
+        end
     end
 end
 
--- ✅ CRIA BOTÃO NA TELA — CONSERTADO ✅
-local function CriarBotaoShoot()
-    if BotaoCriado then return end
-    BotaoCriado = true
-
-    GuiBotao = Instance.new("ScreenGui")
-    GuiBotao.Name = "Astral_ShootBtn"
-    GuiBotao.ResetOnSpawn = false
-    GuiBotao.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    -- ✅ Coloca no CoreGui (garante que aparece)
-    pcall(function() GuiBotao.Parent = CoreGui end)
-    if not GuiBotao.Parent then GuiBotao.Parent = player.PlayerGui end
-
-    local Botao = Instance.new("TextButton")
-    Botao.Name = "ShootBtn"
-    Botao.Size = UDim2.new(0, 170, 0, 55)
-    Botao.Position = UDim2.new(0.02, 0, 0.5, -27)
-    Botao.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
-    Botao.BackgroundTransparency = 0.15
-    Botao.BorderSizePixel = 3
-    Botao.BorderColor3 = Color3.fromRGB(255, 0, 0)
-    Botao.Font = Enum.Font.GothamBold
-    Botao.Text = "🔫 Shoot Murderer"
-    Botao.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Botao.TextSize = 15
-    Botao.AutoLocalize = false
-    Botao.Active = true
-    Botao.Draggable = true -- ✅ Pode arrastar na tela
-    Botao.Parent = GuiBotao
-
-    -- ✅ Funciona em PC e CELULAR
-    Botao.MouseButton1Click:Connect(ShootMurderer)
-    Botao.TouchTap:Connect(ShootMurderer)
-end
-
--- ✅ REMOVER BOTÃO
-local function RemoverBotaoShoot()
-    if GuiBotao then
-        GuiBotao:Destroy()
-        GuiBotao = nil
-    end
-    BotaoCriado = false
-end
-
--- ✅ LOOP DO GRAB GUN
+-- Fica verificando o tempo todo
 RunService.Heartbeat:Connect(function()
     if GrabGunAtivo then
         GrabGun()
     end
 end)
-
 
 -- ==================================
 -- SISTEMAS DA ABA ESP
