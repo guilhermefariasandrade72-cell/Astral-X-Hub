@@ -250,11 +250,6 @@ local function PegarCargos()
     if ok and d then DadosCargos = d end
 end
 
-local function EstaVivo(Nome)
-    local Info = DadosCargos[Nome]
-    return Info and not Info.Killed and not Info.Dead
-end
-
 local function CriarHighlight(Alvo, Cor, Tabela)
     if not Alvo then return end
     if not Tabela[Alvo] then
@@ -278,26 +273,29 @@ local function LimparESP(Tabela)
     table.clear(Tabela)
 end
 
--- 📌 LOOP DE ATUALIZAÇÃO DO ESP
+-- 📌 LOOP DE ATUALIZAÇÃO DO ESP COM LOBBY (BRANCO)
 RunService.RenderStepped:Connect(function()
     if ESPPlayerAtivo then
         PegarCargos()
         for _, p in ipairs(Players:GetPlayers()) do
-            if p ~= player and p.Character and EstaVivo(p.Name) then
+            if p ~= player and p.Character then
                 local Info = DadosCargos[p.Name]
-                local Cor = Color3.fromRGB(60, 200, 80) -- 🟢 Inocente
-                if Info then
+                local Cor = Color3.fromRGB(255, 255, 255) -- ⚪ Lobby / Espectador (Padrão)
+
+                -- Verifica se o jogador está jogando na rodada atual
+                if Info and not Info.Killed and not Info.Dead then
                     if Info.Role == "Murderer" then 
                         Cor = Color3.fromRGB(220, 50, 50) -- 🔴 Assassino
                     elseif Info.Role == "Sheriff" then 
-                        Cor = Color3.fromRGB(0, 0, 225) -- 🔵 Xerife
+                        Cor = Color3.fromRGB(0, 85, 255)  -- 🔵 Xerife
                     elseif Info.Role == "Hero" then 
                         Cor = Color3.fromRGB(255, 215, 0) -- 🟡 Herói
+                    elseif Info.Role == "Innocent" then
+                        Cor = Color3.fromRGB(60, 200, 80) -- 🟢 Inocente
                     end
                 end
+
                 CriarHighlight(p.Character, Cor, Highlights)
-            elseif Highlights[p.Character] then
-                Highlights[p.Character].Enabled = false
             end
         end
     else
@@ -306,9 +304,6 @@ RunService.RenderStepped:Connect(function()
         end
     end
 end)
-
-
-
 
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
