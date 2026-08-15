@@ -298,6 +298,14 @@ RunService.RenderStepped:Connect(function()
                 end
 
                 CriarHighlight(p.Character, Cor, Highlights)
+                
+                -- Atualiza o Nome sobre o Personagem
+if ESPNameAtivo then
+    CriarNomeESP(p, Cor, CargoNome)
+elseif NamesESP[p] then
+    NamesESP[p].Gui.Enabled = false
+end
+
             end
         end
     else
