@@ -1096,7 +1096,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Sheriff:Toggle({
+Sec_Xerife:Toggle({
     Title = "Grab Gun (Botão na Tela)",
     Default = false,
     Callback = function(Ativo)
