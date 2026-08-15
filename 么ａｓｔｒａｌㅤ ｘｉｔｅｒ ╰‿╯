@@ -79,6 +79,7 @@ local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
 local Pressionado = false
 
 local KillAura = false
+local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
 
 
 -- ==================================
@@ -486,6 +487,86 @@ task.spawn(function()
         end
     end
 end)
+
+-- ===========================================
+-- 🗡️ SISTEMA BOTÃO FLUTUANTE KILL ALL
+-- ===========================================
+local function CreateKillAllButton()
+    if KillAllButtonGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_KillAllButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.7, -21)
+    Btn.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
+    Btn.BackgroundTransparency = 0.3
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(255, 50, 50)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Kill All 💀"
+    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Texto.TextSize = 15
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    -- Arrastar o botão na tela
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingKill = true
+            buttonStartPosKill = Btn.Position
+            dragStartPosKill = Input.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then 
+                    isDraggingKill = false 
+                end
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if isDraggingKill and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Btn.Position = buttonStartPosKill + UDim2.fromOffset(Input.Position.X - dragStartPosKill.X, Input.Position.Y - dragStartPosKill.Y)
+        end
+    end)
+
+    -- Clique executa o Kill All Instantâneo
+    Btn.MouseButton1Click:Connect(function() 
+        if not isDraggingKill then 
+            KillAllInstantaneo() 
+        end 
+    end)
+
+    KillAllButtonGui = GuiBtn
+end
+
+local function RemoveKillAllButton()
+    if KillAllButtonGui then 
+        KillAllButtonGui:Destroy() 
+        KillAllButtonGui = nil 
+    end
+end
 
 -- ==================================
 -- SISTEMAS DA ABA ESP
@@ -897,6 +978,18 @@ Sec_Xerife:Toggle({
 -- 🔘 SESSÃO MURDERER (WIND UI - ABA MAIN)
 -- ===========================================
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
+
+Sec_Murderer:Toggle({
+    Title = "Botão Kill All (Tela)",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateKillAllButton()
+        else
+            RemoveKillAllButton()
+        end
+    end
+})
 
 Sec_Murderer:Toggle({
     Title = "Kill All",
