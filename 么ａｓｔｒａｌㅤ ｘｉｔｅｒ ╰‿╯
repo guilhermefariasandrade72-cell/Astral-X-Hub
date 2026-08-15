@@ -71,12 +71,10 @@ local CONFIG_FARM = {
 local AutoFarmAtivo = false
 local collectedCoins = {}
 
--- ==================================
--- VARIÁVEIS — SHOOT MURDERER & GRAB GUN
--- ==================================
 
-
--- ==================================
+local GuiBotao = nil
+local BotaoShoot = nil
+local GrabGunAtivo = false
 
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
@@ -643,11 +641,37 @@ Sec_AutoFarm:Slider({
 })
 
 -- ==================================
--- BOTÕES DA ABA MAIN — XERIFE
+-- BOTÕES DA ABA COMBATE / XERIFE
 -- ==================================
+local Sec_Xerife = Aba_Main:Section({Title = "Funções de Xerife"})
 
+Sec_Xerife:Button({
+    Title = "Atirar no Assassino",
+    Callback = function()
+        ShootMurderer()
+    end
+})
 
--- ==================================
+Sec_Xerife:Toggle({
+    Title = "Botão Flutuante (Shoot)",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CriarBotaoShoot()
+            if GuiBotao then GuiBotao.Enabled = true end
+        else
+            if GuiBotao then GuiBotao.Enabled = false end
+        end
+    end
+})
+
+Sec_Xerife:Toggle({
+    Title = "Auto Equipar / Pegar Arma",
+    Default = false,
+    Callback = function(Ativo)
+        GrabGunAtivo = Ativo
+    end
+})
 
 
 -- ==================================
