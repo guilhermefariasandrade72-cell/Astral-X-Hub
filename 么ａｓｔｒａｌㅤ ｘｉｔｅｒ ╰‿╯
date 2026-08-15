@@ -78,6 +78,8 @@ local collectedCoins = {}
 local ESPPlayerAtivo = false
 local Highlights = {}
 local DadosCargos = {}
+local ESPNameAtivo = false
+local NamesESP = {}
 
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
@@ -455,6 +457,18 @@ Sec_ESP:Toggle({
     end
 })
 
+Sec_ESP:Toggle({
+    Title = "Name ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPNameAtivo = Ativo
+        if not Ativo then
+            for _, n in pairs(NamesESP) do 
+                n.Gui.Enabled = false 
+            end
+        end
+    end
+})
 
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
