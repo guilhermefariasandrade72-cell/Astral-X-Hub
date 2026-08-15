@@ -72,6 +72,13 @@ local AutoFarmAtivo = false
 local collectedCoins = {}
 
 
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
+local Pressionado = false
+
+
 
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
@@ -249,33 +256,6 @@ task.spawn(function()
 end)
 
 
-
-
--- ===========================================
--- 🧲 AUTO GRAB GUN (SOMENTE TRAZ A ARMA)
--- ===========================================
-local function GetGun()
-    if not AutoGrabGun then return end
-    
-    local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-
-    local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
-    local mapToSearch = MapContainer or Workspace
-
-    local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
-    
-    if gunDrop and gunDrop:IsA("BasePart") then
-        gunDrop.CFrame = Char.HumanoidRootPart.CFrame
-    end
-end
-
--- ===========================================
--- 🔁 LOOPS DE EXECUÇÃO
--- ===========================================
-RunService.Heartbeat:Connect(function()
-    GetGun()
-end)
 
 -- ===========================================
 -- 🔘 CHAMADAS PARA OS TOGGLES DO SEU HUB
@@ -672,6 +652,31 @@ Sec_AutoFarm:Slider({
     end
 })
 
+-- ===========================================
+-- 🔘 BOTÕES DA INTERFACE (SESSÃO XERIFE)
+-- ===========================================
+local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
+
+Sec_Xerife:Toggle({
+    Title = "Shoot Murderer",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShoot = Ativo
+        if Ativo then
+            CreateShootButton()
+        else
+            RemoveShootButton()
+        end
+    end
+})
+
+Sec_Xerife:Toggle({
+    Title = "Grab Gun",
+    Default = false,
+    Callback = function(Ativo)
+        AutoGrabGun = Ativo
+    end
+})
 
 -- ==================================
 -- BOTOES DA ABA ESP
