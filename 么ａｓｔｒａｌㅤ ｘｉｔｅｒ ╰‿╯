@@ -254,6 +254,111 @@ task.spawn(function()
     end
 end)
 
+-- ===========================================
+-- 🎯 SHOOT MURDERER / SILENT AIM
+-- ===========================================
+local function GetPing()
+    local ok, value = pcall(function()
+        return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    return ok and value or 100
+end
+
+local function GetMurderer()
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return nil end
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return nil end
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player ~= player and Player:GetAttribute("Alive") then
+            local Info = Data[Player.Name]
+            if Info and Info.Role == "Murderer" then
+                return Player
+            end
+        end
+    end
+    return nil
+end
+
+local function ShootMurderer()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
+    if not Gun then return end
+
+    if Gun.Parent ~= Char then
+        Gun.Parent = Char
+        task.wait(0.05)
+    end
+
+    local Murderer = GetMurderer()
+    if not Murderer or not Murderer.Character then return end
+
+    local TargetHRP = Murderer.Character:FindFirstChild("HumanoidRootPart")
+    local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
+    if not TargetHRP or not TargetTorso then return end
+
+    local Ping = GetPing()
+    local PredictionTime = (Ping / 1000) * ShootPredictMultiplier
+    local Velocity = TargetHRP.Velocity
+    local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * PredictionTime)
+
+    local OriginCFrame = MagicBullet and CFrame.new(TargetTorso.Position, PredictedPos) 
+        or CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
+
+    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true)
+    if ShootEvent then
+        ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos))
+    end
+end
+
+-- ===========================================
+-- 🧲 GRAB GUN
+-- ===========================================
+local function FindMap()
+    for _, child in ipairs(Workspace:GetChildren()) do
+        if child:GetAttribute("MapID") then return child end
+    end
+    return nil
+end
+
+local function GetPlayerRole()
+    local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not R then return nil end
+    local ok, D = pcall(function() return R:InvokeServer() end)
+    if not ok or not D then return nil end
+    return D[player.Name] and D[player.Name].Role or nil
+end
+
+local function IsMurderer()
+    return GetPlayerRole() == "Murderer"
+end
+
+local function GetGun()
+    if not AutoGrabGun then return end
+    pcall(function()
+        if not player:GetAttribute("Alive") then return end
+        if IsMurderer() then return end
+        local map = FindMap()
+        local char = player.Character
+        if not map or not char or not char:FindFirstChild("HumanoidRootPart") then return end
+        local gunDrop = map:FindFirstChild("GunDrop")
+        if gunDrop then
+            gunDrop.CFrame = char.HumanoidRootPart.CFrame
+        end
+    end)
+end
+
+-- ===========================================
+-- 🔁 LOOP PRINCIPAL
+-- ===========================================
+RunService.Heartbeat:Connect(function()
+    GetGun()
+    if AutoShoot then
+        ShootMurderer()
+    end
+end)
 
 -- ==================================
 -- SISTEMAS DA ABA ESP
