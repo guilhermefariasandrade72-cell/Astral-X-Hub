@@ -254,8 +254,9 @@ task.spawn(function()
     end
 end)
 
+
 -- ===========================================
--- 🎯 SHOOT MURDERER / SILENT AIM
+-- 🎯 SHOOT MURDERER / SILENT AIM (CORRIGIDO)
 -- ===========================================
 local function GetPing()
     local ok, value = pcall(function()
@@ -269,10 +270,11 @@ local function GetMurderer()
     if not DataRemote then return nil end
     local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
     if not ok or not Data then return nil end
+
     for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= player and Player:GetAttribute("Alive") then
+        if Player ~= player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
             local Info = Data[Player.Name]
-            if Info and Info.Role == "Murderer" then
+            if Info and not Info.Killed and not Info.Dead and Info.Role == "Murderer" then
                 return Player
             end
         end
@@ -300,54 +302,47 @@ local function ShootMurderer()
     if not TargetHRP or not TargetTorso then return end
 
     local Ping = GetPing()
-    local PredictionTime = (Ping / 1000) * ShootPredictMultiplier
+    local PredictionTime = (Ping / 1000) * (ShootPredictMultiplier or 1)
     local Velocity = TargetHRP.Velocity
     local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * PredictionTime)
 
     local OriginCFrame = MagicBullet and CFrame.new(TargetTorso.Position, PredictedPos) 
         or CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
 
-    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true)
+    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
     if ShootEvent then
-        ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos))
+        if ShootEvent:IsA("RemoteEvent") then
+            ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos))
+        elseif ShootEvent:IsA("RemoteFunction") then
+            ShootEvent:InvokeServer(OriginCFrame, CFrame.new(PredictedPos))
+        end
     end
 end
 
 -- ===========================================
--- 🧲 GRAB GUN
+-- 🧲 AUTO GRAB GUN (CORRIGIDO)
 -- ===========================================
-local function FindMap()
-    for _, child in ipairs(Workspace:GetChildren()) do
-        if child:GetAttribute("MapID") then return child end
-    end
-    return nil
-end
-
-local function GetPlayerRole()
-    local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-    if not R then return nil end
-    local ok, D = pcall(function() return R:InvokeServer() end)
-    if not ok or not D then return nil end
-    return D[player.Name] and D[player.Name].Role or nil
-end
-
-local function IsMurderer()
-    return GetPlayerRole() == "Murderer"
-end
-
 local function GetGun()
     if not AutoGrabGun then return end
-    pcall(function()
-        if not player:GetAttribute("Alive") then return end
-        if IsMurderer() then return end
-        local map = FindMap()
-        local char = player.Character
-        if not map or not char or not char:FindFirstChild("HumanoidRootPart") then return end
-        local gunDrop = map:FindFirstChild("GunDrop")
-        if gunDrop then
-            gunDrop.CFrame = char.HumanoidRootPart.CFrame
-        end
-    end)
+    
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+    -- Busca dinamicamente no mapa atual ou no Workspace
+    local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
+    local mapToSearch = MapContainer or Workspace
+
+    local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
+    
+    if gunDrop and gunDrop:IsA("BasePart") then
+        gunDrop.CFrame = Char.HumanoidRootPart.CFrame
+    end
+
+    -- Se a arma foi pega e está na mochila, equipa automaticamente
+    local BackpackGun = player.Backpack and player.Backpack:FindFirstChild("Gun")
+    if BackpackGun then
+        BackpackGun.Parent = Char
+    end
 end
 
 -- ===========================================
