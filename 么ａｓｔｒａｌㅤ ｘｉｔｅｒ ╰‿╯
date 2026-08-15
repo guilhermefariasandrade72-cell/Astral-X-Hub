@@ -255,12 +255,28 @@ task.spawn(function()
 end)
 
 
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local RunService = game:GetService("RunService")
+local CoreGui = game:GetService("CoreGui")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local Stats = game:GetService("Stats")
+local player = Players.LocalPlayer
+
 -- ===========================================
--- 🎯 SHOOT MURDERER + BOTÃO ESTILIZADO
+-- 📌 VARIÁVEIS DE CONTROLE
 -- ===========================================
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
 local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
 local Pressionado = false
 
+-- ===========================================
+-- 🎯 SHOOT MURDERER (SISTEMA CORRIGIDO)
+-- ===========================================
 local function GetPing()
     local ok, value = pcall(function()
         return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
@@ -323,9 +339,7 @@ local function ShootMurderer()
     local PredictionTime = (Ping / 1000) * (ShootPredictMultiplier or 1)
     local Velocity = TargetHRP.Velocity
     local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * PredictionTime)
-
-    local OriginCFrame = MagicBullet and CFrame.new(TargetTorso.Position, PredictedPos) 
-        or CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
+    local OriginCFrame = CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
 
     local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
     if ShootEvent then
@@ -336,51 +350,62 @@ local function ShootMurderer()
         end
     end
 
-    task.wait(0.3) -- Intervalo de segurança para evitar múltiplos tiros por clique acidental
+    task.wait(0.3)
     Pressionado = false
 end
 
+-- ===========================================
+-- 🔘 BOTÃO FLUTUANTE (SHOOT MURDERER)
+-- ===========================================
 local function CreateShootButton()
     if ShootButtonGui then return end
     
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
     local GuiBtn = Instance.new("ScreenGui")
-    GuiBtn.Name = "BaconX_XerifeTiro"
+    GuiBtn.Name = "XerifeTiro"
     GuiBtn.ResetOnSpawn = false
     GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    GuiBtn.Parent = CoreGui
+    GuiBtn.Parent = ParentGui
 
-    local Btn = Instance.new("TextButton")
+    local Btn = Instance.new("ImageButton")
     Btn.Size = UDim2.new(0, 110, 0, 42)
     Btn.Position = UDim2.new(0.5, -55, 0.6, -21)
     Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    Btn.BackgroundTransparency = 0.4 -- Preto Semi-Transparente
-    Btn.Text = "Shoot"
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.Font = Enum.Font.GothamBold
-    Btn.TextSize = 14
-    Btn.Active = true
+    Btn.BackgroundTransparency = 0.4
     Btn.Parent = GuiBtn
 
-    -- Bordas Arredondadas
     local Corner = Instance.new("UICorner")
     Corner.CornerRadius = UDim.new(0, 10)
     Corner.Parent = Btn
 
-    -- Linha (Borda) Preta ao Redor
     local Borda = Instance.new("UIStroke")
     Borda.Color = Color3.fromRGB(0, 0, 0)
     Borda.Thickness = 2
     Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Borda.Parent = Btn
 
-    -- Sistema de Arrastar o Botão
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Shoot"
+    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Texto.TextSize = 15
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
     Btn.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDragging = true
             buttonStartPos = Btn.Position
             dragStartPos = Input.Position
             Input.Changed:Connect(function()
-                if Input.UserInputState == Enum.UserInputState.End then isDragging = false end
+                if Input.UserInputState == Enum.UserInputState.End then 
+                    isDragging = false 
+                end
             end)
         end
     end)
@@ -391,7 +416,6 @@ local function CreateShootButton()
         end
     end)
 
-    -- Dispara Apenas 1 Vez por Clique
     Btn.MouseButton1Click:Connect(function() 
         if not isDragging then 
             ShootMurderer() 
@@ -407,6 +431,47 @@ local function RemoveShootButton()
         ShootButtonGui = nil 
     end
 end
+
+-- ===========================================
+-- 🧲 AUTO GRAB GUN (SOMENTE TRAZ A ARMA)
+-- ===========================================
+local function GetGun()
+    if not AutoGrabGun then return end
+    
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+    local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
+    local mapToSearch = MapContainer or Workspace
+
+    local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
+    
+    if gunDrop and gunDrop:IsA("BasePart") then
+        gunDrop.CFrame = Char.HumanoidRootPart.CFrame
+    end
+end
+
+-- ===========================================
+-- 🔁 LOOPS DE EXECUÇÃO
+-- ===========================================
+RunService.Heartbeat:Connect(function()
+    GetGun()
+end)
+
+-- ===========================================
+-- 🔘 CHAMADAS PARA OS TOGGLES DO SEU HUB
+-- ===========================================
+-- Coloque no Toggle de Atirar:
+-- CriarToggle("Botão Atirar (Xerife)", Y, function(On)
+--     AutoShoot = On
+--     if On then CreateShootButton() else RemoveShootButton() end
+-- end)
+
+-- Coloque no Toggle de Grab Gun:
+-- CriarToggle("Auto Grab Gun", Y, function(On)
+--     AutoGrabGun = On
+-- end)
+
 
 -- ==================================
 -- SISTEMAS DA ABA ESP
