@@ -261,20 +261,17 @@ task.spawn(function()
 end)
 
 -- ==================================
--- LÓGICA DO XERIFE / COMBATE
+-- SISTEMA — FUNÇÕES DO XERIFE ✅
 -- ==================================
-
--- 🔍 Busca o Murderer utilizando a Remote de dados oficial
 local function GetMurderer()
     local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
     if not DataRemote then return nil end
     local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
     if not ok or not Data then return nil end
-
     for _, Player in ipairs(Players:GetPlayers()) do
-        if Player ~= player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+        if Player ~= player and Player:GetAttribute("Alive") then
             local Info = Data[Player.Name]
-            if Info and not Info.Killed and not Info.Dead and Info.Role == "Murderer" then
+            if Info and Info.Role == "Murderer" then
                 return Player
             end
         end
@@ -282,89 +279,89 @@ local function GetMurderer()
     return nil
 end
 
--- 🔫 Executa o disparo com cálculo de predição
+-- ✅ ATIRAR NO ASSASSINO
 local function ShootMurderer()
     local Char = player.Character
     if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
 
     local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
     if not Gun then return end
-
+    
     if Gun.Parent ~= Char then
         Gun.Parent = Char
         task.wait(0.05)
     end
 
-    local Murderer = GetMurderer()
-    if not Murderer or not Murderer.Character then return end
+    local Alvo = GetMurderer()
+    if not Alvo or not Alvo.Character then return end
 
-    local TargetHRP = Murderer.Character:FindFirstChild("HumanoidRootPart")
-    local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
-    if not TargetHRP or not TargetTorso then return end
+    local HRP = Alvo.Character:FindFirstChild("HumanoidRootPart")
+    if not HRP then return end
 
-    -- Predição de movimento baseada na velocidade do alvo
-    local Velocity = TargetHRP.Velocity
-    local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * 0.13)
-    local OriginCFrame = CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
-
-    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
-    if ShootEvent then
-        if ShootEvent:IsA("RemoteEvent") then
-            ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos))
-        elseif ShootEvent:IsA("RemoteFunction") then
-            ShootEvent:InvokeServer(OriginCFrame, CFrame.new(PredictedPos))
-        end
-    end
+    Gun.Fire:FireServer(HRP.Position)
 end
 
--- 🧲 Coleta/Equipa a arma caso esteja solta ou na mochila
+-- ✅ PEGAR ARMA
 local function GrabGun()
     local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-
-    -- Se a arma estiver no chão (GunDrop)
-    local Map = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
-    if Map then
-        local gunDrop = Map:FindFirstChild("GunDrop") or Workspace:FindFirstChild("GunDrop", true)
-        if gunDrop and gunDrop:IsA("BasePart") then
-            gunDrop.CFrame = Char.HumanoidRootPart.CFrame
-        end
-    end
-
-    -- Se a arma estiver na mochila
-    local BackpackGun = player.Backpack and player.Backpack:FindFirstChild("Gun")
-    if BackpackGun then
-        BackpackGun.Parent = Char
+    if not Char then return end
+    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
+    if Gun and Gun.Parent ~= Char then
+        Gun.Parent = Char
     end
 end
 
--- 🎯 Criação do Botão Flutuante (Arrastável)
-local function CreateShootButton()
-    if ShootButtonGui then return end
+-- ✅ CRIA BOTÃO NA TELA — CONSERTADO ✅
+local function CriarBotaoShoot()
+    if BotaoCriado then return end
+    BotaoCriado = true
 
-    local CoreTarget = nil
-    pcall(function() CoreTarget = game:GetService("CoreGui") end)
-    if not CoreTarget then CoreTarget = player:FindFirstChild("PlayerGui") end
+    GuiBotao = Instance.new("ScreenGui")
+    GuiBotao.Name = "Astral_ShootBtn"
+    GuiBotao.ResetOnSpawn = false
+    GuiBotao.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- ✅ Coloca no CoreGui (garante que aparece)
+    pcall(function() GuiBotao.Parent = CoreGui end)
+    if not GuiBotao.Parent then GuiBotao.Parent = player.PlayerGui end
 
-    local GuiBtn = Instance.new("ScreenGui")
-    GuiBtn.Name = "Astral_XerifeTiro"
-    GuiBtn.ResetOnSpawn = false
-    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    GuiBtn.Parent = CoreTarget
+    local Botao = Instance.new("TextButton")
+    Botao.Name = "ShootBtn"
+    Botao.Size = UDim2.new(0, 170, 0, 55)
+    Botao.Position = UDim2.new(0.02, 0, 0.5, -27)
+    Botao.BackgroundColor3 = Color3.fromRGB(35, 35, 35)
+    Botao.BackgroundTransparency = 0.15
+    Botao.BorderSizePixel = 3
+    Botao.BorderColor3 = Color3.fromRGB(255, 0, 0)
+    Botao.Font = Enum.Font.GothamBold
+    Botao.Text = "🔫 Shoot Murderer"
+    Botao.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Botao.TextSize = 15
+    Botao.AutoLocalize = false
+    Botao.Active = true
+    Botao.Draggable = true -- ✅ Pode arrastar na tela
+    Botao.Parent = GuiBotao
 
+    -- ✅ Funciona em PC e CELULAR
+    Botao.MouseButton1Click:Connect(ShootMurderer)
+    Botao.TouchTap:Connect(ShootMurderer)
+end
 
+-- ✅ REMOVER BOTÃO
+local function RemoverBotaoShoot()
+    if GuiBotao then
+        GuiBotao:Destroy()
+        GuiBotao = nil
+    end
+    BotaoCriado = false
+end
 
--- ==================================
--- SISTEMA DA ABA COMBATE / XERIFE
--- ==================================
-
-
--- ==================================
--- SISTEMA — FUNÇÕES DO XERIFE (IGUAL AO SEU) ✅
--- ==================================
-
-
--- ==================================
+-- ✅ LOOP DO GRAB GUN
+RunService.Heartbeat:Connect(function()
+    if GrabGunAtivo then
+        GrabGun()
+    end
+end)
 
 
 -- ==================================
