@@ -72,6 +72,14 @@ local AutoFarmAtivo = false
 local collectedCoins = {}
 
 
+-- ==================================
+-- VARIÁVEIS DA ABA XERIFE / COMBATE
+-- ==================================
+local ShootButtonGui = nil
+local isDraggingShoot = false
+local dragStartShoot = nil
+local startPosShoot = nil
+local GrabGunAtivo = false
 
 
 -- ==================================
@@ -645,6 +653,37 @@ Sec_AutoFarm:Slider({
 -- ==================================
 -- BOTÕES DA ABA COMBATE / XERIFE
 -- ==================================
+-- ==================================
+-- BOTOES DA ABA XERIFE
+-- ==================================
+local Sec_XerifeControls = Aba_Xerife:Section({Title = "Combate & Xerife"})
+
+Sec_XerifeControls:Button({
+    Title = "Atirar no Assassino (Manual)",
+    Callback = function()
+        ShootMurderer()
+    end
+})
+
+Sec_XerifeControls:Toggle({
+    Title = "Botão Flutuante de Disparo",
+    Default = false,
+    Callback = function(State)
+        if State then
+            CreateShootButton()
+        else
+            RemoveShootButton()
+        end
+    end
+})
+
+Sec_XerifeControls:Toggle({
+    Title = "Auto Grab Gun (Puxar Arma)",
+    Default = false,
+    Callback = function(State)
+        GrabGunAtivo = State
+    end
+})
 
 
 -- ==================================
