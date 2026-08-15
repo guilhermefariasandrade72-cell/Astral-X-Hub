@@ -75,6 +75,9 @@ local collectedCoins = {}
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
 -- ==================================
+local ESPPlayerAtivo = false
+local Highlights = {}
+local DadosCargos = {}
 
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
@@ -240,6 +243,69 @@ end)
 -- ==================================
 -- SISTEMAS DA ABA ESP
 -- ==================================
+local function PegarCargos()
+    local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not R then return end
+    local ok, d = pcall(function() return R:InvokeServer() end)
+    if ok and d then DadosCargos = d end
+end
+
+local function EstaVivo(Nome)
+    local Info = DadosCargos[Nome]
+    return Info and not Info.Killed and not Info.Dead
+end
+
+local function CriarHighlight(Alvo, Cor, Tabela)
+    if not Alvo then return end
+    if not Tabela[Alvo] then
+        local H = Instance.new("Highlight")
+        H.Name = "ESP_Astral"
+        H.Adornee = Alvo
+        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        H.OutlineTransparency = 0
+        H.Parent = Alvo
+        Tabela[Alvo] = H
+    end
+    Tabela[Alvo].FillColor = Cor
+    Tabela[Alvo].OutlineColor = Cor
+    Tabela[Alvo].Enabled = true
+end
+
+local function LimparESP(Tabela)
+    for _, h in pairs(Tabela) do 
+        if h then h:Destroy() end 
+    end
+    table.clear(Tabela)
+end
+
+-- 📌 LOOP DE ATUALIZAÇÃO DO ESP
+RunService.RenderStepped:Connect(function()
+    if ESPPlayerAtivo then
+        PegarCargos()
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character and EstaVivo(p.Name) then
+                local Info = DadosCargos[p.Name]
+                local Cor = Color3.fromRGB(60, 200, 80) -- 🟢 Inocente
+                if Info then
+                    if Info.Role == "Murderer" then 
+                        Cor = Color3.fromRGB(220, 50, 50) -- 🔴 Assassino
+                    elseif Info.Role == "Sheriff" then 
+                        Cor = Color3.fromRGB(0, 0, 225) -- 🔵 Xerife
+                    elseif Info.Role == "Hero" then 
+                        Cor = Color3.fromRGB(255, 215, 0) -- 🟡 Herói
+                    end
+                end
+                CriarHighlight(p.Character, Cor, Highlights)
+            elseif Highlights[p.Character] then
+                Highlights[p.Character].Enabled = false
+            end
+        end
+    else
+        if next(Highlights) then 
+            LimparESP(Highlights) 
+        end
+    end
+end)
 
 
 
@@ -381,6 +447,18 @@ Sec_AutoFarm:Slider({
 -- ==================================
 -- BOTOES DA ABA ESP
 -- ==================================
+local Sec_ESP = Aba_ESP:Section({Title = "ESP"})
+
+Sec_ESP:Toggle({
+    Title = "Highlight ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPPlayerAtivo = Ativo
+        if not Ativo then
+            LimparESP(Highlights)
+        end
+    end
+})
 
 
 -- ==================================
