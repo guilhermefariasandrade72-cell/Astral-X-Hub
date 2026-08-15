@@ -436,17 +436,13 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- ===========================================
--- 🔫 SISTEMA GRAB GUN
+-- 🔫 SISTEMA GRAB GUN (CORRIGIDO)
 -- ===========================================
 local function GetDroppedGun()
-    for _, item in ipairs(workspace:GetChildren()) do
-        if (item.Name == "GunDrop" or item.Name == "Gun") and item:IsA("Tool") then
-            return item
-        end
-    end
     for _, item in ipairs(workspace:GetDescendants()) do
-        if (item.Name == "GunDrop" or item.Name == "Gun") and item:IsA("Tool") and item.Parent ~= workspace then
-            if not item:FindFirstAncestorOfClass("Model") or item:FindFirstAncestorOfClass("Model").Name == "Workspace" then
+        if (item.Name == "GunDrop" or item.Name == "Gun") then
+            -- Aceita tanto Tool quanto BasePart
+            if item:IsA("Tool") or item:IsA("BasePart") then
                 return item
             end
         end
@@ -469,12 +465,18 @@ local function GrabGunAction()
         local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
         
         if HRP then
-            local Handle = DroppedGun:FindFirstChild("Handle") or DroppedGun:FindFirstChild("Gun")
-            if Handle then
+            -- Pega a própria parte se for BasePart, ou procura Handle/qualquer BasePart dentro se for Tool
+            local targetPart = DroppedGun:IsA("BasePart") and DroppedGun or DroppedGun:FindFirstChild("Handle") or DroppedGun:FindFirstChildOfClass("BasePart")
+            
+            if targetPart then
                 pcall(function()
-                    firetouchinterest(HRP, Handle, 0)
-                    task.wait(0.05)
-                    firetouchinterest(HRP, Handle, 1)
+                    -- Traz a arma até o player e força o toque
+                    targetPart.CFrame = HRP.CFrame
+                    if targetPart:FindFirstChild("TouchInterest") or targetPart:IsA("TouchTransmitter") then
+                        firetouchinterest(HRP, targetPart, 0)
+                        task.wait(0.02)
+                        firetouchinterest(HRP, targetPart, 1)
+                    end
                 end)
             end
         end
@@ -561,6 +563,7 @@ local function RemoveGrabGunButton()
         GrabGunButtonGui = nil 
     end
 end
+
 
 -- ===========================================
 -- 🗡️ SISTEMA MURDERER (KILL ALL)
