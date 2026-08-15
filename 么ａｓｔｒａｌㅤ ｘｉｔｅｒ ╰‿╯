@@ -71,6 +71,13 @@ local CONFIG_FARM = {
 local AutoFarmAtivo = false
 local collectedCoins = {}
 
+-- ===========================================
+-- VARIÁVEIS — XERIFE
+-- ===========================================
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+local MagicBullet = false
 
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
@@ -625,6 +632,27 @@ Sec_AutoFarm:Slider({
     Value = {Min = 16, Max = 25, Default = 24, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
+    end
+})
+
+-- ===========================================
+-- 📌 SESSÃO: XERIFE
+-- ===========================================
+local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
+
+Sec_Xerife:Toggle({
+    Title = "Shoot Murderer",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShoot = Ativo
+    end
+})
+
+Sec_Xerife:Toggle({
+    Title = "Grab Gun",
+    Default = false,
+    Callback = function(Ativo)
+        AutoGrabGun = Ativo
     end
 })
 
