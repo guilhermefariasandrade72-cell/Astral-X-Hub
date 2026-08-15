@@ -75,11 +75,7 @@ local collectedCoins = {}
 -- ==================================
 -- VARIÁVEIS DA ABA XERIFE / COMBATE
 -- ==================================
-local ShootButtonGui = nil
-local isDraggingShoot = false
-local dragStartShoot = nil
-local startPosShoot = nil
-local GrabGunAtivo = false
+
 
 
 -- ==================================
@@ -349,77 +345,7 @@ local function CreateShootButton()
     GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     GuiBtn.Parent = CoreTarget
 
-    local Btn = Instance.new("TextButton")
-    Btn.Name = "ShootBtn"
-    Btn.Size = UDim2.new(0, 150, 0, 48)
-    Btn.Position = UDim2.new(0.05, 0, 0.4, 0)
-    Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 30)
-    Btn.BackgroundTransparency = 0.1
-    Btn.Text = "🔫 Shoot Murderer"
-    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Btn.TextSize = 14
-    Btn.Font = Enum.Font.GothamBold
-    Btn.Active = true
-    Btn.Parent = GuiBtn
 
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
-    Corner.Parent = Btn
-
-    local Border = Instance.new("UIStroke")
-    Border.Color = Color3.fromRGB(255, 50, 50)
-    Border.Thickness = 1.5
-    Border.Parent = Btn
-
-    -- Lógica de arrastar para Mobile e PC
-    Btn.InputBegan:Connect(function(input)
-        if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
-            isDraggingShoot = true
-            dragStartShoot = input.Position
-            startPosShoot = Btn.Position
-            
-            input.Changed:Connect(function()
-                if input.UserInputState == Enum.UserInputState.End then
-                    isDraggingShoot = false
-                end
-            end)
-        end
-    end)
-
-    Btn.InputChanged:Connect(function(input)
-        if isDraggingShoot and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
-            local delta = input.Position - dragStartShoot
-            Btn.Position = UDim2.new(
-                startPosShoot.X.Scale,
-                startPosShoot.X.Offset + delta.X,
-                startPosShoot.Y.Scale,
-                startPosShoot.Y.Offset + delta.Y
-            )
-        end
-    end)
-
-    Btn.MouseButton1Click:Connect(function()
-        if not isDraggingShoot then
-            ShootMurderer()
-        end
-    end)
-
-    ShootButtonGui = GuiBtn
-end
-
-local function RemoveShootButton()
-    if ShootButtonGui then
-        ShootButtonGui:Destroy()
-        ShootButtonGui = nil
-    end
-end
-
--- Loop para manter o Grab Gun ativo quando ligado
-RunService.Heartbeat:Connect(function()
-    if GrabGunAtivo then
-        GrabGun()
-    end
-end)
 
 -- ==================================
 -- SISTEMA DA ABA COMBATE / XERIFE
@@ -820,34 +746,7 @@ Sec_AutoFarm:Slider({
 -- ==================================
 -- BOTOES DA ABA XERIFE
 -- ==================================
-local Sec_XerifeControls = Aba_Xerife:Section({Title = "Combate & Xerife"})
 
-Sec_XerifeControls:Button({
-    Title = "Atirar no Assassino (Manual)",
-    Callback = function()
-        ShootMurderer()
-    end
-})
-
-Sec_XerifeControls:Toggle({
-    Title = "Botão Flutuante de Disparo",
-    Default = false,
-    Callback = function(State)
-        if State then
-            CreateShootButton()
-        else
-            RemoveShootButton()
-        end
-    end
-})
-
-Sec_XerifeControls:Toggle({
-    Title = "Auto Grab Gun (Puxar Arma)",
-    Default = false,
-    Callback = function(State)
-        GrabGunAtivo = State
-    end
-})
 
 
 -- ==================================
