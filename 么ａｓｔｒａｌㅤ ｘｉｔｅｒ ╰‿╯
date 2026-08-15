@@ -256,9 +256,10 @@ end)
 
 
 -- ===========================================
--- 🎯 SHOOT MURDERER + BOTÃO ARRASTÁVEL
+-- 🎯 SHOOT MURDERER + BOTÃO ESTILIZADO
 -- ===========================================
 local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
+local Pressionado = false
 
 local function GetPing()
     local ok, value = pcall(function()
@@ -285,11 +286,20 @@ local function GetMurderer()
 end
 
 local function ShootMurderer()
+    if Pressionado then return end
+    Pressionado = true
+
     local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then 
+        Pressionado = false 
+        return 
+    end
 
     local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
-    if not Gun then return end
+    if not Gun then 
+        Pressionado = false 
+        return 
+    end
 
     if Gun.Parent ~= Char then
         Gun.Parent = Char
@@ -297,11 +307,17 @@ local function ShootMurderer()
     end
 
     local Murderer = GetMurderer()
-    if not Murderer or not Murderer.Character then return end
+    if not Murderer or not Murderer.Character then 
+        Pressionado = false 
+        return 
+    end
 
     local TargetHRP = Murderer.Character:FindFirstChild("HumanoidRootPart")
     local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
-    if not TargetHRP or not TargetTorso then return end
+    if not TargetHRP or not TargetTorso then 
+        Pressionado = false 
+        return 
+    end
 
     local Ping = GetPing()
     local PredictionTime = (Ping / 1000) * (ShootPredictMultiplier or 1)
@@ -319,10 +335,14 @@ local function ShootMurderer()
             ShootEvent:InvokeServer(OriginCFrame, CFrame.new(PredictedPos))
         end
     end
+
+    task.wait(0.3) -- Intervalo de segurança para evitar múltiplos tiros por clique acidental
+    Pressionado = false
 end
 
 local function CreateShootButton()
     if ShootButtonGui then return end
+    
     local GuiBtn = Instance.new("ScreenGui")
     GuiBtn.Name = "BaconX_XerifeTiro"
     GuiBtn.ResetOnSpawn = false
@@ -330,25 +350,30 @@ local function CreateShootButton()
     GuiBtn.Parent = CoreGui
 
     local Btn = Instance.new("TextButton")
-    Btn.Size = UDim2.new(0, 140, 0, 48)
-    Btn.Position = UDim2.new(0.5, -70, 0.6, -24)
-    Btn.BackgroundColor3 = Color3.fromRGB(25, 25, 35)
-    Btn.Text = "🔫 Shoot Murderer"
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.6, -21)
+    Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Btn.BackgroundTransparency = 0.4 -- Preto Semi-Transparente
+    Btn.Text = "Shoot"
     Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Btn.Font = Enum.Font.GothamBold
-    Btn.TextSize = 13
+    Btn.TextSize = 14
     Btn.Active = true
     Btn.Parent = GuiBtn
 
+    -- Bordas Arredondadas
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.CornerRadius = UDim.new(0, 10)
     Corner.Parent = Btn
 
+    -- Linha (Borda) Preta ao Redor
     local Borda = Instance.new("UIStroke")
-    Borda.Color = Color3.fromRGB(255, 50, 50)
-    Borda.Thickness = 1.5
+    Borda.Color = Color3.fromRGB(0, 0, 0)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Borda.Parent = Btn
 
+    -- Sistema de Arrastar o Botão
     Btn.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDragging = true
@@ -366,6 +391,7 @@ local function CreateShootButton()
         end
     end)
 
+    -- Dispara Apenas 1 Vez por Clique
     Btn.MouseButton1Click:Connect(function() 
         if not isDragging then 
             ShootMurderer() 
@@ -376,55 +402,11 @@ local function CreateShootButton()
 end
 
 local function RemoveShootButton()
-    if ShootButtonGui then ShootButtonGui:Destroy() ShootButtonGui = nil end
-end
-
--- ===========================================
--- 🧲 AUTO GRAB GUN (SOMENTALMENTE PUXAR A ARMA)
--- ===========================================
-local function GetGun()
-    if not AutoGrabGun then return end
-    
-    local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-
-    local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
-    local mapToSearch = MapContainer or Workspace
-
-    local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
-    
-    -- Teleporta o item do chão para você para você coletar normalmente sem forçar equipar
-    if gunDrop and gunDrop:IsA("BasePart") then
-        gunDrop.CFrame = Char.HumanoidRootPart.CFrame
+    if ShootButtonGui then 
+        ShootButtonGui:Destroy() 
+        ShootButtonGui = nil 
     end
 end
-
--- ===========================================
--- 🔘 CHAMADAS NA INTERFACE
--- ===========================================
-
--- No Toggle do Shoot Murderer no seu menu, chame:
--- CriarToggle("Botão Atirar (Xerife)", Y, function(On)
---     AutoShoot = On
---     if On then CreateShootButton() else RemoveShootButton() end
--- end)
-
--- Loop para o Grab Gun
-RunService.Heartbeat:Connect(function()
-    GetGun()
-end)
-
-
-
--- ===========================================
--- 🔁 LOOP PRINCIPAL
--- ===========================================
-RunService.Heartbeat:Connect(function()
-    GetGun()
-    if AutoShoot then
-        ShootMurderer()
-    end
-end)
 
 -- ==================================
 -- SISTEMAS DA ABA ESP
