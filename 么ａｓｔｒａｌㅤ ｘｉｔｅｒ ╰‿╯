@@ -252,8 +252,206 @@ end)
 -- ==================================
 -- SISTEMAS DA ABA ESP
 -- ==================================
+local function PegarCargos()
+    local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not R then return end
+    local ok, d = pcall(function() return R:InvokeServer() end)
+    if ok and d then DadosCargos = d end
+end
 
+-- 🔴 HIGHLIGHT
+local function CriarHighlight(Alvo, Cor)
+    if not Alvo then return end
+    if not Highlights[Alvo] then
+        local H = Instance.new("Highlight")
+        H.Name = "ESP_Highlight"
+        H.Adornee = Alvo
+        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        H.OutlineTransparency = 0
+        H.Parent = Alvo
+        Highlights[Alvo] = H
+    end
+    Highlights[Alvo].FillColor = Cor
+    Highlights[Alvo].OutlineColor = Cor
+    Highlights[Alvo].Enabled = true
+end
 
+-- 🟢 NOME (Topo do Personagem)
+local function CriarNomeESP(Jogador, Cor, CargoTexto)
+    local Char = Jogador.Character
+    if not Char or not Char:FindFirstChild("Head") then return end
+    local Head = Char.Head
+
+    if not NamesESP[Jogador] then
+        local BGui = Instance.new("BillboardGui")
+        BGui.Name = "ESP_Name"
+        BGui.Adornee = Head
+        BGui.Size = UDim2.new(0, 150, 0, 30)
+        BGui.StudsOffset = Vector3.new(0, 2.2, 0)
+        BGui.AlwaysOnTop = true
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Name = "Label"
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Font = Enum.Font.SourceSansBold
+        TextLabel.TextSize = 14
+        TextLabel.TextStrokeTransparency = 0
+        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+        TextLabel.Parent = BGui
+
+        BGui.Parent = Head
+        NamesESP[Jogador] = {Gui = BGui, Label = TextLabel}
+    end
+
+    local Data = NamesESP[Jogador]
+    Data.Label.Text = Jogador.Name .. " [" .. CargoTexto .. "]"
+    Data.Label.TextColor3 = Cor
+    Data.Gui.Enabled = true
+end
+
+-- 🔵 DISTÂNCIA (Parte de Baixo / Pés)
+local function CriarDistanciaESP(Jogador, Cor, Distancia)
+    local Char = Jogador.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+    local HRP = Char.HumanoidRootPart
+
+    if not DistanceESP[Jogador] then
+        local BGui = Instance.new("BillboardGui")
+        BGui.Name = "ESP_Distance"
+        BGui.Adornee = HRP
+        BGui.Size = UDim2.new(0, 100, 0, 20)
+        BGui.StudsOffset = Vector3.new(0, -3.2, 0) -- Fica nos pés
+        BGui.AlwaysOnTop = true
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Name = "Label"
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Font = Enum.Font.SourceSansBold
+        TextLabel.TextSize = 13
+        TextLabel.TextStrokeTransparency = 0
+        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+        TextLabel.Parent = BGui
+
+        BGui.Parent = HRP
+        DistanceESP[Jogador] = {Gui = BGui, Label = TextLabel}
+    end
+
+    local Data = DistanceESP[Jogador]
+    Data.Label.Text = math.floor(Distancia) .. "m"
+    Data.Label.TextColor3 = Cor
+    Data.Gui.Enabled = true
+end
+
+-- 🟡 LINHA / TRACER (Saindo de Baixo da Tela)
+local function CriarTracerESP(Jogador, Cor)
+    local Char = Jogador.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+    local Cam = Workspace.CurrentCamera
+    local Vector, OnScreen = Cam:WorldToViewportPoint(Char.HumanoidRootPart.Position)
+
+    if not TracersESP[Jogador] then
+        local Line = Drawing.new("Line")
+        Line.Thickness = 1.5
+        Line.Transparency = 1
+        TracersESP[Jogador] = Line
+    end
+
+    local Line = TracersESP[Jogador]
+    if OnScreen then
+        -- Origem: Centro inferior da tela (ideal para celular)
+        Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+        Line.To = Vector2.new(Vector.X, Vector.Y)
+        Line.Color = Cor
+        Line.Visible = true
+    else
+        Line.Visible = false
+    end
+end
+
+-- 🧹 LIMPEZA GERAL
+local function LimparTabela(Tabela)
+    for _, item in pairs(Tabela) do
+        if typeof(item) == "Instance" then
+            item:Destroy()
+        elseif type(item) == "table" and item.Gui then
+            item.Gui:Destroy()
+        elseif type(item) == "userdata" and item.Remove then
+            item:Remove()
+        end
+    end
+    table.clear(Tabela)
+end
+
+-- 📌 LOOP DE ATUALIZAÇÃO PRINCIPAL
+RunService.RenderStepped:Connect(function()
+    if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
+        PegarCargos()
+        local MeuChar = player.Character
+        local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
+
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+                local Info = DadosCargos[p.Name]
+                local Cor = Color3.fromRGB(255, 255, 255) -- ⚪ Lobby
+                local CargoNome = "Lobby"
+
+                -- Identifica papéis
+                if Info and not Info.Killed and not Info.Dead then
+                    if Info.Role == "Murderer" then 
+                        Cor = Color3.fromRGB(220, 50, 50)
+                        CargoNome = "Assassino"
+                    elseif Info.Role == "Sheriff" then 
+                        Cor = Color3.fromRGB(0, 85, 255)
+                        CargoNome = "Xerife"
+                    elseif Info.Role == "Hero" then 
+                        Cor = Color3.fromRGB(255, 215, 0)
+                        CargoNome = "Herói"
+                    elseif Info.Role == "Innocent" then
+                        Cor = Color3.fromRGB(60, 200, 80)
+                        CargoNome = "Inocente"
+                    end
+                end
+
+                local Distancia = (MinhaPos - p.Character.HumanoidRootPart.Position).Magnitude
+
+                -- 1. Highlight
+                if ESPHighlightAtivo then
+                    CriarHighlight(p.Character, Cor)
+                elseif Highlights[p.Character] then
+                    Highlights[p.Character].Enabled = false
+                end
+
+                -- 2. Nome
+                if ESPNomeAtivo then
+                    CriarNomeESP(p, Cor, CargoNome)
+                elseif NamesESP[p] then
+                    NamesESP[p].Gui.Enabled = false
+                end
+
+                -- 3. Distância
+                if ESPDistanciaAtiva then
+                    CriarDistanciaESP(p, Cor, Distancia)
+                elseif DistanceESP[p] then
+                    DistanceESP[p].Gui.Enabled = false
+                end
+
+                -- 4. Linha / Tracer
+                if ESPTracerAtivo then
+                    CriarTracerESP(p, Cor)
+                elseif TracersESP[p] then
+                    TracersESP[p].Visible = false
+                end
+            end
+        end
+    else
+        if next(Highlights) then LimparTabela(Highlights) end
+        if next(NamesESP) then LimparTabela(NamesESP) end
+        if next(DistanceESP) then LimparTabela(DistanceESP) end
+        if next(TracersESP) then LimparTabela(TracersESP) end
+    end
+end)
 
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
