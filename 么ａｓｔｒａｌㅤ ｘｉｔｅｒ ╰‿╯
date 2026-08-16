@@ -112,10 +112,7 @@ local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
 local FOV_Padrao = 70
 
-local SpinningAtivo = false
-local SpinVelocidade = 16
-local SpinAngularVelocity = nil
-local SpinAttachment = nil
+
 
 -- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
 local ZoomMaxOriginal = player.CameraMaxZoomDistance
@@ -1132,51 +1129,6 @@ end)
 -- ===========================================
 -- ⚙️ SISTEMA DE GIRO DO PERSONAGEM
 -- ===========================================
-local function AtualizarGiro()
-    local Char = player.Character
-    local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
-
-    if SpinningAtivo and HRP then
-        -- Cria os componentes de física se não existirem
-        if not SpinAttachment or SpinAttachment.Parent ~= HRP then
-            if SpinAttachment then SpinAttachment:Destroy() end
-            SpinAttachment = Instance.new("Attachment")
-            SpinAttachment.Name = "SpinAttachment"
-            SpinAttachment.Parent = HRP
-        end
-
-        if not SpinAngularVelocity or SpinAngularVelocity.Parent ~= HRP then
-            if SpinAngularVelocity then SpinAngularVelocity:Destroy() end
-            SpinAngularVelocity = Instance.new("AngularVelocity")
-            SpinAngularVelocity.Name = "SpinAngularVelocity"
-            SpinAngularVelocity.Attachment0 = SpinAttachment
-            SpinAngularVelocity.MaxTorque = math.huge
-            SpinAngularVelocity.RelativeTo = Enum.ActuatorRelativeTo.World
-            SpinAngularVelocity.Parent = HRP
-        end
-
-        -- Aplica a velocidade de rotação no eixo Y (em pé)
-        SpinAngularVelocity.AngularVelocity = Vector3.new(0, SpinVelocidade, 0)
-    else
-        -- Remove a física se desativado
-        if SpinAngularVelocity then
-            SpinAngularVelocity:Destroy()
-            SpinAngularVelocity = nil
-        end
-        if SpinAttachment then
-            SpinAttachment:Destroy()
-            SpinAttachment = nil
-        end
-    end
-end
-
--- Re-aplica a rotação quando o personagem renascer
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    if SpinningAtivo then
-        AtualizarGiro()
-    end
-end)
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
@@ -1377,27 +1329,7 @@ Sec_ESP:Toggle({
 -- ==================================
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
-Sec_Movimento:Toggle({
-    Title = "Girar Personagem",
-    Default = false,
-    Callback = function(Ativo)
-        SpinningAtivo = Ativo
-        AtualizarGiro()
-    end
-})
 
-Sec_Movimento:Slider({
-    Title = "Velocidade de Giro",
-    Min = 16,
-    Max = 100,
-    Default = 16,
-    Callback = function(Valor)
-        SpinVelocidade = Valor
-        if SpinningAtivo then
-            AtualizarGiro()
-        end
-    end
-})
 
 Sec_Movimento:Slider({
     Title = "Velocidade",
