@@ -112,10 +112,7 @@ local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
 local FOV_Padrao = 70
 
-local WalkFlingAtivo = false
-local FlingPower = 999999
-local FlingPart = nil
-local FlingConnection = nil
+
 
 -- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
 local ZoomMaxOriginal = player.CameraMaxZoomDistance
@@ -1131,67 +1128,6 @@ end)
 
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
--- ==================================
--- ==================================
--- SISTEMA WALK FLING (MÉTODO CFRAME DELTA)
--- ==================================
-local function ToggleWalkFling(state)
-    WalkFlingAtivo = state
-
-    if not WalkFlingAtivo then
-        if FlingConnection then
-            FlingConnection:Disconnect()
-            FlingConnection = nil
-        end
-        return
-    end
-
-    FlingConnection = RunService.Heartbeat:Connect(function()
-        if not WalkFlingAtivo then return end
-
-        local char = player.Character
-        local hrp = char and char:FindFirstChild("HumanoidRootPart")
-        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
-
-        if hrp and humanoid then
-            -- 1. Desativa a colisão para não colidir com o mapa
-            for _, part in ipairs(char:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = false
-                end
-            end
-
-            -- 2. Salva CFrame atual do movimento do jogador
-            local oldCFrame = hrp.CFrame
-            local vel = hrp.AssemblyLinearVelocity
-
-            -- 3. Teleporta a raiz do personagem milissegundos para posições extremas no espaço
-            -- Isso faz o servidor achar que seu corpo está colidindo em altíssima velocidade
-            -- sem aplicar a força de reação do chão em você
-            hrp.CFrame = oldCFrame * CFrame.Angles(0, math.rad(math.random(1, 360)), 0)
-            hrp.AssemblyAngularVelocity = Vector3.new(0, 999999, 0)
-
-            -- Reseta a velocidade para manter a movimentação estável no seu cliente
-            RunService.RenderStepped:Wait()
-            if hrp then
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-                if humanoid.MoveDirection.Magnitude > 0 then
-                    hrp.AssemblyLinearVelocity = vel
-                else
-                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-                end
-            end
-        end
-    end)
-end
-
--- Mantém ativo ao renascer
-player.CharacterAdded:Connect(function()
-    if WalkFlingAtivo then
-        task.wait(0.5)
-        ToggleWalkFling(true)
-    end
-end)
 
 
 -- ==================================
@@ -1418,13 +1354,7 @@ Sec_Movimento:Slider({
     end
 })
 
-Sec_Movimento:Toggle({
-    Title = "Walk Fling (Delta)",
-    Default = false,
-    Callback = function(Ativo)
-        ToggleWalkFling(Ativo)
-    end
-})
+
 
 Sec_Movimento:Toggle({
     Title = "Pulo Infinito",
