@@ -71,6 +71,9 @@ local CONFIG_FARM = {
 local AutoFarmAtivo = false
 local collectedCoins = {}
 
+local AutoFarmButtonGui = nil
+local isDraggingFarm = false
+
 
 local AutoShoot = false
 local AutoGrabGun = false
@@ -260,6 +263,101 @@ task.spawn(function()
         end
     end
 end)
+
+-- ===========================================
+-- 🔘 SISTEMA DO BOTÃO NA TELA
+-- ===========================================
+local function CreateAutoFarmButton()
+    if AutoFarmButtonGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_AutoFarmButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.4, -21)
+    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Branco (Desligado)
+    Btn.BackgroundTransparency = 0.2
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(0, 0, 0)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Auto Farm"
+    Texto.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto preto no fundo branco
+    Texto.TextSize = 14
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    local dragThreshold = 10
+    local dragStartMousePos, buttonStartPosScreen
+
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingFarm = false
+            dragStartMousePos = Input.Position
+            buttonStartPosScreen = Btn.Position
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartMousePos then
+            local delta = Input.Position - dragStartMousePos
+            if delta.Magnitude > dragThreshold then
+                isDraggingFarm = true
+                Btn.Position = buttonStartPosScreen + UDim2.fromOffset(delta.X, delta.Y)
+            end
+        end
+    end)
+
+    Btn.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not isDraggingFarm then
+                AutoFarmAtivo = not AutoFarmAtivo
+
+                if AutoFarmAtivo then
+                    -- LIGADO: Verde com texto Branco
+                    Btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+                else
+                    -- DESLIGADO: Branco com texto Preto
+                    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    Texto.TextColor3 = Color3.fromRGB(0, 0, 0)
+                end
+            end
+            dragStartMousePos = nil
+            isDraggingFarm = false
+        end
+    end)
+
+    AutoFarmButtonGui = GuiBtn
+end
+
+local function RemoveAutoFarmButton()
+    if AutoFarmButtonGui then 
+        AutoFarmButtonGui:Destroy() 
+        AutoFarmButtonGui = nil 
+    end
+    AutoFarmAtivo = false
+end
 
 -- ===========================================
 -- 🎯 SISTEMA SHOOT MURDERER & AUTO GRAB GUN
@@ -1073,6 +1171,18 @@ Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores(
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
+    Title = "Auto Farm ( Botao )",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateAutoFarmButton()
+        else
+            RemoveAutoFarmButton()
+        end
+    end
+})
+
+Sec_AutoFarm:Toggle({
     Title = "Auto Farm",
     Default = false,
     Callback = function(Ativo)
@@ -1081,8 +1191,8 @@ Sec_AutoFarm:Toggle({
 })
 
 Sec_AutoFarm:Slider({
-    Title = "Velocidade Auto Farm",
-    Value = {Min = 16, Max = 25, Default = 24, Step = 1},
+    Title = "Velocidade Farm",
+    Value = {Min = 16, Max = 20, Default = 20, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
     end
