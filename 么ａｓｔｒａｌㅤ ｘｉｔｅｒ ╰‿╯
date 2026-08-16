@@ -112,6 +112,10 @@ local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
 local FOV_Padrao = 70
 
+local WalkFlingAtivo = false
+local FlingPower = 999999
+local FlingPart = nil
+local FlingConnection = nil
 
 -- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
 local ZoomMaxOriginal = player.CameraMaxZoomDistance
@@ -1125,9 +1129,74 @@ RunService.RenderStepped:Connect(function()
     Cam.FieldOfView = FOV_Padrao
 end)
 
--- ===========================================
--- 💥 SISTEMA DE WALKFLING (ESTILO DELTA)
--- ===========================================
+-- ==================================
+-- SISTEMA WALK FLING (ESTILO DELTA)
+-- ==================================
+local function EnableFling()
+    local character = player.Character or player.CharacterAdded:Wait()
+    local hrp = character:WaitForChild("HumanoidRootPart")
+
+    if FlingPart then FlingPart:Destroy() end
+
+    -- Parte invisível sem colisão para não te jogar longe ao encostar no chão
+    FlingPart = Instance.new("Part")
+    FlingPart.Name = "DeltaFlingPart"
+    FlingPart.Size = Vector3.new(6, 6, 6)
+    FlingPart.Transparency = 1
+    FlingPart.CanCollide = false
+    FlingPart.Massless = true
+    FlingPart.Parent = character
+
+    local weld = Instance.new("Weld")
+    weld.Part0 = hrp
+    weld.Part1 = FlingPart
+    weld.C0 = CFrame.new(0, 0, 0)
+    weld.Parent = FlingPart
+
+    -- Aplica torque extremo na parte invisível e mantém você firme
+    FlingConnection = RunService.PostSimulation:Connect(function()
+        if FlingPart and FlingPart.Parent then
+            FlingPart.AssemblyAngularVelocity = Vector3.new(0, FlingPower, 0)
+            if hrp then
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            end
+        end
+    end)
+end
+
+local function DisableFling()
+    if FlingConnection then
+        FlingConnection:Disconnect()
+        FlingConnection = nil
+    end
+
+    if FlingPart then
+        FlingPart:Destroy()
+        FlingPart = nil
+    end
+
+    local character = player.Character
+    if character and character:FindFirstChild("HumanoidRootPart") then
+        character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    end
+end
+
+local function ToggleWalkFling(state)
+    WalkFlingAtivo = state
+    if WalkFlingAtivo then
+        EnableFling()
+    else
+        DisableFling()
+    end
+end
+
+-- Mantém ativo se você morrer ou renascer no jogo
+player.CharacterAdded:Connect(function()
+    if WalkFlingAtivo then
+        task.wait(0.5)
+        EnableFling()
+    end
+end)
 
 
 -- ==================================
@@ -1329,8 +1398,6 @@ Sec_ESP:Toggle({
 -- ==================================
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
-
-
 Sec_Movimento:Slider({
     Title = "Velocidade",
     Value = {Min = 16, Max = 30, Default = 16, Step = 1},
@@ -1353,6 +1420,14 @@ Sec_Movimento:Slider({
             Char.Humanoid.UseJumpPower = true
             Char.Humanoid.JumpPower = Valor
         end
+    end
+})
+
+Sec_Movimento:Toggle({
+    Title = "Walk Fling (Delta)",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleWalkFling(Ativo)
     end
 })
 
