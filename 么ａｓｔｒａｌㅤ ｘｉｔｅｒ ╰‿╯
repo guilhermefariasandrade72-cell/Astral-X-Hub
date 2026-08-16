@@ -1130,83 +1130,60 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==================================
--- SISTEMA WALK FLING (SEM BUG DE VOAR)
+-- SISTEMA WALK FLING (MÉTODO DELTA / NO-COLLIDE)
 -- ==================================
-local function EnableFling()
-    local character = player.Character or player.CharacterAdded:Wait()
-    local hrp = character:WaitForChild("HumanoidRootPart")
+local function ToggleWalkFling(state)
+    WalkFlingAtivo = state
+    
+    if not WalkFlingAtivo then
+        if FlingConnection then
+            FlingConnection:Disconnect()
+            FlingConnection = nil
+        end
+        return
+    end
 
-    if FlingPart then FlingPart:Destroy() end
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
 
-    -- Parte invisível que faz o fling
-    FlingPart = Instance.new("Part")
-    FlingPart.Name = "DeltaFlingPart"
-    FlingPart.Size = Vector3.new(7, 7, 7)
-    FlingPart.Transparency = 1
-    FlingPart.CanCollide = false
-    FlingPart.CanTouch = true
-    FlingPart.Massless = true
-    FlingPart.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
-    FlingPart.Parent = character
+    -- Desativa colisão entre os membros do próprio personagem
+    for _, part in ipairs(Char:GetChildren()) do
+        if part:IsA("BasePart") then
+            part.CanCollide = false
+        end
+    end
 
-    local weld = Instance.new("Weld")
-    weld.Part0 = hrp
-    weld.Part1 = FlingPart
-    weld.C0 = CFrame.new(0, 0, 0)
-    weld.Parent = FlingPart
-
-    -- Loop de Fling isolando o movimento do personagem principal
     FlingConnection = RunService.Stepped:Connect(function()
         if not WalkFlingAtivo then return end
         
-        local char = player.Character
-        local root = char and char:FindFirstChild("HumanoidRootPart")
-        
-        if root and FlingPart and FlingPart.Parent then
-            -- Garante velocidade linear/angular zero no seu personagem principal
-            root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            
-            -- Oscila a velocidade da parte secundaria para arremessar sem travar na física do mapa
-            FlingPart.AssemblyAngularVelocity = Vector3.new(0, FlingPower, 0)
-            FlingPart.AssemblyLinearVelocity = Vector3.new(0, 100, 0)
+        local character = player.Character
+        local hrp = character and character:FindFirstChild("HumanoidRootPart")
+        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+        if hrp and humanoid then
+            -- Salva a velocidade linear atual do andar
+            local currentVel = hrp.AssemblyLinearVelocity
+
+            -- Alterna força de giro massiva no eixo Y
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 9999999, 0)
+
+            -- Mantém seu movimento fluindo sem te travar no ar ou chão
+            if humanoid.MoveDirection.Magnitude > 0 then
+                hrp.AssemblyLinearVelocity = Vector3.new(currentVel.X, 0, currentVel.Z)
+            else
+                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            end
         end
     end)
 end
 
-local function DisableFling()
-    if FlingConnection then
-        FlingConnection:Disconnect()
-        FlingConnection = nil
-    end
-
-    if FlingPart then
-        FlingPart:Destroy()
-        FlingPart = nil
-    end
-
-    local character = player.Character
-    if character and character:FindFirstChild("HumanoidRootPart") then
-        character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-        character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    end
-end
-
-local function ToggleWalkFling(state)
-    WalkFlingAtivo = state
-    if WalkFlingAtivo then
-        EnableFling()
-    else
-        DisableFling()
-    end
-end
-
-player.CharacterAdded:Connect(function()
+-- Mantém ativo ao renascer
+player.CharacterAdded:Connect(function(newChar)
     if WalkFlingAtivo then
         task.wait(0.5)
-        EnableFling()
+        ToggleWalkFling(true)
     end
 end)
-
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
