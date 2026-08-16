@@ -112,9 +112,6 @@ local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
 local FOV_Padrao = 70
 
-local WalkFlingAtivo = false
-local FlingPower = 10000
-local FlingConnection = nil
 
 -- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
 local ZoomMaxOriginal = player.CameraMaxZoomDistance
@@ -1131,58 +1128,7 @@ end)
 -- ===========================================
 -- 💥 SISTEMA DE WALKFLING (ESTILO DELTA)
 -- ===========================================
-local function ToggleWalkFling(State)
-    WalkFlingAtivo = State
 
-    if FlingConnection then
-        FlingConnection:Disconnect()
-        FlingConnection = nil
-    end
-
-    if WalkFlingAtivo then
-        FlingConnection = game:GetService("RunService").Heartbeat:Connect(function()
-            if not WalkFlingAtivo then return end
-
-            local Char = player.Character
-            local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
-            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
-
-            if HRP and Humanoid then
-                -- Desativa colisão interna para o seu próprio corpo não travar
-                for _, part in ipairs(Char:GetChildren()) do
-                    if part:IsA("BasePart") then
-                        part.CanCollide = false
-                    end
-                end
-
-                -- Aplica velocidade angular extrema na RootPart apenas no momento da colisão
-                local Vel = HRP.AssemblyLinearVelocity
-                HRP.AssemblyAngularVelocity = Vector3.new(0, FlingPower, 0)
-                
-                -- Mantém a movimentação do seu personagem limpa e sem tremer
-                HRP.AssemblyLinearVelocity = Vector3.new(Vel.X, 0, Vel.Z)
-            end
-        end)
-    else
-        -- Restaura as colisões ao desligar
-        local Char = player.Character
-        if Char then
-            for _, part in ipairs(Char:GetChildren()) do
-                if part:IsA("BasePart") then
-                    part.CanCollide = true
-                end
-            end
-        end
-    end
-end
-
--- Mantém o estado ao renascer
-player.CharacterAdded:Connect(function()
-    if WalkFlingAtivo then
-        task.wait(1)
-        ToggleWalkFling(true)
-    end
-end)
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
@@ -1383,21 +1329,7 @@ Sec_ESP:Toggle({
 -- ==================================
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
-Sec_Movimento:Toggle({
-    Title = "WalkFling (Encostou = Voou)",
-    Default = false,
-    Callback = function(Ativo)
-        ToggleWalkFling(Ativo)
-    end
-})
 
-Sec_Movimento:Slider({
-    Title = "Força do Fling",
-    Value = {Min = 1000, Max = 50000, Default = 10000, Step = 1000},
-    Callback = function(Valor)
-        FlingPower = Valor
-    end
-})
 
 Sec_Movimento:Slider({
     Title = "Velocidade",
