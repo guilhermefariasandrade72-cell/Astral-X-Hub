@@ -1130,7 +1130,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==================================
--- SISTEMA WALK FLING (ESTILO DELTA)
+-- SISTEMA WALK FLING (SEM BUG DE VOAR)
 -- ==================================
 local function EnableFling()
     local character = player.Character or player.CharacterAdded:Wait()
@@ -1138,13 +1138,15 @@ local function EnableFling()
 
     if FlingPart then FlingPart:Destroy() end
 
-    -- Parte invisível sem colisão para não te jogar longe ao encostar no chão
+    -- Parte invisível que faz o fling
     FlingPart = Instance.new("Part")
     FlingPart.Name = "DeltaFlingPart"
-    FlingPart.Size = Vector3.new(6, 6, 6)
+    FlingPart.Size = Vector3.new(7, 7, 7)
     FlingPart.Transparency = 1
     FlingPart.CanCollide = false
+    FlingPart.CanTouch = true
     FlingPart.Massless = true
+    FlingPart.CustomPhysicalProperties = PhysicalProperties.new(0, 0, 0, 0, 0)
     FlingPart.Parent = character
 
     local weld = Instance.new("Weld")
@@ -1153,13 +1155,20 @@ local function EnableFling()
     weld.C0 = CFrame.new(0, 0, 0)
     weld.Parent = FlingPart
 
-    -- Aplica torque extremo na parte invisível e mantém você firme
-    FlingConnection = RunService.PostSimulation:Connect(function()
-        if FlingPart and FlingPart.Parent then
+    -- Loop de Fling isolando o movimento do personagem principal
+    FlingConnection = RunService.Stepped:Connect(function()
+        if not WalkFlingAtivo then return end
+        
+        local char = player.Character
+        local root = char and char:FindFirstChild("HumanoidRootPart")
+        
+        if root and FlingPart and FlingPart.Parent then
+            -- Garante velocidade linear/angular zero no seu personagem principal
+            root.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+            
+            -- Oscila a velocidade da parte secundaria para arremessar sem travar na física do mapa
             FlingPart.AssemblyAngularVelocity = Vector3.new(0, FlingPower, 0)
-            if hrp then
-                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
-            end
+            FlingPart.AssemblyLinearVelocity = Vector3.new(0, 100, 0)
         end
     end)
 end
@@ -1178,6 +1187,7 @@ local function DisableFling()
     local character = player.Character
     if character and character:FindFirstChild("HumanoidRootPart") then
         character.HumanoidRootPart.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        character.HumanoidRootPart.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
     end
 end
 
@@ -1190,7 +1200,6 @@ local function ToggleWalkFling(state)
     end
 end
 
--- Mantém ativo se você morrer ou renascer no jogo
 player.CharacterAdded:Connect(function()
     if WalkFlingAtivo then
         task.wait(0.5)
