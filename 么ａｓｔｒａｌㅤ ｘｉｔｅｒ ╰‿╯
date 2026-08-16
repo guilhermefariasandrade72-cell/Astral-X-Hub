@@ -1302,22 +1302,6 @@ Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores(
 -- ==================================
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
-Sec_Movimento:Toggle({
-    Title = "Fly (Delta)",
-    Default = false,
-    Callback = function(Ativo)
-        ToggleFly(Ativo)
-    end
-})
-
-Sec_Movimento:Slider({
-    Title = "Velocidade do Fly",
-    Value = {Min = 10, Max = 300, Default = 50, Step = 5},
-    Callback = function(Valor)
-        FlyVelocidade = Valor
-    end
-})
-
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm ( Botao )",
     Default = false,
@@ -1464,6 +1448,22 @@ Sec_ESP:Toggle({
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
+
+Sec_Movimento:Toggle({
+    Title = "Fly (Delta)",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleFly(Ativo)
+    end
+})
+
+Sec_Movimento:Slider({
+    Title = "Velocidade do Fly",
+    Value = {Min = 10, Max = 300, Default = 50, Step = 5},
+    Callback = function(Valor)
+        FlyVelocidade = Valor
+    end
+})
 
 Sec_Movimento:Toggle({
     Title = "Walk Fling (Delta Max)",
