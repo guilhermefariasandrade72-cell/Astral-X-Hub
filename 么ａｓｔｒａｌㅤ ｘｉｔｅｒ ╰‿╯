@@ -1131,8 +1131,47 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ===========================================
--- ⚙️ SISTEMA DE GIRO DO PERSONAGEM (CORRIGIDO)
+-- ⚙️ SISTEMA DE GIRO / FLING (CORRIGIDO)
 -- ===========================================
+local function AtualizarGiro()
+    local Char = player.Character
+    local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+    if SpinningAtivo and HRP then
+        if not SpinAttachment or SpinAttachment.Parent ~= HRP then
+            if SpinAttachment then SpinAttachment:Destroy() end
+            SpinAttachment = Instance.new("Attachment")
+            SpinAttachment.Name = "SpinAttachment"
+            SpinAttachment.Parent = HRP
+        end
+
+        if not SpinAngularVelocity or SpinAngularVelocity.Parent ~= HRP then
+            if SpinAngularVelocity then SpinAngularVelocity:Destroy() end
+            SpinAngularVelocity = Instance.new("AngularVelocity")
+            SpinAngularVelocity.Name = "SpinAngularVelocity"
+            SpinAngularVelocity.Attachment0 = SpinAttachment
+            SpinAngularVelocity.MaxTorque = 999999999 -- Torque máximo para não travar
+            SpinAngularVelocity.RelativeTo = Enum.ActuatorRelativeTo.Attachment0
+            
+            -- 💥 CHAVE DO FLING: Transfere a força de impacto para outros players
+            SpinAngularVelocity.ReactionTorqueEnabled = true 
+            
+            SpinAngularVelocity.Parent = HRP
+        end
+
+        -- Multiplicador ajustado para dar um giro rápido e forte
+        SpinAngularVelocity.AngularVelocity = Vector3.new(0, SpinVelocidade * 50, 0)
+    else
+        if SpinAngularVelocity then
+            SpinAngularVelocity:Destroy()
+            SpinAngularVelocity = nil
+        end
+        if SpinAttachment then
+            SpinAttachment:Destroy()
+            SpinAttachment = nil
+        end
+    end
+end
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
@@ -1333,7 +1372,25 @@ Sec_ESP:Toggle({
 -- ==================================
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
+Sec_Movimento:Toggle({
+    Title = "Girar Personagem (Fling)",
+    Default = false,
+    Callback = function(Ativo)
+        SpinningAtivo = Ativo
+        AtualizarGiro()
+    end
+})
 
+Sec_Movimento:Slider({
+    Title = "Força do Giro / Fling",
+    Value = {Min = 10, Max = 500, Default = 100, Step = 10},
+    Callback = function(Valor)
+        SpinVelocidade = Valor
+        if SpinningAtivo then
+            AtualizarGiro()
+        end
+    end
+})
 
 
 Sec_Movimento:Slider({
