@@ -109,6 +109,10 @@ local ForcaPuloPadrao = 50
 local VelocidadeNoPulo = 300
 local FOV_Padrao = 70
 
+local FlyAtivo = false
+local FlyVelocidade = 50
+local FlyConnection = nil
+
 local WalkFlingAtivo = false
 local FlingPower = 100000000000
 local FlingConnection = nil
@@ -1180,6 +1184,78 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- ==================================
+-- SISTEMA FLY (MÓVEL / DIREÇÃO DA CÂMERA)
+-- ==================================
+local function EnableFly()
+    local char = player.Character or player.CharacterAdded:Wait()
+    local hrp = char:WaitForChild("HumanoidRootPart")
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    local camera = workspace.CurrentCamera
+
+    if humanoid then
+        humanoid.PlatformStand = true -- Deixa o personagem 'duro' sem animação de queda/andar
+    end
+
+    FlyConnection = RunService.RenderStepped:Connect(function()
+        if not FlyAtivo or not hrp or not camera then return end
+
+        -- Zera velocidades da física do jogo para o personagem não cair
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
+        -- Direção da câmera
+        local camLook = camera.CFrame.LookVector
+        local moveVector = Vector3.new(0, 0, 0)
+
+        -- Se o jogador estiver movendo pelo analógico/teclado
+        if humanoid and humanoid.MoveDirection.Magnitude > 0 then
+            -- Mover para frente/trás alinhado com o olhar da câmera
+            moveVector = camLook * FlyVelocidade
+        end
+
+        -- Atualiza a posição mantendo o corpo rígido olhando para a câmera
+        hrp.CFrame = CFrame.new(hrp.Position + moveVector * 0.03, hrp.Position + camLook)
+    end)
+end
+
+local function DisableFly()
+    if FlyConnection then
+        FlyConnection:Disconnect()
+        FlyConnection = nil
+    end
+
+    local char = player.Character
+    if char then
+        local humanoid = char:FindFirstChildOfClass("Humanoid")
+        local hrp = char:FindFirstChild("HumanoidRootPart")
+
+        if humanoid then
+            humanoid.PlatformStand = false -- Devolve o controle normal de animações
+        end
+
+        if hrp then
+            hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+        end
+    end
+end
+
+local function ToggleFly(state)
+    FlyAtivo = state
+    if FlyAtivo then
+        EnableFly()
+    else
+        DisableFly()
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    if FlyAtivo then
+        task.wait(0.5)
+        EnableFly()
+    end
+end)
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
@@ -1225,6 +1301,22 @@ Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores(
 -- BOTOES DA ABA MAIN
 -- ==================================
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
+
+Sec_Movimento:Toggle({
+    Title = "Fly (Delta)",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleFly(Ativo)
+    end
+})
+
+Sec_Movimento:Slider({
+    Title = "Velocidade do Fly",
+    Value = {Min = 10, Max = 300, Default = 50, Step = 5},
+    Callback = function(Valor)
+        FlyVelocidade = Valor
+    end
+})
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm ( Botao )",
