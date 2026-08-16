@@ -1130,11 +1130,11 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==================================
--- SISTEMA WALK FLING (MÉTODO DELTA / NO-COLLIDE)
+-- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
 -- ==================================
 local function ToggleWalkFling(state)
     WalkFlingAtivo = state
-    
+
     if not WalkFlingAtivo then
         if FlingConnection then
             FlingConnection:Disconnect()
@@ -1143,42 +1143,37 @@ local function ToggleWalkFling(state)
         return
     end
 
-    local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-
-    -- Desativa colisão entre os membros do próprio personagem
-    for _, part in ipairs(Char:GetChildren()) do
-        if part:IsA("BasePart") then
-            part.CanCollide = false
-        end
-    end
-
-    FlingConnection = RunService.Stepped:Connect(function()
+    FlingConnection = RunService.PostSimulation:Connect(function()
         if not WalkFlingAtivo then return end
-        
-        local character = player.Character
-        local hrp = character and character:FindFirstChild("HumanoidRootPart")
-        local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
 
         if hrp and humanoid then
-            -- Salva a velocidade linear atual do andar
-            local currentVel = hrp.AssemblyLinearVelocity
+            -- 1. Desativa a colisão física de TODAS as partes do corpo no frame atual
+            for _, part in ipairs(char:GetDescendants()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
 
-            -- Alterna força de giro massiva no eixo Y
-            hrp.AssemblyAngularVelocity = Vector3.new(0, 9999999, 0)
-
-            -- Mantém seu movimento fluindo sem te travar no ar ou chão
-            if humanoid.MoveDirection.Magnitude > 0 then
-                hrp.AssemblyLinearVelocity = Vector3.new(currentVel.X, 0, currentVel.Z)
+            -- 2. Zera a velocidade física acumulada nas direções verticais/horizontais
+            local moveDir = humanoid.MoveDirection
+            if moveDir.Magnitude > 0 then
+                hrp.AssemblyLinearVelocity = Vector3.new(moveDir.X * humanoid.WalkSpeed, 0, moveDir.Z * humanoid.WalkSpeed)
             else
                 hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
             end
+
+            -- 3. Aplica o torque de Fling
+            hrp.AssemblyAngularVelocity = Vector3.new(0, 999999, 0)
         end
     end)
 end
 
 -- Mantém ativo ao renascer
-player.CharacterAdded:Connect(function(newChar)
+player.CharacterAdded:Connect(function()
     if WalkFlingAtivo then
         task.wait(0.5)
         ToggleWalkFling(true)
