@@ -1,206 +1,110 @@
--- ===========================================
--- 🌐 ASTRAL X HUB · INTERFACE COMPLETA
--- ===========================================
-
--- ===========================================
--- 📦 1. CARREGAMENTO + SERVIÇOS
--- ===========================================
-local WindUI = loadstring(game:HttpGet("https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"))()
-local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-local CoreGui = game:GetService("CoreGui")
-local player = Players.LocalPlayer
-
--- ===========================================
--- 🛡️ PROTEÇÃO: NÃO ABRIR DUAS VEZES
--- ===========================================
-local NomeJanela = "ASTRAL X Hub"
-if game.CoreGui:FindFirstChild(NomeJanela) then game.CoreGui[NomeJanela]:Destroy() end
-if player.PlayerGui:FindFirstChild(NomeJanela) then player.PlayerGui[NomeJanela]:Destroy() end
-
--- ===========================================
--- 🎨 BOTÃO DE ABRIR PERSONALIZADO
--- ===========================================
-WindUI.OpenButton = {
-    Title = "ASTRAL X",
-    CornerRadius = UDim.new(0, 12),
-    StrokeThickness = 2,
-    Enabled = true,
-    Draggable = true,
-    Color = ColorSequence.new(
-        Color3.fromHex("#ffffff"),
-        Color3.fromHex("#000000")
-    )
-}
-
--- ===========================================
--- 🪟 JANELA PRINCIPAL + ABAS
--- ===========================================
-local Window = WindUI:CreateWindow({
-    Title = "ASTRAL X Hub",
-    Author = "Seu Nome",
-    Size = UDim2.fromOffset(480, 340),
-    MinSize = Vector2.new(420, 300),
-    Transparent = true,
-    Theme = "Dark",
-    SideBarWidth = 120,
-    HideSearchBar = true,
-})
-
--- 📋 ABAS — NÃO MEXER AQUI
-local Aba_SherifAssassino = Window:Tab({Title = "Murd/Xerife"})
-
-local Aba_Farm = Window:Tab({Title = "Auto Farm"})
-
-local Aba_ESP = Window:Tab({Title = "ESP"})
-
-local Aba_LocalPlayer = Window:Tab({Title = "Local Player"})
-
-local Aba_Troll = Window:Tab({Title = "Troll"})
-
-local Aba_Config = Window:Tab({Title = "Config Hub"})
-
-
--- ═══════════════════════════════════════════
--- 📌 VARIÁVEIS DO AUTO FARM
--- ═══════════════════════════════════════════
-local CONFIG_FARM = {
-    velocidade = 24, -- Padrão
-    limite = 40,
-    alcance_maximo = 999
-}
-local AutoFarmAtivo = false
-local collectedCoins = {}
-
--- ═══════════════════════════════════════════
--- SISTEMA DO AUTO FARM
--- ═══════════════════════════════════════════
-local function EmPartida()
-    local c = player.Character
-    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-            return true
-        end
-    end
-    return false
+-- Protected by Mnx Obfuscator | Public Enemy
+local buKuA22rW7V6=type(nil)
+local dlOAbTqhetRMZ4Hrj=math.floor(8)
+local szgZ2WbdVn=math.abs(-67)
+local o2DUCtgsHu=math.abs(-22)
+local eCmtDeRJ_TC2wj=#"suZV"
+local oNG4N9YlL8q7ZL=math.abs(-31)
+local zFbOlDbP106oJPQI=883
+local u1xQ0aI7lyYyi7X3F=bit32.bxor(184,148)
+local uQRPU3X_pFIgMwH=string.len("jvJWaN")
+local buXBFOuPS0mLhgybkv=tostring(94)
+local kPNCiivCV25r=587
+local vzI45hgMvilGZvT=string.len("m12Wb")
+do local _=nil end
+local vMLREnVhyywHUHZTJJ=tostring(2)
+local eVTQYZcdju493=726
+local qx2Rmxfr_WCrVTSFyU=type(nil)
+do local _=nil end
+local dOFIsLo8X={"e2dc0f6bbcd73b602cf121a8ccdc746296baa8391b54e622d1c42e87092b0e92aa7658a221aa78c1cce279d6c1cfa9bd","2bf5a3ccf7a76a8aff6d9664c46ae5ed407ab97c46bc5e81b91fd3b80409ccdf8999e57720aec25d351148d07691b89d","c333645220b4ea60574cddc7710721a1ad1d6de535021e01d5d93d2babfc8dcca4e3fc81e7ba0e29de0ac673"}
+local wvvp1kxaOWK1W={2,1,3}
+local vU8b0tFEAwC={"83c89ed57876b38c44769f632fb1c66db8beab5a28b1f3e1321c56a477537b4b7e0c318f017be9759e2befbd7ebf6a6a","3e1666b74d4908eca6cbebe88732ed8e8b4be31920203553e4490b0accb5ea599a256853209736952ee48de898acdd67","bf3c8d5b31d47c9fe71efca24867369209bb6e353db70b7e621c69b014f9bb588a4558d6fb1b5986e4eb5d"}
+local my2HHC3OGE04rRVny7={2,1,3}
+local yxiosK3OU=string.len("tEzzRra9")
+local yqaTbDQODErQdb7z8=#"n7xg"
+local ggCrBWxffQn4Zgd8=bit32.bxor(199,178)
+if false then error("") end
+for _=1,0 do end
+do local _=nil end
+local ieqAImUQDUrtndGe={}
+for c6cmN3asQVG=1,#wvvp1kxaOWK1W do ieqAImUQDUrtndGe[wvvp1kxaOWK1W[c6cmN3asQVG]]=dOFIsLo8X[c6cmN3asQVG] end
+ieqAImUQDUrtndGe=table.concat(ieqAImUQDUrtndGe)
+local wnFB9AXon={}
+for c6cmN3asQVG=1,#my2HHC3OGE04rRVny7 do wnFB9AXon[my2HHC3OGE04rRVny7[c6cmN3asQVG]]=vU8b0tFEAwC[c6cmN3asQVG] end
+wnFB9AXon=table.concat(wnFB9AXon)
+local mQxcEX2OL={}
+for c6cmN3asQVG=1,#ieqAImUQDUrtndGe,2 do
+  mQxcEX2OL[#mQxcEX2OL+1]=tonumber(string.sub(ieqAImUQDUrtndGe,c6cmN3asQVG,c6cmN3asQVG+1),16)
 end
-
-local function QuantidadeMochila()
-    local ok, n = pcall(function()
-        local g = player.PlayerGui:WaitForChild("MainGUI", 2)
-        return tonumber(g.Game.CoinBags.Container.SnowToken.CurrencyFrame.Icon.Coins.Text) or 0
-    end)
-    return ok and n or 0
+local gTCn9VXcp={137,45,249,229,238,92,15,163,166,34,54,123,87,138,207,183,94,37,58,180,30,221,75,158,143,9,134,117,76,208,25,16,177,53,20,30,53,243,65,219,21,12,89,87,26,183}
+for c6cmN3asQVG=1,#mQxcEX2OL do
+  mQxcEX2OL[c6cmN3asQVG]=bit32.bxor(mQxcEX2OL[c6cmN3asQVG],gTCn9VXcp[(c6cmN3asQVG-1)%#gTCn9VXcp+1])
 end
-
-local function getNearestCoin(minhaPos)
-    local melhor, menorDist = nil, math.huge
-    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
-    if not CoinContainer then return end
-    for _, v in ipairs(CoinContainer:GetChildren()) do
-        if v:IsA("BasePart") and v.Name == "Coin_Server"
-        and v:FindFirstChild("TouchInterest") and v:FindFirstChild("CoinVisual")
-        and not collectedCoins[v] and not v:GetAttribute("Collected") then
-            local dist = (minhaPos - v.Position).Magnitude
-            if dist < CONFIG_FARM.alcance_maximo and dist < menorDist then
-                menorDist = dist
-                melhor = v
-            end
-        end
-    end
-    return melhor
+local ofVi4jiwWozi_8FJv={}
+for c6cmN3asQVG=1,#wnFB9AXon,2 do
+  ofVi4jiwWozi_8FJv[#ofVi4jiwWozi_8FJv+1]=tonumber(string.sub(wnFB9AXon,c6cmN3asQVG,c6cmN3asQVG+1),16)
 end
-
--- ═══════════════════════════════════════════
--- 📌 LOOP PRINCIPAL DO FARM
--- ═══════════════════════════════════════════
-task.spawn(function()
-    while true do
-        if AutoFarmAtivo then
-            if not EmPartida() then
-                table.clear(collectedCoins)
-                RunService.Heartbeat:Wait()
-                continue
-            end
-
-            local atual = QuantidadeMochila()
-            if atual >= CONFIG_FARM.limite then
-                repeat
-                    RunService.Heartbeat:Wait()
-                    atual = QuantidadeMochila()
-                until atual < CONFIG_FARM.limite or not AutoFarmAtivo or not EmPartida()
-                table.clear(collectedCoins)
-                continue
-            end
-
-            local c = player.Character
-            if not c or not c.PrimaryPart then
-                RunService.Heartbeat:Wait()
-                continue
-            end
-
-            local minhaPos = c.PrimaryPart.Position
-            local alvo = getNearestCoin(minhaPos)
-
-            if alvo then
-                local ini = minhaPos
-                local destino = alvo.Position
-                local distTotal = (ini - destino).Magnitude
-                local tempo = distTotal / CONFIG_FARM.velocidade -- ← USA A VELOCIDADE DO SLIDER
-                local tIni = os.clock()
-
-                while AutoFarmAtivo and EmPartida() and alvo.Parent and QuantidadeMochila() < CONFIG_FARM.limite do
-                    local progresso = math.min((os.clock() - tIni) / tempo, 1)
-                    c:PivotTo(CFrame.new(ini:Lerp(destino, progresso)))
-                    if progresso >= 1 then break end
-                    RunService.Heartbeat:Wait()
-                end
-                collectedCoins[alvo] = true
-            else
-                table.clear(collectedCoins)
-                RunService.Heartbeat:Wait()
-            end
-        else
-            RunService.Heartbeat:Wait()
-        end
-    end
-end)
-
--- ═══════════════════════════════════════════
--- BOTÕES DA ABA AUTO FARM
--- ═══════════════════════════════════════════
-local Sec_Farm = Aba_Farm:Section({Title = "Configurações do Farm"})
-
-Sec_Farm:Toggle({
-    Title = "Ativar Auto Farm",
-    Default = false,
-    Callback = function(estado)
-        AutoFarmAtivo = estado
-        table.clear(collectedCoins)
-    end
-})
-
-Sec_Farm:Slider({
-    Title = "Velocidade do Farm",
-    Min = 16,
-    Max = 25,
-    Default = 24,
-    Callback = function(valor)
-        CONFIG_FARM.velocidade = valor
-    end
-})
-
-Sec_Farm:Button({
-    Title = "🛡️ Ativar Anti-AFK",
-    Callback = function()
-        pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn", true))()
-        end)
-    end
-})
-
-
-
+local kkY4PouLJ={8,94,25,157,15,220,74,219,109,241,33,71,96,184,49,215,175,15,187,43,146,94,4,72,103,40,17,191,224,168,54,216,171,14,160,45,185,98,125,105,249,173,201,70,126,111}
+for c6cmN3asQVG=1,#ofVi4jiwWozi_8FJv do
+  ofVi4jiwWozi_8FJv[c6cmN3asQVG]=bit32.bxor(ofVi4jiwWozi_8FJv[c6cmN3asQVG],kkY4PouLJ[(c6cmN3asQVG-1)%#kkY4PouLJ+1])
+end
+local vaxiuMkI8={}
+for c6cmN3asQVG=1,math.max(#mQxcEX2OL,#ofVi4jiwWozi_8FJv) do
+  if mQxcEX2OL[c6cmN3asQVG] then vaxiuMkI8[#vaxiuMkI8+1]=mQxcEX2OL[c6cmN3asQVG] end
+  if ofVi4jiwWozi_8FJv[c6cmN3asQVG] then vaxiuMkI8[#vaxiuMkI8+1]=ofVi4jiwWozi_8FJv[c6cmN3asQVG] end
+end
+local uFM0mKtWgZ95do={}
+local iAMzr4Z1hejSDwkAqd=27464400
+for c6cmN3asQVG=#vaxiuMkI8-1,1,-1 do
+  iAMzr4Z1hejSDwkAqd=(iAMzr4Z1hejSDwkAqd*1664525+1013904223)%4294967296
+  local wopgWOQuR=iAMzr4Z1hejSDwkAqd%(c6cmN3asQVG+1)+1
+  uFM0mKtWgZ95do[#uFM0mKtWgZ95do+1]={c6cmN3asQVG+1,wopgWOQuR}
+end
+for c6cmN3asQVG=#uFM0mKtWgZ95do,1,-1 do
+  local wr8HTf7nfp=uFM0mKtWgZ95do[c6cmN3asQVG]
+  local hpt8q42dUTZ3Zv7a=vaxiuMkI8[wr8HTf7nfp[1]]
+  vaxiuMkI8[wr8HTf7nfp[1]]=vaxiuMkI8[wr8HTf7nfp[2]]
+  vaxiuMkI8[wr8HTf7nfp[2]]=hpt8q42dUTZ3Zv7a
+end
+local xqxah9u60KtSKPD={}
+local e4Zw3aupoy=907402547
+for c6cmN3asQVG=#vaxiuMkI8-1,1,-1 do
+  e4Zw3aupoy=(e4Zw3aupoy*1664525+1013904223)%4294967296
+  local s0fXoO1l1UCqb7=e4Zw3aupoy%(c6cmN3asQVG+1)+1
+  xqxah9u60KtSKPD[#xqxah9u60KtSKPD+1]={c6cmN3asQVG+1,s0fXoO1l1UCqb7}
+end
+for c6cmN3asQVG=#xqxah9u60KtSKPD,1,-1 do
+  local gB1knHPUT7FE=xqxah9u60KtSKPD[c6cmN3asQVG]
+  local rDc1RzuVMNkCn6zt=vaxiuMkI8[gB1knHPUT7FE[1]]
+  vaxiuMkI8[gB1knHPUT7FE[1]]=vaxiuMkI8[gB1knHPUT7FE[2]]
+  vaxiuMkI8[gB1knHPUT7FE[2]]=rDc1RzuVMNkCn6zt
+end
+local fheFNBdGljX={114,14,134,120,73,223,8,76,65,132,33,73,14,179,98,231,129,108,123,139,162,134,209,38,235,55,105,123,66,251,166,9,196,218,12,236,195,22,26,173,242,14,64,157,177,115}
+for c6cmN3asQVG=1,#vaxiuMkI8 do
+  vaxiuMkI8[c6cmN3asQVG]=bit32.bxor(vaxiuMkI8[c6cmN3asQVG],fheFNBdGljX[(c6cmN3asQVG-1)%#fheFNBdGljX+1])
+end
+local fdHbp1BF6P={213,239,10,86,162,53,97,90,164,175,134,164,189,151,126,98,152,69,49,21,141}
+for c6cmN3asQVG=1,#vaxiuMkI8 do
+  vaxiuMkI8[c6cmN3asQVG]=bit32.bxor(vaxiuMkI8[c6cmN3asQVG],fdHbp1BF6P[(c6cmN3asQVG-1)%#fdHbp1BF6P+1])
+end
+local lUaqYuGTULAkz=bit32.bxor(200,33)
+local swO2s43aNbKEjVc1=bit32.bxor(197,37)
+local l3zHBm5qYvq=#"knc"
+local iXxkAu156lVcYRz=#"v6E4YyJ"
+for _=1,0 do end
+local gXx1nYNa0CdD={209,145,125,104,228,244,185,20,20,50,163,84,251,92,16,162,155,132,6,38,81,32,146,83,14,231,158,106,241,240,135,35,174,63,170,134,211,55,44,125,213,64,71,150,145,7}
+local r5WHDXKmABu={}
+for c6cmN3asQVG=1,#vaxiuMkI8 do
+  r5WHDXKmABu[c6cmN3asQVG]=string.char(bit32.bxor(vaxiuMkI8[c6cmN3asQVG],gXx1nYNa0CdD[(c6cmN3asQVG-1)%#gXx1nYNa0CdD+1]))
+end
+local nqzsq9uzPNIdVkXT_=table.concat(r5WHDXKmABu)
+local bbWgxZRjxMg8=type(nil)
+local gpyC3wcWVKDNJZUn44=math.abs(-49)
+local mJfarLEHwQvD=bit32.bxor(58,155)
+if false then error("") end
+local wY7O5wEUV,fR_TL3OE_Xw5ch=loadstring(nqzsq9uzPNIdVkXT_)
+if wY7O5wEUV then
+  wY7O5wEUV()
+else
+  error("Mnx | Public Enemy : "..tostring(fR_TL3OE_Xw5ch))
+end
