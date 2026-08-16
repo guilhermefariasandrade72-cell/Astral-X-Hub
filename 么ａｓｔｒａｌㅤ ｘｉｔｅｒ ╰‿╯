@@ -142,7 +142,6 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA MAIN
 -- ==================================
--- SISTEMA AUTO FARM — CORRIGIDO ✅
 local function EmPartida()
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
@@ -162,7 +161,6 @@ local function QuantidadeMochila()
     return ok and n or 0
 end
 
--- ✅ CORRIGIDO: SEMPRE RETORNA A MAIS PRÓXIMA
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
@@ -177,7 +175,6 @@ local function getNearestCoin(minhaPos)
         and not moeda:GetAttribute("Collected") then
             
             local distancia = (minhaPos - moeda.Position).Magnitude
-            -- ✅ SÓ ESCOLHA SE FOR MAIS PRÓXIMA QUE A ATUAL
             if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
                 menorDistancia = distancia
                 melhorMoeda = moeda
@@ -187,7 +184,7 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 📌 LOOP PRINCIPAL CORRIGIDO
+-- 📌 LOOP PRINCIPAL CORRIGIDO COM RECALCULO EM TEMPO REAL
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -213,44 +210,48 @@ task.spawn(function()
                 continue
             end
 
-            -- ✅ SEMPRE BUSCA A MAIS PRÓXIMA A CADA PASSO
-            local minhaPos = c.PrimaryPart.Position
-            local alvo = getNearestCoin(minhaPos)
+            -- Busca o alvo inicial
+            local alvo = getNearestCoin(c.PrimaryPart.Position)
 
             if alvo then
-                local posInicial = minhaPos
-                local posAlvo = alvo.Position
-                local distanciaTotal = (posInicial - posAlvo).Magnitude
-                local tempoPercurso = distanciaTotal / CONFIG_FARM.velocidade
-                local tempoInicio = os.clock()
-
-                -- ✅ VERIFICA A CADA INSTANTE SE A MOEDA AINDA EXISTE
+                -- Loop de movimentação contínua
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and QuantidadeMochila() < CONFIG_FARM.limite 
-                and not alvo:GetAttribute("Collected") do
+                and not alvo:GetAttribute("Collected") 
+                and not collectedCoins[alvo] do
                     
-                    -- Se alguém pegou ou desapareceu → PARA E BUSCA OUTRA
-                    if not alvo:IsDescendantOf(Workspace) or collectedCoins[alvo] then
+                    local minhaPosAtual = c.PrimaryPart.Position
+                    
+                    -- 🔄 CHECAGEM DINÂMICA: Verifica se surgiu alguma outra moeda MAIS PERTO da posição atual
+                    local novaMoedaProxima = getNearestCoin(minhaPosAtual)
+                    if novaMoedaProxima and novaMoedaProxima ~= alvo then
+                        -- Troca de alvo imediatamente no meio do caminho!
+                        alvo = novaMoedaProxima
+                    end
+
+                    -- Se a moeda atual foi deletada do workspace por outro player
+                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
                         break
                     end
 
-                    local progresso = math.min((os.clock() - tempoInicio) / tempoPercurso, 1)
-                    c:PivotTo(CFrame.new(posInicial:Lerp(posAlvo, progresso)))
+                    local posAlvo = alvo.Position
+                    local direcao = (posAlvo - minhaPosAtual)
+                    local distancia = direcao.Magnitude
 
-                    -- ✅ CHEGOU OU ALGUÉM PEGOU → PARA
-                    if progresso >= 1 or alvo:GetAttribute("Collected") then
+                    -- Se chegou na moeda
+                    if distancia <= 1.5 then
+                        collectedCoins[alvo] = true
                         break
                     end
 
-                    RunService.Heartbeat:Wait()
-                end
+                    -- Move em passos curtos frame a frame baseados na velocidade
+                    local dt = RunService.Heartbeat:Wait()
+                    local passo = math.min(CONFIG_FARM.velocidade * dt, distancia)
+                    local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                -- ✅ MARCA COMO COLETADA
-                if alvo and not alvo:GetAttribute("Collected") then
-                    collectedCoins[alvo] = true
+                    c:PivotTo(CFrame.new(novaPos))
                 end
             else
-                -- Nenhuma moeda → limpa lista e espera
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
             end
