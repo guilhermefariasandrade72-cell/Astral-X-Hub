@@ -135,6 +135,15 @@ _G.CameraNoClip = false
 local JogadorSelecionadoTP = nil
 local DropdownJogadores = nil
 
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local LoopServerHop = false
+local RejoinAtivo = false
+local AutoHopTimerAtivo = false
+local TempoEsperaMinutos = 30
+local AutoHopThread = nil
+
 -- ==================================
 -- VARIÁVEIS DA ABA CONFIG UI
 -- ==================================
@@ -1287,6 +1296,58 @@ end
 Players.PlayerAdded:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
 Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
 
+
+
+local function ServerHop()
+    local placeId = game.PlaceId
+    local currentJobId = game.JobId
+
+    pcall(function()
+        local servers = {}
+        local req = HttpService:JSONDecode(game:HttpGet("https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Asc&limit=100"))
+        
+        if req and req.data then
+            for _, server in ipairs(req.data) do
+                if type(server) == "table" and server.id ~= currentJobId and server.playing < server.maxPlayers then
+                    table.insert(servers, server.id)
+                end
+            end
+        end
+
+        if #servers > 0 then
+            TeleportService:TeleportToPlaceInstance(placeId, servers[math.random(1, #servers)], player)
+        else
+            TeleportService:Teleport(placeId, player)
+        end
+    end)
+end
+
+local function RejoinServer()
+    pcall(function()
+        if #Players:GetPlayers() <= 1 then
+            TeleportService:Teleport(game.PlaceId, player)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end
+    end)
+end
+
+local function IniciarTimerAutoHop()
+    if AutoHopThread then
+        task.cancel(AutoHopThread)
+        AutoHopThread = nil
+    end
+
+    if AutoHopTimerAtivo then
+        AutoHopThread = task.spawn(function()
+            task.wait(TempoEsperaMinutos * 60)
+            if AutoHopTimerAtivo then
+                ServerHop()
+            end
+        end)
+    end
+end
+
 -- ==================================
 -- SISTEMAS DA ABA CONFIG UI
 -- ==================================
@@ -1561,5 +1622,52 @@ Sec_Teleporte:Button({
         and player.Character and player.Character:FindFirstChild("HumanoidRootPart") then
             player.Character:PivotTo(alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0))
         end
+    end
+})
+
+local Sec_TrocarServidor = Aba_Tele:Section({Title = "Trocar de servidor"})
+
+Sec_TrocarServidor:Toggle({
+    Title = "Ir para outro servidor",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            ServerHop()
+        end
+    end
+})
+
+Sec_TrocarServidor:Toggle({
+    Title = "Reentrar no servidor",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            RejoinServer()
+        end
+    end
+})
+
+Sec_TrocarServidor:Input({
+    Title = "Tempo de Espera (Minutos)",
+    Default = "30",
+    Numeric = true,
+    Finished = true,
+    Callback = function(Texto)
+        local num = tonumber(Texto)
+        if num and num > 0 then
+            TempoEsperaMinutos = num
+            if AutoHopTimerAtivo then
+                IniciarTimerAutoHop()
+            end
+        end
+    end
+})
+
+Sec_TrocarServidor:Toggle({
+    Title = "Trocar de servidor após tempo",
+    Default = false,
+    Callback = function(Ativo)
+        AutoHopTimerAtivo = Ativo
+        IniciarTimerAutoHop()
     end
 })
