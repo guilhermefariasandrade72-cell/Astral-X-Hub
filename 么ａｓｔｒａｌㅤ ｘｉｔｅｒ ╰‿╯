@@ -165,22 +165,47 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 
 -- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
     velocidade = 16,
-    limite = 40,
     alcance_maximo = 500,
-    offsetY = -3.0,
-    hitboxSize = Vector3.new(10, 20, 10) -- Tamanho expandido da hitbox da moeda (X, Y, Z)
+    offsetY = -3.0,                      -- Distancia abaixo da moeda
+    hitboxSize = Vector3.new(15, 20, 13)  -- Tamanho expandido da moeda
 }
 
 local AutoFarmAtivo = false
+local BolsaCheia = false
 local collectedCoins = {}
 
--- 1. Verificacao precisa de Partida
+-- ==================================
+-- DETECTOR DE BOLSA CHEIA VIA REMOTES (MM2 NATIVO)
+-- ==================================
+task.spawn(function()
+    local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
+    if Remotes then
+        local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
+        if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
+            coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
+                -- Verifica se quem coletou foi o jogador local
+                if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
+                    if tonumber(atual) and tonumber(maximo) then
+                        if tonumber(atual) >= tonumber(maximo) then
+                            BolsaCheia = true
+                        else
+                            BolsaCheia = false
+                        end
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- 1. Verificacao de Partida
 local function EmPartida()
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then 
@@ -204,16 +229,7 @@ local function EmPartida()
     return false
 end
 
--- 2. Leitura de Moedas na Mochila
-local function QuantidadeMochila()
-    local ok, n = pcall(function()
-        local g = player.PlayerGui:WaitForChild("MainGUI", 2)
-        return tonumber(g.Game.CoinBags.Container.SnowToken.CurrencyFrame.Icon.Coins.Text) or 0
-    end)
-    return ok and n or 0
-end
-
--- 3. Procura a moeda mais proxima e AUMENTA A HITBOX dela
+-- 2. Procura a moeda mais proxima e expande a hitbox dela
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
@@ -227,10 +243,10 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
-            -- EXPANSÃO DA HITBOX: Aumenta o tamanho da moeda e deixa invisivel/transparente se necessario
+            -- Expande a hitbox no cliente sem atrapalhar o visual
             if moeda.Size ~= CONFIG_FARM.hitboxSize then
                 moeda.Size = CONFIG_FARM.hitboxSize
-                moeda.Transparency = 1 -- Torna a caixa gigante invisivel para nao poluir a tela
+                moeda.Transparency = 1
                 moeda.CanCollide = false
             end
 
@@ -244,7 +260,7 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 4. LOOP PRINCIPAL DO AUTO FARM (COM HITBOX EXPANDIDA)
+-- 3. LOOP PRINCIPAL DO AUTO FARM
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -252,20 +268,21 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
+            -- Se nao estiver em partida, restaura postura e reseta estados
             if not EmPartida() or not hrp or not humanoid then
                 if humanoid then humanoid.PlatformStand = false end
+                BolsaCheia = false
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
                 continue
             end
 
-            local atual = QuantidadeMochila()
-            if atual >= CONFIG_FARM.limite then
+            -- Se o evento CoinCollected detectou que a bolsa encheu
+            if BolsaCheia then
                 humanoid.PlatformStand = false
                 repeat
                     RunService.Heartbeat:Wait()
-                    atual = QuantidadeMochila()
-                until atual < CONFIG_FARM.limite or not AutoFarmAtivo or not EmPartida()
+                until not BolsaCheia or not AutoFarmAtivo or not EmPartida()
                 table.clear(collectedCoins)
                 continue
             end
@@ -274,7 +291,7 @@ task.spawn(function()
 
             if alvo then
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
-                and QuantidadeMochila() < CONFIG_FARM.limite 
+                and not BolsaCheia 
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
@@ -293,12 +310,12 @@ task.spawn(function()
                     local direcao = (posAlvoAjustada - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Como a hitbox agora e maior, a distancia de coleta (1.5) vai acionar muito mais rapido
                     if distancia <= 1.5 then
                         collectedCoins[alvo] = true
                         break
                     end
 
+                    -- Fica deitado de costas olhando para cima
                     humanoid.PlatformStand = true
 
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
@@ -318,6 +335,7 @@ task.spawn(function()
             local c = player.Character
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             if humanoid then humanoid.PlatformStand = false end
+            BolsaCheia = false
             RunService.Heartbeat:Wait()
         end
     end
