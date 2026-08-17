@@ -161,22 +161,50 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- SISTEMAS DA ABA MAIN (CORRIGIDO: COLETA E MOCHILA)
 -- ==================================
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+
+-- Configuracoes Base do Auto Farm
+local CONFIG_FARM = {
+    velocidade = 16, -- Valor padrao inicial (16 a 20)
+    limite = 40,
+    alcance_maximo = 500
+}
+
+local AutoFarmAtivo = false
+local collectedCoins = {}
+
+-- 1. Verificacao precisa de Partida
 local function EmPartida()
     local c = player.Character
-    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then 
+        return false 
+    end
     
-    -- Verifica se o jogador está spawnado dentro do mapa de jogo (fora do Lobby)
     local hrp = c:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
 
+    -- Se nao houver moedas ativas, considera fora de partida
+    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    if not CoinContainer or #CoinContainer:GetChildren() == 0 then
+        return false
+    end
+
+    -- Checa se existe outro jogador vivo
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
             return true
         end
     end
+
     return false
 end
 
+-- 2. Leitura de Moedas na Mochila
 local function QuantidadeMochila()
     local ok, n = pcall(function()
         local g = player.PlayerGui:WaitForChild("MainGUI", 2)
@@ -185,6 +213,7 @@ local function QuantidadeMochila()
     return ok and n or 0
 end
 
+-- 3. Procura a moeda mais proxima
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
@@ -208,7 +237,7 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 📌 LOOP PRINCIPAL: MOVEMENTO DEITADO OLHANDO PARA CIMA + VERIFICAÇÃO DE PARTIDA
+-- 4. LOOP PRINCIPAL DO AUTO FARM
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -216,7 +245,7 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se não estiver em partida ou não tiver personagem válido, cancela o movimento e levanta
+            -- Se nao estiver em partida, desativa o modo deitado e aguarda
             if not EmPartida() or not hrp or not humanoid then
                 if humanoid then humanoid.PlatformStand = false end
                 table.clear(collectedCoins)
@@ -224,6 +253,7 @@ task.spawn(function()
                 continue
             end
 
+            -- Trava se a bolsa estiver cheia
             local atual = QuantidadeMochila()
             if atual >= CONFIG_FARM.limite then
                 humanoid.PlatformStand = false
@@ -235,11 +265,9 @@ task.spawn(function()
                 continue
             end
 
-            -- Busca o alvo inicial
             local alvo = getNearestCoin(hrp.Position)
 
             if alvo then
-                -- Loop de movimentação contínua deitado
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and QuantidadeMochila() < CONFIG_FARM.limite 
                 and not alvo:GetAttribute("Collected") 
@@ -247,7 +275,7 @@ task.spawn(function()
                     
                     local minhaPosAtual = hrp.Position
                     
-                    -- CHECAGEM DINÂMICA: Troca pela moeda mais próxima
+                    -- Recalcula se surgiu moeda mais proxima
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -261,20 +289,22 @@ task.spawn(function()
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Se chegou na moeda
                     if distancia <= 1.5 then
                         collectedCoins[alvo] = true
                         break
                     end
 
-                    -- Deita o personagem com as costas no chão e a frente virada para cima
+                    -- Aplica estado deitado olhando para cima
                     humanoid.PlatformStand = true
 
+                    -- LER VELOCIDADE DINAMICA: Garante que respeita o Slider (Limitado entre 16 e 20)
+                    local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
+
                     local dt = RunService.Heartbeat:Wait()
-                    local passo = math.min(CONFIG_FARM.velocidade * dt, distancia)
+                    local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    -- CFrame ajustado em +90 graus no eixo X para ficar deitado olhando para cima
+                    -- Rotacao deitado de costas (costas no chao, barriga/olhos para cima)
                     hrp.CFrame = CFrame.new(novaPos) * CFrame.Angles(math.rad(90), 0, 0)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
