@@ -137,6 +137,12 @@ local TeleportandoLocais = false
 local JogadorSelecionadoTP = nil
 local DropdownJogadores = nil
 
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local EmCooldownHop = false
+local ServidoresVisitados = {}
+
 
 -- ==================================
 -- VARIÁVEIS DA ABA CONFIG UI
@@ -1355,6 +1361,69 @@ local function TeleportarPorCargo(cargoBusca)
     end
 end
 
+local function ExecutarServerHop()
+    if EmCooldownHop then return end
+    EmCooldownHop = true
+
+    local placeId = game.PlaceId
+    local currentJobId = game.JobId
+    local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Desc&limit=100"
+
+    task.spawn(function()
+        local sucesso, resposta = pcall(function()
+            return game:HttpGet(url)
+        end)
+
+        if sucesso and resposta then
+            local dados = HttpService:JSONDecode(resposta)
+            if dados and dados.data then
+                local servidoresValidos = {}
+
+                for _, server in ipairs(dados.data) do
+                    if type(server) == "table" 
+                    and server.id ~= currentJobId 
+                    and server.playing < server.maxPlayers 
+                    and not ServidoresVisitados[server.id] then
+                        table.insert(servidoresValidos, server.id)
+                    end
+                end
+
+                if #servidoresValidos > 0 then
+                    local servidorEscolhido = servidoresValidos[math.random(1, #servidoresValidos)]
+                    ServidoresVisitados[servidorEscolhido] = true
+                    
+                    TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
+                else
+                    -- Se visitou todos, limpa o histórico e tenta de novo
+                    table.clear(ServidoresVisitados)
+                    TeleportService:Teleport(placeId, player)
+                end
+            end
+        else
+            TeleportService:Teleport(placeId, player)
+        end
+
+        task.wait(3)
+        EmCooldownHop = false
+    end)
+end
+
+local function ExecutarRejoin()
+    if EmCooldownHop then return end
+    EmCooldownHop = true
+
+    task.spawn(function()
+        if #Players:GetPlayers() <= 1 then
+            TeleportService:Teleport(game.PlaceId, player)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end
+
+        task.wait(3)
+        EmCooldownHop = false
+    end)
+end
+
 -- ==================================
 -- SISTEMAS DA ABA CONFIG UI
 -- ==================================
@@ -1686,5 +1755,21 @@ Sec_TPMapaLobby:Button({
         if posLobby then
             TeleportarPara(posLobby)
         end
+    end
+})
+
+local Sec_ServerHop = Aba_Tele:Section({Title = "Server Hop"})
+
+Sec_ServerHop:Button({
+    Title = "Trocar de Servidor",
+    Callback = function()
+        ExecutarServerHop()
+    end
+})
+
+Sec_ServerHop:Button({
+    Title = "Reentrar no Servidor",
+    Callback = function()
+        ExecutarRejoin()
     end
 })
