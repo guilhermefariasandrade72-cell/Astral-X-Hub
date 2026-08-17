@@ -171,9 +171,9 @@ local player = Players.LocalPlayer
 
 -- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 16,                     -- Respeita o slider (16 a 20)
+    velocidade = 20,                     -- Respeita o slider (16 a 20)
     alcance_maximo = 500,
-    offsetY = -1.5,                      -- Distância abaixo da moeda
+    offsetY = -1.9,                      -- Distância abaixo da moeda
     hitboxSize = Vector3.new(10, 10, 10)  -- Hitbox expandida da moeda
 }
 
