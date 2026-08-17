@@ -134,6 +134,9 @@ _G.CameraNoClip = false
 -- ==================================
 local TeleportandoLocais = false
 
+local JogadorSelecionadoTP = nil
+local DropdownJogadores = nil
+
 
 -- ==================================
 -- VARIÁVEIS DA ABA CONFIG UI
@@ -1313,6 +1316,44 @@ local function GetLobbySpawn()
     return nil
 end
 
+local function PegarListaJogadores()
+    local lista = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+    table.sort(lista)
+    return lista
+end
+
+local function TeleportarParaPlayer(alvo)
+    if alvo and alvo.Character and alvo.Character:FindFirstChild("HumanoidRootPart") then
+        local meuChar = player.Character
+        local meuHRP = meuChar and meuChar:FindFirstChild("HumanoidRootPart")
+        if meuHRP then
+            meuHRP.CFrame = alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+end
+
+local function TeleportarPorCargo(cargoBusca)
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return end
+    
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local info = Data[p.Name]
+            if info and not info.Killed and not info.Dead and info.Role == cargoBusca then
+                TeleportarParaPlayer(p)
+                break
+            end
+        end
+    end
+end
 
 -- ==================================
 -- SISTEMAS DA ABA CONFIG UI
@@ -1577,6 +1618,55 @@ Sec_Camera:Slider({
 -- ==================================
 -- BOTOES DA ABA TELEPORTE
 -- ==================================
+local Sec_TPPlayer = Aba_Tele:Section({Title = "Teleporta para player"})
+
+local function CriarDropdownJogadores()
+    if DropdownJogadores then
+        pcall(function() DropdownJogadores:Destroy() end)
+    end
+    DropdownJogadores = Sec_TPPlayer:Dropdown({
+        Title = "Escolha um jogador",
+        Values = PegarListaJogadores(),
+        Default = "",
+        Callback = function(nome)
+            JogadorSelecionadoTP = nome
+        end
+    })
+end
+
+-- Atualiza a lista automaticamente quando alguém entra ou sai
+Players.PlayerAdded:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
+Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
+
+-- Criar a lista inicial
+CriarDropdownJogadores()
+
+Sec_TPPlayer:Button({
+    Title = "TP Player Selecionado",
+    Callback = function()
+        if JogadorSelecionadoTP then
+            local alvo = Players:FindFirstChild(JogadorSelecionadoTP)
+            if alvo then
+                TeleportarParaPlayer(alvo)
+            end
+        end
+    end
+})
+
+Sec_TPPlayer:Button({
+    Title = "TP Murderer",
+    Callback = function()
+        TeleportarPorCargo("Murderer")
+    end
+})
+
+Sec_TPPlayer:Button({
+    Title = "TP Xerife",
+    Callback = function()
+        TeleportarPorCargo("Sheriff")
+    end
+})
+
 local Sec_TPMapaLobby = Aba_Tele:Section({Title = "TP Mapa & Lobby"})
 
 Sec_TPMapaLobby:Button({
