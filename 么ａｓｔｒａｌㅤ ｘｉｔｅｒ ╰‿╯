@@ -779,7 +779,7 @@ local function CreateKillAllButton()
     local Texto = Instance.new("TextLabel")
     Texto.Size = UDim2.new(1, 0, 1, 0)
     Texto.BackgroundTransparency = 1
-    Texto.Text = "Kill All 💀"
+    Texto.Text = "Kill All"
     Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
     Texto.TextSize = 15
     Texto.Font = Enum.Font.GothamBold
@@ -1361,46 +1361,47 @@ local function TeleportarPorCargo(cargoBusca)
     end
 end
 
+
+
 local function ExecutarServerHop()
     if EmCooldownHop then return end
     EmCooldownHop = true
 
     local placeId = game.PlaceId
     local currentJobId = game.JobId
-    local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Desc&limit=100"
 
     task.spawn(function()
         local sucesso, resposta = pcall(function()
-            return game:HttpGet(url)
+            return game:HttpGet("https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Asc&limit=100")
         end)
 
         if sucesso and resposta then
             local dados = HttpService:JSONDecode(resposta)
             if dados and dados.data then
-                local servidoresValidos = {}
+                local servidoresOutros = {}
 
                 for _, server in ipairs(dados.data) do
                     if type(server) == "table" 
                     and server.id ~= currentJobId 
                     and server.playing < server.maxPlayers 
                     and not ServidoresVisitados[server.id] then
-                        table.insert(servidoresValidos, server.id)
+                        table.insert(servidoresOutros, server.id)
                     end
                 end
 
-                if #servidoresValidos > 0 then
-                    local servidorEscolhido = servidoresValidos[math.random(1, #servidoresValidos)]
+                if #servidoresOutros > 0 then
+                    local servidorEscolhido = servidoresOutros[math.random(1, #servidoresOutros)]
                     ServidoresVisitados[servidorEscolhido] = true
-                    
                     TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
                 else
-                    -- Se visitou todos, limpa o histórico e tenta de novo
+                    -- Se já passou por todos da lista, limpa o histórico (menos o atual) e tenta novamente
                     table.clear(ServidoresVisitados)
-                    TeleportService:Teleport(placeId, player)
+                    ServidoresVisitados[currentJobId] = true
+                    EmCooldownHop = false
+                    ExecutarServerHop()
+                    return
                 end
             end
-        else
-            TeleportService:Teleport(placeId, player)
         end
 
         task.wait(3)
@@ -1413,12 +1414,7 @@ local function ExecutarRejoin()
     EmCooldownHop = true
 
     task.spawn(function()
-        if #Players:GetPlayers() <= 1 then
-            TeleportService:Teleport(game.PlaceId, player)
-        else
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
-        end
-
+        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
         task.wait(3)
         EmCooldownHop = false
     end)
