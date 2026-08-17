@@ -1371,13 +1371,15 @@ local function ExecutarServerHop()
     local currentJobId = game.JobId
 
     task.spawn(function()
+        -- Usando RoProxy para evitar bloqueio no mobile
+        local url = "https://games.roproxy.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Asc&limit=100"
         local sucesso, resposta = pcall(function()
-            return game:HttpGet("https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Asc&limit=100")
+            return game:HttpGet(url)
         end)
 
         if sucesso and resposta then
-            local dados = HttpService:JSONDecode(resposta)
-            if dados and dados.data then
+            local okDecode, dados = pcall(function() return HttpService:JSONDecode(resposta) end)
+            if okDecode and dados and dados.data then
                 local servidoresOutros = {}
 
                 for _, server in ipairs(dados.data) do
@@ -1392,16 +1394,19 @@ local function ExecutarServerHop()
                 if #servidoresOutros > 0 then
                     local servidorEscolhido = servidoresOutros[math.random(1, #servidoresOutros)]
                     ServidoresVisitados[servidorEscolhido] = true
-                    TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
+                    
+                    pcall(function()
+                        TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
+                    end)
                 else
-                    -- Se já passou por todos da lista, limpa o histórico (menos o atual) e tenta novamente
                     table.clear(ServidoresVisitados)
                     ServidoresVisitados[currentJobId] = true
-                    EmCooldownHop = false
-                    ExecutarServerHop()
-                    return
+                    TeleportService:Teleport(placeId, player)
                 end
             end
+        else
+            -- Fallback padrão
+            TeleportService:Teleport(placeId, player)
         end
 
         task.wait(3)
@@ -1414,7 +1419,16 @@ local function ExecutarRejoin()
     EmCooldownHop = true
 
     task.spawn(function()
-        TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        pcall(function()
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end)
+        
+        task.wait(2)
+        -- Caso o TeleportToPlaceInstance falhe no Rejoin, usa a chamada simples
+        pcall(function()
+            TeleportService:Teleport(game.PlaceId, player)
+        end)
+
         task.wait(3)
         EmCooldownHop = false
     end)
