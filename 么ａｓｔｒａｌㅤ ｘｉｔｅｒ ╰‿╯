@@ -317,7 +317,7 @@ local function CreateAutoFarmButton()
     local Texto = Instance.new("TextLabel")
     Texto.Size = UDim2.new(1, 0, 1, 0)
     Texto.BackgroundTransparency = 1
-    Texto.Text = "Auto Farm"
+    Texto.Text = "Auto Farm Coin"
     Texto.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto preto no fundo branco
     Texto.TextSize = 14
     Texto.Font = Enum.Font.GothamBold
@@ -1369,43 +1369,39 @@ local function ExecutarServerHop()
 
     local placeId = game.PlaceId
     local currentJobId = game.JobId
+    local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Desc&limit=100"
 
     task.spawn(function()
-        -- Usando RoProxy para evitar bloqueio no mobile
-        local url = "https://games.roproxy.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Asc&limit=100"
         local sucesso, resposta = pcall(function()
             return game:HttpGet(url)
         end)
 
         if sucesso and resposta then
-            local okDecode, dados = pcall(function() return HttpService:JSONDecode(resposta) end)
-            if okDecode and dados and dados.data then
-                local servidoresOutros = {}
+            local dados = HttpService:JSONDecode(resposta)
+            if dados and dados.data then
+                local servidoresValidos = {}
 
                 for _, server in ipairs(dados.data) do
                     if type(server) == "table" 
                     and server.id ~= currentJobId 
                     and server.playing < server.maxPlayers 
                     and not ServidoresVisitados[server.id] then
-                        table.insert(servidoresOutros, server.id)
+                        table.insert(servidoresValidos, server.id)
                     end
                 end
 
-                if #servidoresOutros > 0 then
-                    local servidorEscolhido = servidoresOutros[math.random(1, #servidoresOutros)]
+                if #servidoresValidos > 0 then
+                    local servidorEscolhido = servidoresValidos[math.random(1, #servidoresValidos)]
                     ServidoresVisitados[servidorEscolhido] = true
                     
-                    pcall(function()
-                        TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
-                    end)
+                    TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
                 else
+                    -- Se visitou todos, limpa o histórico e tenta de novo
                     table.clear(ServidoresVisitados)
-                    ServidoresVisitados[currentJobId] = true
                     TeleportService:Teleport(placeId, player)
                 end
             end
         else
-            -- Fallback padrão
             TeleportService:Teleport(placeId, player)
         end
 
@@ -1419,15 +1415,11 @@ local function ExecutarRejoin()
     EmCooldownHop = true
 
     task.spawn(function()
-        pcall(function()
-            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
-        end)
-        
-        task.wait(2)
-        -- Caso o TeleportToPlaceInstance falhe no Rejoin, usa a chamada simples
-        pcall(function()
+        if #Players:GetPlayers() <= 1 then
             TeleportService:Teleport(game.PlaceId, player)
-        end)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end
 
         task.wait(3)
         EmCooldownHop = false
@@ -1447,7 +1439,7 @@ end
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
-    Title = "Auto Farm ( Botao )",
+    Title = "Botão Auto Farm Coin",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1459,7 +1451,7 @@ Sec_AutoFarm:Toggle({
 })
 
 Sec_AutoFarm:Toggle({
-    Title = "Auto Farm",
+    Title = "Auto Farm Coin",
     Default = false,
     Callback = function(Ativo)
         AutoFarmAtivo = Ativo
@@ -1467,7 +1459,7 @@ Sec_AutoFarm:Toggle({
 })
 
 Sec_AutoFarm:Slider({
-    Title = "Velocidade Farm",
+    Title = "Speed Auto Farm",
     Value = {Min = 16, Max = 20, Default = 20, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
@@ -1477,7 +1469,7 @@ Sec_AutoFarm:Slider({
 local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
 
 Sec_Xerife:Toggle({
-    Title = "Shoot Murderer",
+    Title = " Botão Shoot Murderer",
     Default = false,
     Callback = function(Ativo)
         AutoShoot = Ativo
@@ -1490,7 +1482,7 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "Grab Gun (Botão na Tela)",
+    Title = "Botão Grab Gun",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1512,7 +1504,7 @@ Sec_Xerife:Toggle({
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 Sec_Murderer:Toggle({
-    Title = "Botão Kill All (Tela)",
+    Title = "Botão Kill All",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1532,7 +1524,7 @@ Sec_Murderer:Toggle({
 })
 
 Sec_Murderer:Button({
-    Title = "Kill All Instantâneo 💀",
+    Title = "Kill All Instantâneo",
     Callback = function()
         KillAllInstantaneo()
     end
@@ -1594,7 +1586,7 @@ Sec_ESP:Toggle({
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
 Sec_Movimento:Slider({
-    Title = "Velocidade",
+    Title = "Speed",
     Value = {Min = 16, Max = 30, Default = 16, Step = 1},
     Callback = function(Valor)
         VelocidadePadrao = Valor
@@ -1606,7 +1598,7 @@ Sec_Movimento:Slider({
 })
 
 Sec_Movimento:Slider({
-    Title = "Força de Pulo",
+    Title = "Jump",
     Value = {Min = 50, Max = 75, Default = 50, Step = 1},
     Callback = function(Valor)
         ForcaPuloPadrao = Valor
@@ -1619,7 +1611,7 @@ Sec_Movimento:Slider({
 })
 
 Sec_Movimento:Toggle({
-    Title = "Walk Fling (Delta Max)",
+    Title = "Walk Fling",
     Default = false,
     Callback = function(Ativo)
         ToggleWalkFling(Ativo)
@@ -1627,7 +1619,7 @@ Sec_Movimento:Toggle({
 })
 
 Sec_Movimento:Toggle({
-    Title = "Fly (Mobile Smooth)",
+    Title = "Fly",
     Default = false,
     Callback = function(Ativo)
         ToggleFly(Ativo)
@@ -1635,7 +1627,7 @@ Sec_Movimento:Toggle({
 })
 
 Sec_Movimento:Slider({
-    Title = "Velocidade do Fly",
+    Title = "Fly Speed",
     Value = {Min = 16, Max = 100, Default = 16, Step = 1},
     Callback = function(Valor)
         FlyVelocidade = Valor
@@ -1643,7 +1635,7 @@ Sec_Movimento:Slider({
 })
 
 Sec_Movimento:Toggle({
-    Title = "Pulo Infinito",
+    Title = "Infinite Jump",
     Default = false,
     Callback = function(Ativo)
         _G.PuloInfinito = Ativo
@@ -1651,7 +1643,7 @@ Sec_Movimento:Toggle({
 })
 
 Sec_Movimento:Toggle({
-    Title = "Velocidade no Pulo",
+    Title = "Speed glith",
     Default = false,
     Callback = function(Ativo)
         _G.SpeedNoPulo = Ativo
@@ -1662,7 +1654,7 @@ local Sec_Camera = Aba_Local:Section({Title = "Câmera"})
 
 -- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
 Sec_Camera:Toggle({
-    Title = "Câmera Infinita",
+    Title = "Infinite Zum",
     Default = false,
     Callback = function(Ativo)
         _G.CameraInfinita = Ativo
@@ -1678,7 +1670,7 @@ Sec_Camera:Toggle({
 })
 
 Sec_Camera:Toggle({
-    Title = "Câmera Sem Bloqueio",
+    Title = "Noclip camera",
     Default = false,
     Callback = function(Ativo)
         _G.CameraNoClip = Ativo
@@ -1686,7 +1678,7 @@ Sec_Camera:Toggle({
 })
 
 Sec_Camera:Slider({
-    Title = "Campo de Visão (FOV)",
+    Title = "Fov",
     Value = {Min = 70, Max = 130, Default = 70, Step = 1},
     Callback = function(Valor)
         FOV_Padrao = Valor
