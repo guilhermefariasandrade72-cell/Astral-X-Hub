@@ -132,6 +132,7 @@ _G.CameraNoClip = false
 -- ==================================
 -- VARIÁVEIS DA ABA TELEPORTE 
 -- ==================================
+local TeleportandoLocais = false
 
 
 -- ==================================
@@ -1256,6 +1257,61 @@ end)
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
 -- ==================================
+local function TeleportarPara(posicaoCFrame)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = posicaoCFrame
+    end
+end
+
+local function GetMapSpawn()
+    -- Procura o container do mapa atual no Workspace
+    local coinContainer = workspace:FindFirstChild("CoinContainer", true)
+    if coinContainer and coinContainer.Parent then
+        local map = coinContainer.Parent
+        local spawns = map:FindFirstChild("Spawns") or map:FindFirstChild("Spawn")
+        
+        if spawns then
+            local partesSpawn = spawns:GetChildren()
+            if #partesSpawn > 0 then
+                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+        
+        -- Caso não ache uma pasta de spawns, usa a posição central do próprio mapa
+        if map:IsA("Model") then
+            local cf, _ = map:GetBoundingBox()
+            return cf + Vector3.new(0, 5, 0)
+        end
+    end
+    return nil
+end
+
+local function GetLobbySpawn()
+    local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyMap")
+    if lobby then
+        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn")
+        if spawns then
+            local partesSpawn = spawns:GetChildren()
+            if #partesSpawn > 0 then
+                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+        if lobby:IsA("Model") then
+            local cf, _ = lobby:GetBoundingBox()
+            return cf + Vector3.new(0, 5, 0)
+        end
+    end
+    
+    -- Fallback para o SpawnLocation padrão do Roblox no jogo
+    local defaultSpawn = workspace:FindFirstChildOfClass("SpawnLocation")
+    if defaultSpawn then
+        return defaultSpawn.CFrame + Vector3.new(0, 3, 0)
+    end
+    
+    return nil
+end
 
 
 -- ==================================
@@ -1521,3 +1577,24 @@ Sec_Camera:Slider({
 -- ==================================
 -- BOTOES DA ABA TELEPORTE
 -- ==================================
+local Sec_TPMapaLobby = Aba_Tele:Section({Title = "TP Mapa & Lobby"})
+
+Sec_TPMapaLobby:Button({
+    Title = "TP Mapa",
+    Callback = function()
+        local posMapa = GetMapSpawn()
+        if posMapa then
+            TeleportarPara(posMapa)
+        end
+    end
+})
+
+Sec_TPMapaLobby:Button({
+    Title = "TP Lobby",
+    Callback = function()
+        local posLobby = GetLobbySpawn()
+        if posLobby then
+            TeleportarPara(posLobby)
+        end
+    end
+})
