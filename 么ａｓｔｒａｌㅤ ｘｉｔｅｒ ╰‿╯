@@ -170,10 +170,11 @@ local player = Players.LocalPlayer
 
 -- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 20,
+    velocidade = 16,
     limite = 40,
     alcance_maximo = 500,
-    offsetY = -1.7 -- Distancia abaixo da moeda (ajuste se precisar de mais ou menos)
+    offsetY = -1.5,
+    hitboxSize = Vector3.new(10, 10, 10) -- Tamanho expandido da hitbox da moeda (X, Y, Z)
 }
 
 local AutoFarmAtivo = false
@@ -212,7 +213,7 @@ local function QuantidadeMochila()
     return ok and n or 0
 end
 
--- 3. Procura a moeda mais proxima
+-- 3. Procura a moeda mais proxima e AUMENTA A HITBOX dela
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
@@ -226,6 +227,13 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
+            -- EXPANSÃO DA HITBOX: Aumenta o tamanho da moeda e deixa invisivel/transparente se necessario
+            if moeda.Size ~= CONFIG_FARM.hitboxSize then
+                moeda.Size = CONFIG_FARM.hitboxSize
+                moeda.Transparency = 1 -- Torna a caixa gigante invisivel para nao poluir a tela
+                moeda.CanCollide = false
+            end
+
             local distancia = (minhaPos - moeda.Position).Magnitude
             if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
                 menorDistancia = distancia
@@ -236,7 +244,7 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 4. LOOP PRINCIPAL DO AUTO FARM (COM OFFSET ABAIXO DA MOEDA)
+-- 4. LOOP PRINCIPAL DO AUTO FARM (COM HITBOX EXPANDIDA)
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -281,11 +289,11 @@ task.spawn(function()
                         break
                     end
 
-                    -- Posicao do alvo ajustada um pouco ABAIXO da moeda
                     local posAlvoAjustada = alvo.Position + Vector3.new(0, CONFIG_FARM.offsetY, 0)
                     local direcao = (posAlvoAjustada - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
+                    -- Como a hitbox agora e maior, a distancia de coleta (1.5) vai acionar muito mais rapido
                     if distancia <= 1.5 then
                         collectedCoins[alvo] = true
                         break
@@ -298,7 +306,6 @@ task.spawn(function()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    -- Rotacao deitado de costas olhando para cima
                     hrp.CFrame = CFrame.new(novaPos) * CFrame.Angles(math.rad(90), 0, 0)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
