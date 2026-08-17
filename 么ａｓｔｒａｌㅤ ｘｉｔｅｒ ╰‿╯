@@ -159,7 +159,7 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 -- ==================================
--- SISTEMAS DA ABA MAIN
+-- SISTEMAS DA ABA MAIN (AUTOFARM ATUALIZADO)
 -- ==================================
 local function EmPartida()
     local c = player.Character
@@ -175,25 +175,46 @@ end
 local function QuantidadeMochila()
     local ok, n = pcall(function()
         local g = player.PlayerGui:WaitForChild("MainGUI", 2)
-        return tonumber(g.Game.CoinBags.Container.SnowToken.CurrencyFrame.Icon.Coins.Text) or 0
+        local coinText = g.Game.CoinBags.Container.SnowToken.CurrencyFrame.Icon.Coins.Text
+        return tonumber(coinText) or 0
     end)
     return ok and n or 0
 end
 
+local function GetPosicaoEspera()
+    local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyMap")
+    if lobby then
+        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn")
+        if spawns and #spawns:GetChildren() > 0 then
+            return spawns:GetChildren()[1].CFrame + Vector3.new(0, 5, 0)
+        end
+        if lobby:IsA("Model") then
+            local cf, _ = lobby:GetBoundingBox()
+            return cf + Vector3.new(0, 10, 0)
+        end
+    end
+    
+    local defaultSpawn = workspace:FindFirstChildOfClass("SpawnLocation")
+    if defaultSpawn then
+        return defaultSpawn.CFrame + Vector3.new(0, 5, 0)
+    end
+    
+    return CFrame.new(0, 500, 0)
+end
+
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
-    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    local CoinContainer = workspace:FindFirstChild("CoinContainer", true)
     if not CoinContainer then return nil end
 
     for _, moeda in ipairs(CoinContainer:GetChildren()) do
-        if moeda:IsA("BasePart") 
-        and moeda.Name == "Coin_Server"
-        and moeda:FindFirstChild("TouchInterest") 
-        and moeda:FindFirstChild("CoinVisual")
+        if (moeda:IsA("BasePart") or moeda:IsA("Model"))
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
-            local distancia = (minhaPos - moeda.Position).Magnitude
+            local posMoeda = moeda:IsA("Model") and moeda:GetPivot().Position or moeda.Position
+            local distancia = (minhaPos - posMoeda).Magnitude
+            
             if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
                 menorDistancia = distancia
                 melhorMoeda = moeda
@@ -203,78 +224,92 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 📌 LOOP PRINCIPAL CORRIGIDO COM RECALCULO EM TEMPO REAL
+-- LOOP PRINCIPAL DO AUTO FARM (USA A VELOCIDADE DO SLIDER E DEITA O JOGADOR)
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
-            if not EmPartida() then
+            local c = player.Character
+            local hrp = c and c:FindFirstChild("HumanoidRootPart")
+            local humanoid = c and c:FindFirstChildOfClass("Humanoid")
+
+            if not EmPartida() or not hrp or not humanoid then
+                if humanoid then humanoid.PlatformStand = false end
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
                 continue
             end
 
+            -- Checagem de mochila cheia (usa CONFIG_FARM.limite)
             local atual = QuantidadeMochila()
             if atual >= CONFIG_FARM.limite then
+                humanoid.PlatformStand = false
+                hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                
+                -- Teleporta para o lugar seguro e aguarda a próxima partida
+                hrp.CFrame = GetPosicaoEspera()
+
                 repeat
                     RunService.Heartbeat:Wait()
                     atual = QuantidadeMochila()
                 until atual < CONFIG_FARM.limite or not AutoFarmAtivo or not EmPartida()
+                
                 table.clear(collectedCoins)
                 continue
             end
 
-            local c = player.Character
-            if not c or not c.PrimaryPart then
-                RunService.Heartbeat:Wait()
-                continue
-            end
-
-            -- Busca o alvo inicial
-            local alvo = getNearestCoin(c.PrimaryPart.Position)
+            -- Busca a moeda mais próxima
+            local alvo = getNearestCoin(hrp.Position)
 
             if alvo then
-                -- Loop de movimentação contínua
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and QuantidadeMochila() < CONFIG_FARM.limite 
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
-                    local minhaPosAtual = c.PrimaryPart.Position
+                    local minhaPosAtual = hrp.Position
                     
-                    -- 🔄 CHECAGEM DINÂMICA: Verifica se surgiu alguma outra moeda MAIS PERTO da posição atual
+                    -- Troca dinâmica de moeda no meio do caminho
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
-                        -- Troca de alvo imediatamente no meio do caminho!
                         alvo = novaMoedaProxima
                     end
 
-                    -- Se a moeda atual foi deletada do workspace por outro player
-                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
+                    if not alvo:IsDescendantOf(workspace) or alvo:GetAttribute("Collected") then
                         break
                     end
 
-                    local posAlvo = alvo.Position
-                    local direcao = (posAlvo - minhaPosAtual)
+                    local posMoeda = alvo:IsA("Model") and alvo:GetPivot().Position or alvo.Position
+                    local posAbaixo = posMoeda - Vector3.new(0, 2.5, 0)
+                    local direcao = (posAbaixo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Se chegou na moeda
+                    -- Chegou na posição da moeda
                     if distancia <= 1.5 then
                         collectedCoins[alvo] = true
                         break
                     end
 
-                    -- Move em passos curtos frame a frame baseados na velocidade
+                    -- Deita o personagem virado para cima
+                    humanoid.PlatformStand = true
+
                     local dt = RunService.Heartbeat:Wait()
+                    -- Utiliza a velocidade definida pelo Slider (CONFIG_FARM.velocidade)
                     local passo = math.min(CONFIG_FARM.velocidade * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    c:PivotTo(CFrame.new(novaPos))
+                    -- Move mantendo a rotação deitado
+                    hrp.CFrame = CFrame.new(novaPos) * CFrame.Angles(math.rad(-90), 0, 0)
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
+                humanoid.PlatformStand = false
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
             end
         else
+            local c = player.Character
+            local humanoid = c and c:FindFirstChildOfClass("Humanoid")
+            if humanoid then humanoid.PlatformStand = false end
             RunService.Heartbeat:Wait()
         end
     end
