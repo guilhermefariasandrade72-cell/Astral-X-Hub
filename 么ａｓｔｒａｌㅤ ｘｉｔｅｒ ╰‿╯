@@ -173,7 +173,7 @@ local CONFIG_FARM = {
     velocidade = 20,
     limite = 40,
     alcance_maximo = 500,
-    offsetY = -0.8 -- Distancia abaixo da moeda (ajuste se precisar de mais ou menos)
+    offsetY = -2.0 -- Distancia abaixo da moeda (ajuste se precisar de mais ou menos)
 }
 
 local AutoFarmAtivo = false
