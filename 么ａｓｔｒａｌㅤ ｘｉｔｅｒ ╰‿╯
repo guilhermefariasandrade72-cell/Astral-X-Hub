@@ -173,8 +173,8 @@ local player = Players.LocalPlayer
 local CONFIG_FARM = {
     velocidade = 16,
     alcance_maximo = 500,
-    offsetY = -3.0,                      -- Distancia abaixo da moeda
-    hitboxSize = Vector3.new(15, 20, 13)  -- Tamanho expandido da moeda
+    offsetY = -2.8,                      -- Distancia abaixo da moeda
+    hitboxSize = Vector3.new(10, 20, 10)  -- Tamanho expandido da moeda
 }
 
 local AutoFarmAtivo = false
