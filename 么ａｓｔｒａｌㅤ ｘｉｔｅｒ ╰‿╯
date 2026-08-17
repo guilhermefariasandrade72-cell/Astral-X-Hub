@@ -170,9 +170,10 @@ local player = Players.LocalPlayer
 
 -- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 16, -- Valor padrao inicial (16 a 20)
+    velocidade = 20,
     limite = 40,
-    alcance_maximo = 500
+    alcance_maximo = 500,
+    offsetY = -1.5 -- Distancia abaixo da moeda (ajuste se precisar de mais ou menos)
 }
 
 local AutoFarmAtivo = false
@@ -188,13 +189,11 @@ local function EmPartida()
     local hrp = c:FindFirstChild("HumanoidRootPart")
     if not hrp then return false end
 
-    -- Se nao houver moedas ativas, considera fora de partida
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
     if not CoinContainer or #CoinContainer:GetChildren() == 0 then
         return false
     end
 
-    -- Checa se existe outro jogador vivo
     for _, p in pairs(Players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
             return true
@@ -237,7 +236,7 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 4. LOOP PRINCIPAL DO AUTO FARM
+-- 4. LOOP PRINCIPAL DO AUTO FARM (COM OFFSET ABAIXO DA MOEDA)
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -245,7 +244,6 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se nao estiver em partida, desativa o modo deitado e aguarda
             if not EmPartida() or not hrp or not humanoid then
                 if humanoid then humanoid.PlatformStand = false end
                 table.clear(collectedCoins)
@@ -253,7 +251,6 @@ task.spawn(function()
                 continue
             end
 
-            -- Trava se a bolsa estiver cheia
             local atual = QuantidadeMochila()
             if atual >= CONFIG_FARM.limite then
                 humanoid.PlatformStand = false
@@ -275,7 +272,6 @@ task.spawn(function()
                     
                     local minhaPosAtual = hrp.Position
                     
-                    -- Recalcula se surgiu moeda mais proxima
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -285,8 +281,9 @@ task.spawn(function()
                         break
                     end
 
-                    local posAlvo = alvo.Position
-                    local direcao = (posAlvo - minhaPosAtual)
+                    -- Posicao do alvo ajustada um pouco ABAIXO da moeda
+                    local posAlvoAjustada = alvo.Position + Vector3.new(0, CONFIG_FARM.offsetY, 0)
+                    local direcao = (posAlvoAjustada - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
                     if distancia <= 1.5 then
@@ -294,17 +291,14 @@ task.spawn(function()
                         break
                     end
 
-                    -- Aplica estado deitado olhando para cima
                     humanoid.PlatformStand = true
 
-                    -- LER VELOCIDADE DINAMICA: Garante que respeita o Slider (Limitado entre 16 e 20)
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
-
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    -- Rotacao deitado de costas (costas no chao, barriga/olhos para cima)
+                    -- Rotacao deitado de costas olhando para cima
                     hrp.CFrame = CFrame.new(novaPos) * CFrame.Angles(math.rad(90), 0, 0)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
