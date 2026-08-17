@@ -171,10 +171,10 @@ local player = Players.LocalPlayer
 
 -- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 16,
+    velocidade = 16,                     -- Respeita o slider (16 a 20)
     alcance_maximo = 500,
-    offsetY = -2.8,                      -- Distancia abaixo da moeda
-    hitboxSize = Vector3.new(10, 20, 10)  -- Tamanho expandido da moeda
+    offsetY = -1.5,                      -- Distância abaixo da moeda
+    hitboxSize = Vector3.new(10, 10, 10)  -- Hitbox expandida da moeda
 }
 
 local AutoFarmAtivo = false
@@ -182,7 +182,7 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- DETECTOR DE BOLSA CHEIA VIA REMOTES (MM2 NATIVO)
+-- 1. DETECTOR DE BOLSA CHEIA VIA REMOTES (MM2 NATIVO)
 -- ==================================
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
@@ -190,11 +190,11 @@ task.spawn(function()
         local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
         if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
             coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
-                -- Verifica se quem coletou foi o jogador local
+                -- Escuta a resposta do servidor para saber se fomos nós que coletamos
                 if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
                     if tonumber(atual) and tonumber(maximo) then
                         if tonumber(atual) >= tonumber(maximo) then
-                            BolsaCheia = true
+                            BolsaCheia = true  -- ✅ Bolsa cheia (40/40 ou 50/50 Elite)
                         else
                             BolsaCheia = false
                         end
@@ -205,31 +205,32 @@ task.spawn(function()
     end
 end)
 
--- 1. Verificacao de Partida
+-- ==================================
+-- 2. VERIFICAÇÃO DE PARTIDA COM ATRIBUTO "Alive" (OFICIAL DO MM2)
+-- ==================================
 local function EmPartida()
+    -- 📌 1. Checa o atributo 'Alive' diretamente no jogador (O mais importante!)
+    if player:GetAttribute("Alive") ~= true then
+        return false
+    end
+
+    -- 📌 2. Verifica se o personagem está totalmente carregado
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then 
         return false 
     end
     
     local hrp = c:FindFirstChild("HumanoidRootPart")
-    if not hrp then return false end
-
-    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
-    if not CoinContainer or #CoinContainer:GetChildren() == 0 then
-        return false
+    if not hrp then 
+        return false 
     end
 
-    for _, p in pairs(Players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("Humanoid") and p.Character.Humanoid.Health > 0 then
-            return true
-        end
-    end
-
-    return false
+    return true
 end
 
--- 2. Procura a moeda mais proxima e expande a hitbox dela
+-- ==================================
+-- 3. BUSCA MOEDA E EXPANDE HITBOX
+-- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
     local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
@@ -243,7 +244,7 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
-            -- Expande a hitbox no cliente sem atrapalhar o visual
+            -- Aumenta a hitbox transparente da moeda no lado do cliente
             if moeda.Size ~= CONFIG_FARM.hitboxSize then
                 moeda.Size = CONFIG_FARM.hitboxSize
                 moeda.Transparency = 1
@@ -260,7 +261,9 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
--- 3. LOOP PRINCIPAL DO AUTO FARM
+-- ==================================
+-- 4. LOOP PRINCIPAL DO AUTO FARM
+-- ==================================
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
@@ -268,7 +271,7 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se nao estiver em partida, restaura postura e reseta estados
+            -- Se "Alive" for false/nil (lobby/morto) -> Levanta o boneco e reseta
             if not EmPartida() or not hrp or not humanoid then
                 if humanoid then humanoid.PlatformStand = false end
                 BolsaCheia = false
@@ -277,7 +280,7 @@ task.spawn(function()
                 continue
             end
 
-            -- Se o evento CoinCollected detectou que a bolsa encheu
+            -- Bolsa cheia detectada pelo Remote Event -> Aguarda nova partida
             if BolsaCheia then
                 humanoid.PlatformStand = false
                 repeat
@@ -297,6 +300,7 @@ task.spawn(function()
                     
                     local minhaPosAtual = hrp.Position
                     
+                    -- Recalcula moeda mais próxima em tempo real
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -306,6 +310,7 @@ task.spawn(function()
                         break
                     end
 
+                    -- Posiciona um pouco abaixo da moeda
                     local posAlvoAjustada = alvo.Position + Vector3.new(0, CONFIG_FARM.offsetY, 0)
                     local direcao = (posAlvoAjustada - minhaPosAtual)
                     local distancia = direcao.Magnitude
@@ -315,7 +320,7 @@ task.spawn(function()
                         break
                     end
 
-                    -- Fica deitado de costas olhando para cima
+                    -- Deita de costas no chão (olhando para cima)
                     humanoid.PlatformStand = true
 
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
