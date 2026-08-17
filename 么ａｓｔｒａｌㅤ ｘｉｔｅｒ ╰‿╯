@@ -173,8 +173,8 @@ local CONFIG_FARM = {
     velocidade = 16,
     limite = 40,
     alcance_maximo = 500,
-    offsetY = -1.5,
-    hitboxSize = Vector3.new(10, 10, 10) -- Tamanho expandido da hitbox da moeda (X, Y, Z)
+    offsetY = -3.0,
+    hitboxSize = Vector3.new(100, 100, 100) -- Tamanho expandido da hitbox da moeda (X, Y, Z)
 }
 
 local AutoFarmAtivo = false
