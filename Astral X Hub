@@ -1,0 +1,135 @@
+-- ==================================
+-- 🌐 ASTRAL X HUB
+-- ==================================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+-- ==================================
+-- CARREGAR INTERFACE (WINDUI)
+-- ==================================
+local WindUI = loadstring(game:HttpGet(
+    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+))()
+
+-- ==================================
+-- FUNÇÃO DE COR GRADIENTE
+-- ==================================
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
+        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
+        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
+        result = result .. "<font color=\"rgb("..r..", "..g..", "..b..")\">"..text:sub(i, i).."</font>"
+    end
+    return result
+end
+
+-- ==================================
+-- INTERFACE (JANELA E BOTÃO)
+-- ==================================
+local Window = WindUI:CreateWindow({
+    Title = gradient("Astral X Hub V1", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
+    Icon = "star",
+    Author = gradient("MM2 · PREMIUM", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+    Transparent = true,
+    Theme = "Dark",
+    SideBarWidth = 130,
+    HasOutline = true,
+    HideSearchBar = true,
+})
+
+-- ==================================
+-- 📌 CONFIGURAÇÃO DAS VARIÁVEIS DO SCRIPT
+-- ==================================
+
+
+
+-- ==================================
+-- CRIANDO AS ABAS
+-- ==================================
+local Aba_Main = Window:Tab({Title = gradient("Main", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "monitor"})
+local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "eye"})
+local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "user"})
+local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
+local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
+
+
+-- ==================================
+-- SEÇÕES DAS ABAS
+-- ==================================
+local Sec_Main = Aba_Main:Section({ Title = "Main" })
+local Sec_ESP = Aba_ESP:Section({ Title = "ESP" })
+local Sec_Local = Aba_Local:Section({ Title = "Local Player" })
+local Sec_Tele = Aba_Tele:Section({ Title = "Teleporte" })
+local Sec_Config = Aba_Config:Section({ Title = "Config UI" })
+
+
+-- ==================================
+-- SISTEMA DA ABA 
+-- ==================================
+
+-- ==================================
+-- SISTEMA DA ABA 
+-- ==================================
+
+-- ==================================
+-- SISTEMA DA ABA 
+-- ==================================
+
+-- ==================================
+-- SISTEMA DA ABA 
+-- ==================================
+
+-- ==================================
+-- SISTEMA DA ABA 
+-- ==================================
+
+
+
+
+
+-- ==================================
+-- 🔘 REGISTRO DE BOTÕES E ELEMENTOS DA UI
+-- ==================================
+
+
+
+
+-- ==================================
+-- BOTÕES DA ABA MAIN
+-- ==================================
+
+
+-- ==================================
+-- BOTÕES DA ABA ESP
+-- ==================================
+
+
+-- ===================================
+-- BOTÕES DA ABA LOCAL PLAYER
+-- ===================================
+
+
+-- ===================================
+-- BOTÕES DA ABA TELEPORTE
+-- ===================================
+
+
+-- ===================================
+-- BOTÕES DA ABA CONFIG UI
+-- ===================================
+
+
+
+
+
+
+
+
+
+
