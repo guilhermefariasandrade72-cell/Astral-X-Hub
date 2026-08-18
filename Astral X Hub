@@ -1,14 +1,18 @@
 -- ==================================
--- 🌐 ASTRAL X HUB
+-- 🌐 ASTRAL X HUB V1
 -- ==================================
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
 local player = Players.LocalPlayer
 
 -- ==================================
--- CARREGAR INTERFACE (WINDUI)
+-- CARREGAR INTERFACE
 -- ==================================
 local WindUI = loadstring(game:HttpGet(
-    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+"https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
 ))()
 
 -- ==================================
@@ -38,19 +42,51 @@ local Window = WindUI:CreateWindow({
     MinSize = Vector2.new(420, 300),
     Transparent = true,
     Theme = "Dark",
-    SideBarWidth = 130,
+    SideBarWidth = 120,
     HasOutline = true,
     HideSearchBar = true,
 })
 
+Window:EditOpenButton({
+    Title = "Astral",
+    Icon = "star",
+    CornerRadius = UDim.new(0, 12),
+    StrokeThickness = 2,
+    Color = ColorSequence.new(
+        Color3.fromHex("#ffcc00"),
+        Color3.fromHex("#ff6600")
+    ),
+    Draggable = true,
+})
+
 -- ==================================
--- 📌 CONFIGURAÇÃO DAS VARIÁVEIS DO SCRIPT
+-- VARIÁVEIS DA ABA MAIN
+-- ==================================
+
+
+-- ==================================
+-- VARIÁVEIS DA ABA ESP
+-- ==================================
+
+
+-- ==================================
+-- VARIÁVEIS DA ABA LOCAL PLAYER
+-- ==================================
+
+
+-- ==================================
+-- VARIÁVEIS DA ABA TELEPORTE 
 -- ==================================
 
 
 
 -- ==================================
--- CRIANDO AS ABAS
+-- VARIÁVEIS DA ABA CONFIG UI
+-- ==================================
+
+
+-- ==================================
+-- ABAS
 -- ==================================
 local Aba_Main = Window:Tab({Title = gradient("Main", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "monitor"})
 local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "eye"})
@@ -60,69 +96,29 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 
 
 -- ==================================
--- SEÇÕES DAS ABAS
--- ==================================
-local Sec_Main = Aba_Main:Section({ Title = "Main" })
-local Sec_ESP = Aba_ESP:Section({ Title = "ESP" })
-local Sec_Local = Aba_Local:Section({ Title = "Local Player" })
-local Sec_Tele = Aba_Tele:Section({ Title = "Teleporte" })
-local Sec_Config = Aba_Config:Section({ Title = "Config UI" })
-
-
--- ==================================
--- SISTEMA DA ABA 
--- ==================================
-
--- ==================================
--- SISTEMA DA ABA 
--- ==================================
-
--- ==================================
--- SISTEMA DA ABA 
--- ==================================
-
--- ==================================
--- SISTEMA DA ABA 
--- ==================================
-
--- ==================================
--- SISTEMA DA ABA 
--- ==================================
-
-
-
-
-
--- ==================================
--- 🔘 REGISTRO DE BOTÕES E ELEMENTOS DA UI
--- ==================================
-
-
-
-
--- ==================================
--- BOTÕES DA ABA MAIN
+-- BOTOES DA ABA MAIN
 -- ==================================
 
 
 -- ==================================
--- BOTÕES DA ABA ESP
+-- BOTOES DA ABA ESP
 -- ==================================
 
 
--- ===================================
--- BOTÕES DA ABA LOCAL PLAYER
--- ===================================
+-- ==================================
+-- BOTOES DA ABA LOCAL PLAYER
+-- ==================================
 
 
--- ===================================
--- BOTÕES DA ABA TELEPORTE
--- ===================================
+-- ==================================
+-- BOTOES DA ABA TELEPORTE
+-- ==================================
 
 
--- ===================================
--- BOTÕES DA ABA CONFIG UI
--- ===================================
+-- ==================================
+-- BOTOES DA ABA CONFIG UI
+-- ==================================
+
 
 
 
