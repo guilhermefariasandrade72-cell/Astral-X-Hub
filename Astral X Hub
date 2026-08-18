@@ -180,30 +180,14 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ==================================
--- ⚙️ SISTEMA LÓGICO DO ESP
+-- 🔍 SISTEMA ESP — TODOS INIMIGOS / TODOS BRANCO
 -- ==================================
 
--- 🔍 Verificação de Estado do Jogador e Definição de Cor
-local function ObterEstadoJogador(p)
-    local char = p.Character
-    if not char then return Color3.fromRGB(255, 255, 255) end
-
-    -- 🔴 Vermelho: Segurando qualquer item/ferramenta na mão
-    local ferramenta = char:FindFirstChildOfClass("Tool")
-    if ferramenta then
-        return Color3.fromRGB(255, 50, 50)
-    end
-
-    -- 🟢 Verde: Na partida sem item | ⚪ Branco: No Lobby
-    if p:GetAttribute("Alive") == true then
-        return Color3.fromRGB(50, 255, 100)
-    else
-        return Color3.fromRGB(255, 255, 255)
-    end
-end
+-- ⚪ COR FIXA: BRANCO PARA TODO MUNDO
+local COR_BRANCO = Color3.fromRGB(255, 255, 255)
 
 -- 🔴 Função para Criar/Atualizar Highlight
-local function CriarHighlight(Alvo, Cor)
+local function CriarHighlight(Alvo)
     if not Alvo then return end
     if not Highlights[Alvo] then
         local H = Instance.new("Highlight")
@@ -215,19 +199,21 @@ local function CriarHighlight(Alvo, Cor)
         H.Parent = Alvo
         Highlights[Alvo] = H
     end
-    Highlights[Alvo].FillColor = Cor
-    Highlights[Alvo].OutlineColor = Cor
+    Highlights[Alvo].FillColor = COR_BRANCO
+    Highlights[Alvo].OutlineColor = COR_BRANCO
     Highlights[Alvo].Enabled = true
 end
 
 -- 🟢 Função para Criar/Atualizar Nome (Em cima da cabeça)
-local function CriarNomeESP(Jogador, Cor)
+local function CriarNomeESP(Jogador)
     local Char = Jogador.Character
     if not Char or not Char:FindFirstChild("Head") then return end
     local Head = Char.Head
 
     if not NamesESP[Jogador] or not NamesESP[Jogador].Gui or NamesESP[Jogador].Gui.Parent ~= Head then
-        if NamesESP[Jogador] and NamesESP[Jogador].Gui then NamesESP[Jogador].Gui:Destroy() end
+        if NamesESP[Jogador] and NamesESP[Jogador].Gui then 
+            NamesESP[Jogador].Gui:Destroy() 
+        end
         
         local BGui = Instance.new("BillboardGui")
         BGui.Name = "ESP_Name"
@@ -252,18 +238,20 @@ local function CriarNomeESP(Jogador, Cor)
 
     local Data = NamesESP[Jogador]
     Data.Label.Text = Jogador.Name
-    Data.Label.TextColor3 = Cor
+    Data.Label.TextColor3 = COR_BRANCO
     Data.Gui.Enabled = true
 end
 
 -- 🔵 Função para Criar/Atualizar Distância (Embaixo dos pés)
-local function CriarDistanciaESP(Jogador, Cor, Distancia)
+local function CriarDistanciaESP(Jogador, Distancia)
     local Char = Jogador.Character
     if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
     local HRP = Char.HumanoidRootPart
 
     if not DistanceESP[Jogador] or not DistanceESP[Jogador].Gui or DistanceESP[Jogador].Gui.Parent ~= HRP then
-        if DistanceESP[Jogador] and DistanceESP[Jogador].Gui then DistanceESP[Jogador].Gui:Destroy() end
+        if DistanceESP[Jogador] and DistanceESP[Jogador].Gui then 
+            DistanceESP[Jogador].Gui:Destroy() 
+        end
 
         local BGui = Instance.new("BillboardGui")
         BGui.Name = "ESP_Distance"
@@ -288,12 +276,12 @@ local function CriarDistanciaESP(Jogador, Cor, Distancia)
 
     local Data = DistanceESP[Jogador]
     Data.Label.Text = math.floor(Distancia) .. "m"
-    Data.Label.TextColor3 = Cor
+    Data.Label.TextColor3 = COR_BRANCO
     Data.Gui.Enabled = true
 end
 
 -- 🟡 Função para Criar/Atualizar Linha (Tracer saindo de baixo da tela)
-local function CriarTracerESP(Jogador, Cor)
+local function CriarTracerESP(Jogador)
     local Char = Jogador.Character
     if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
     local Cam = Workspace.CurrentCamera
@@ -311,7 +299,7 @@ local function CriarTracerESP(Jogador, Cor)
     if OnScreen then
         Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
         Line.To = Vector2.new(Vector.X, Vector.Y)
-        Line.Color = Cor
+        Line.Color = COR_BRANCO
         Line.Visible = true
     else
         Line.Visible = false
@@ -320,7 +308,7 @@ end
 
 -- 🧹 Limpeza Individual de Jogador
 local function LimparJogadorESP(p)
-    if Highlights[p.Character] then
+    if p.Character and Highlights[p.Character] then
         Highlights[p.Character]:Destroy()
         Highlights[p.Character] = nil
     end
@@ -353,30 +341,40 @@ local function LimparTabela(Tabela)
     table.clear(Tabela)
 end
 
--- 🔄 Loop Principal do ESP (RenderStepped)
+-- 🔄 Loop Principal do ESP — MOSTRA TODO MUNDO
 RunService.RenderStepped:Connect(function()
     if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
         local MeuChar = player.Character
-        local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
+        local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) 
+            and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
 
         for _, p in ipairs(Players:GetPlayers()) do
             local Char = p.Character
             local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
             local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
 
+            -- ❌ Ignora apenas VOCÊ e quem estiver MORTO
             if p == player or not Char or not HRP or not Humanoid or Humanoid.Health <= 0 then
                 LimparJogadorESP(p)
             else
-                local Cor = ObterEstadoJogador(p)
+                -- ✅ TODO MUNDO VIVO = INIMIGO = BRANCO
                 local Distancia = (MinhaPos - HRP.Position).Magnitude
 
-                if ESPHighlightAtivo then CriarHighlight(Char, Cor) elseif Highlights[Char] then Highlights[Char].Enabled = false end
-                if ESPNomeAtivo then CriarNomeESP(p, Cor) elseif NamesESP[p] and NamesESP[p].Gui then NamesESP[p].Gui.Enabled = false end
-                if ESPDistanciaAtiva then CriarDistanciaESP(p, Cor, Distancia) elseif DistanceESP[p] and DistanceESP[p].Gui then DistanceESP[p].Gui.Enabled = false end
-                if ESPTracerAtivo then CriarTracerESP(p, Cor) elseif TracersESP[p] then TracersESP[p].Visible = false end
+                if ESPHighlightAtivo then CriarHighlight(Char)
+                elseif Highlights[Char] then Highlights[Char].Enabled = false end
+
+                if ESPNomeAtivo then CriarNomeESP(p)
+                elseif NamesESP[p] and NamesESP[p].Gui then NamesESP[p].Gui.Enabled = false end
+
+                if ESPDistanciaAtiva then CriarDistanciaESP(p, Distancia)
+                elseif DistanceESP[p] and DistanceESP[p].Gui then DistanceESP[p].Gui.Enabled = false end
+
+                if ESPTracerAtivo then CriarTracerESP(p)
+                elseif TracersESP[p] then TracersESP[p].Visible = false end
             end
         end
     else
+        -- 🧹 Desligou tudo → limpa tudo
         if next(Highlights) then LimparTabela(Highlights) end
         if next(NamesESP) then LimparTabela(NamesESP) end
         if next(DistanceESP) then LimparTabela(DistanceESP) end
@@ -384,6 +382,16 @@ RunService.RenderStepped:Connect(function()
     end
 end)
 
+-- 🔄 Atualiza automaticamente quando alguém ENTRA ou SAI
+Players.PlayerAdded:Connect(function(p)
+    p.CharacterAdded:Connect(function()
+        task.wait(0.2) -- Espera carregar o personagem
+    end)
+end)
+
+Players.PlayerRemoving:Connect(function(p)
+    LimparJogadorESP(p) -- Remove imediatamente
+end)
 
 -- ==================================
 -- BOTOES DA ABA MAIN
