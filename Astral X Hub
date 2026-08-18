@@ -62,6 +62,11 @@ Window:EditOpenButton({
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
+local AimbotAtivo = false
+local CircleFOVAtivo = false
+local RadioFOV = 100 -- Tamanho inicial do círculo de FOV
+
+local FOVCircle = nil
 
 
 -- ==================================
@@ -102,6 +107,77 @@ local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), C
 local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "user"})
 local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
+
+-- ==================================
+-- ⚙️ SISTEMA LÓGICO DO AIMBOT E FOV
+-- ==================================
+
+-- 🎯 Função para encontrar o jogador mais próximo da mira/centro da tela
+local function ObterJogadorMaisProximo()
+    local Cam = Workspace.CurrentCamera
+    local CentroTela = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y / 2)
+    local AlvoMaisProximo = nil
+    local MenorDistancia = RadioFOV -- Limita a busca apenas a quem estiver dentro do raio do FOV
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
+            local Head = p.Character.Head
+            local Humanoid = p.Character:FindFirstChildOfClass("Humanoid")
+
+            if Humanoid and Humanoid.Health > 0 then
+                local Vector, OnScreen = Cam:WorldToViewportPoint(Head.Position)
+
+                if OnScreen then
+                    local PosicaoTela = Vector2.new(Vector.X, Vector.Y)
+                    local DistanciaDaMira = (PosicaoTela - CentroTela).Magnitude
+
+                    if DistanciaDaMira < MenorDistancia then
+                        MenorDistancia = DistanciaDaMira
+                        AlvoMaisProximo = Head
+                    end
+                end
+            end
+        end
+    end
+
+    return AlvoMaisProximo
+end
+
+-- ⭕ Função para Criar / Atualizar o Círculo de FOV na Tela
+local function AtualizarCircleFOV()
+    if not FOVCircle then
+        FOVCircle = Drawing.new("Circle")
+        FOVCircle.Color = Color3.fromRGB(255, 255, 255) -- Cor Branca
+        FOVCircle.Thickness = 1.5
+        FOVCircle.NumSides = 64
+        FOVCircle.Filled = false
+        FOVCircle.Transparency = 1
+    end
+
+    if CircleFOVAtivo then
+        local Cam = Workspace.CurrentCamera
+        FOVCircle.Position = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y / 2)
+        FOVCircle.Radius = RadioFOV
+        FOVCircle.Visible = true
+    else
+        FOVCircle.Visible = false
+    end
+end
+
+-- 🔄 Loop Principal em RenderStepped (Atualização Instantânea)
+RunService.RenderStepped:Connect(function()
+    -- Atualiza o Círculo Enfeite
+    AtualizarCircleFOV()
+
+    -- Atualiza o Aimbot grudando no jogador mais próximo
+    if AimbotAtivo then
+        local Alvo = ObterJogadorMaisProximo()
+        if Alvo then
+            local Cam = Workspace.CurrentCamera
+            Cam.CFrame = CFrame.new(Cam.CFrame.Position, Alvo.Position)
+        end
+    end
+end)
 
 -- ==================================
 -- ⚙️ SISTEMA LÓGICO DO ESP
@@ -312,6 +388,31 @@ end)
 -- ==================================
 -- BOTOES DA ABA MAIN
 -- ==================================
+local Sec_Aimbot = Aba_Main:Section({ Title = "Aimbot" })
+
+Sec_Aimbot:Toggle({
+    Title = "Aimbot Player",
+    Default = false,
+    Callback = function(Ativo)
+        AimbotAtivo = Ativo
+    end
+})
+
+Sec_Aimbot:Toggle({
+    Title = "Cicle Fov",
+    Default = false,
+    Callback = function(Ativo)
+        CircleFOVAtivo = Ativo
+    end
+})
+
+Sec_Aimbot:Slider({
+    Title = "Tamanho do FOV",
+    Value = {Min = 50, Max = 300, Default = 100, Step = 1},
+    Callback = function(Valor)
+        RadioFOV = Valor
+    end
+})
 
 
 -- ==================================
