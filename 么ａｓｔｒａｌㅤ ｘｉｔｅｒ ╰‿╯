@@ -1336,63 +1336,45 @@ end)
 -- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE
 -- ==============================================================================
 
--- 👻 Função para Ativar/Desativar a Invisibilidade
 local function AlternarInvisibilidade(Estado)
     InvisivelAtivo = Estado
 
-    -- Limpa a conexão antiga se existir
+    -- Desconecta o loop antigo antes de criar um novo
     if ConnectionInvisivel then
         ConnectionInvisivel:Disconnect()
         ConnectionInvisivel = nil
     end
 
-    local Char = player.Character
-    if not Char then return end
-
     if InvisivelAtivo then
-        -- Torna partes semi-transparentes localmente para você saber que está invisível
-        for _, part in ipairs(Char:GetDescendants()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.LocalTransparencyModifier = 0.5
-            end
-        end
-
-        -- Desincronização de CFrame constante
         ConnectionInvisivel = RunService.Heartbeat:Connect(function()
-            local CurrentChar = player.Character
-            local RootPart = CurrentChar and CurrentChar:FindFirstChild("HumanoidRootPart")
-            local Humanoid = CurrentChar and CurrentChar:FindFirstChildOfClass("Humanoid")
+            local Char = player.Character
+            local RootPart = Char and Char:FindFirstChild("HumanoidRootPart")
+            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
 
             if RootPart and Humanoid then
-                local OriginalCF = RootPart.CFrame
-                local OriginalCamOffset = Humanoid.CameraOffset
-                local HiddenCF = OriginalCF * CFrame.new(0, -10000, 0) -- Distância segura contra o Void
+                local cf = RootPart.CFrame
+                local camOffset = Humanoid.CameraOffset
+                local hidden = cf * CFrame.new(0, -200000, 0)
 
-                -- Move para baixo no servidor
-                RootPart.CFrame = HiddenCF
-                Humanoid.CameraOffset = HiddenCF:ToObjectSpace(CFrame.new(OriginalCF.Position)).Position
+                -- 1. Envia o personagem para baixo no tick do Heartbeat (Servidor)
+                RootPart.CFrame = hidden
+                Humanoid.CameraOffset = hidden:ToObjectSpace(CFrame.new(cf.Position)).Position
 
-                -- Restaura localmente no próximo frame sem travar o script
-                task.defer(function()
-                    if RootPart and RootPart.Parent then
-                        RootPart.CFrame = OriginalCF
-                        Humanoid.CameraOffset = OriginalCamOffset
-                    end
-                end)
+                -- 2. Espera a renderização do frame atual passar
+                RunService.RenderStepped:Wait()
+
+                -- 3. Restaura o CFrame localmente para você continuar vendo o mapa/personagem
+                if RootPart and RootPart.Parent then
+                    RootPart.CFrame = cf
+                    Humanoid.CameraOffset = camOffset
+                end
             end
         end)
-    else
-        -- Restaura transparência normal ao desligar
-        for _, part in ipairs(Char:GetDescendants()) do
-            if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
-                part.LocalTransparencyModifier = 0
-            end
-        end
     end
 end
 
--- 🔄 Reseta a invisibilidade quando o personagem morre ou renasce
-player.CharacterAdded:Connect(function(NovoChar)
+-- 🔄 Limpeza ao renascer/mudar de personagem
+player.CharacterAdded:Connect(function()
     InvisivelAtivo = false
     if ConnectionInvisivel then
         ConnectionInvisivel:Disconnect()
