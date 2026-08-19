@@ -174,7 +174,7 @@ local CONFIG_FARM = {
     velocidade = 20,                     -- Respeita o slider (16 a 20)
     alcance_maximo = 500,
     offsetY = -2.0,                      -- Distância abaixo da moeda
-    hitboxSize = Vector3.new(10, 10, 10)  -- Hitbox expandida da moeda
+    hitboxSize = Vector3.new(10, 18, 10)  -- Hitbox expandida da moeda
 }
 
 local AutoFarmAtivo = false
@@ -555,7 +555,7 @@ local function CreateShootButton()
     local Texto = Instance.new("TextLabel")
     Texto.Size = UDim2.new(1, 0, 1, 0)
     Texto.BackgroundTransparency = 1
-    Texto.Text = "Shoot"
+    Texto.Text = "Silent AIM"
     Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
     Texto.TextSize = 15
     Texto.Font = Enum.Font.GothamBold
@@ -1505,7 +1505,7 @@ end
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
-    Title = "Botão Auto Farm Coin",
+    Title = "Auto Farm Coin (botão)",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1525,8 +1525,8 @@ Sec_AutoFarm:Toggle({
 })
 
 Sec_AutoFarm:Slider({
-    Title = "Speed Auto Farm",
-    Value = {Min = 16, Max = 20, Default = 20, Step = 1},
+    Title = "Speed Farm",
+    Value = {Min = 16, Max = 20, Default = 16, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
     end
@@ -1535,7 +1535,7 @@ Sec_AutoFarm:Slider({
 local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
 
 Sec_Xerife:Toggle({
-    Title = " Botão Shoot Murderer",
+    Title = "Shoot Murderer (botão)",
     Default = false,
     Callback = function(Ativo)
         AutoShoot = Ativo
@@ -1548,7 +1548,7 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "Botão Grab Gun",
+    Title = "Grab Gun (botão)",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1570,7 +1570,7 @@ Sec_Xerife:Toggle({
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 Sec_Murderer:Toggle({
-    Title = "Botão Kill All",
+    Title = "Kill All (botão)",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1635,7 +1635,7 @@ Sec_ESP:Toggle({
 })
 
 Sec_ESP:Toggle({
-    Title = "Tracer ESP (Linha)",
+    Title = "Tracer ESP",
     Default = false,
     Callback = function(Ativo)
         ESPTracerAtivo = Ativo
@@ -1720,7 +1720,7 @@ local Sec_Camera = Aba_Local:Section({Title = "Câmera"})
 
 -- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
 Sec_Camera:Toggle({
-    Title = "Infinite Zum",
+    Title = "Infinite Zoom",
     Default = false,
     Callback = function(Ativo)
         _G.CameraInfinita = Ativo
@@ -1762,7 +1762,7 @@ local function CriarDropdownJogadores()
         pcall(function() DropdownJogadores:Destroy() end)
     end
     DropdownJogadores = Sec_TPPlayer:Dropdown({
-        Title = "Escolha um jogador",
+        Title = "Select Player",
         Values = PegarListaJogadores(),
         Default = "",
         Callback = function(nome)
@@ -1779,7 +1779,7 @@ Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores(
 CriarDropdownJogadores()
 
 Sec_TPPlayer:Button({
-    Title = "TP Player Selecionado",
+    Title = "TP Player",
     Callback = function()
         if JogadorSelecionadoTP then
             local alvo = Players:FindFirstChild(JogadorSelecionadoTP)
@@ -1829,14 +1829,14 @@ Sec_TPMapaLobby:Button({
 local Sec_ServerHop = Aba_Tele:Section({Title = "Server Hop"})
 
 Sec_ServerHop:Button({
-    Title = "Trocar de Servidor",
+    Title = "Hop Serve",
     Callback = function()
         ExecutarServerHop()
     end
 })
 
 Sec_ServerHop:Button({
-    Title = "Reentrar no Servidor",
+    Title = "Rejoin Serve",
     Callback = function()
         ExecutarRejoin()
     end
