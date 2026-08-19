@@ -104,6 +104,9 @@ local DadosCargos = {}
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
+local InvisivelAtivo = false
+local PartesCorpo = {}
+local Personagem, Humanoid, Raiz
 
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
@@ -1330,9 +1333,58 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+
 -- ==============================================================================
 -- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE
 -- ==============================================================================
+local function ConfigurarPersonagem()
+    Personagem = player.Character or player.CharacterAdded:Wait()
+    Humanoid = Personagem:FindFirstChild("Humanoid")
+    Raiz = Personagem:FindFirstChild("HumanoidRootPart")
+    PartesCorpo = {}
+    for _, obj in ipairs(Personagem:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Transparency == 0 then
+            table.insert(PartesCorpo, obj)
+        end
+    end
+end
+
+RunService.Heartbeat:Connect(function()
+    if not InvisivelAtivo or not Raiz or not Humanoid then return end
+
+    -- Corpo transparente
+    for _, parte in ipairs(PartesCorpo) do
+        parte.Transparency = 0.5
+    end
+
+    -- Invisível para o servidor
+    local PosOriginal = Raiz.CFrame
+    local CamOffset = Humanoid.CameraOffset
+    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
+    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
+    RunService.RenderStepped:Wait()
+    Raiz.CFrame = PosOriginal
+    Humanoid.CameraOffset = CamOffset
+end)
+
+-- Volta ao normal ao desligar
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if not InvisivelAtivo then
+            for _, parte in ipairs(PartesCorpo) do
+                parte.Transparency = 0
+            end
+        end
+    end
+end)
+
+-- Recarrega ao renascer
+player.CharacterAdded:Connect(ConfigurarPersonagem)
+
+-- Inicia
+ConfigurarPersonagem()
+
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
@@ -1654,6 +1706,15 @@ Sec_ESP:Toggle({
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
+local Sec_Extras = Aba_Local:Section({Title = "Extras"})
+
+Sec_Extras:Toggle({
+    Title = "Invisível",
+    Default = false,
+    Callback = function(Ativo)
+        InvisivelAtivo = Ativo
+    end
+})
 
 
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
