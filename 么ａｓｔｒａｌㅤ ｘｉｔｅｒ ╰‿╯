@@ -104,8 +104,6 @@ local DadosCargos = {}
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
-local InvisivelAtivo = false
-local ConnectionInvisivel = nil
 
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
@@ -1336,52 +1334,6 @@ end)
 -- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE
 -- ==============================================================================
 
-local function AlternarInvisibilidade(Estado)
-    InvisivelAtivo = Estado
-
-    -- Desconecta o loop antigo antes de criar um novo
-    if ConnectionInvisivel then
-        ConnectionInvisivel:Disconnect()
-        ConnectionInvisivel = nil
-    end
-
-    if InvisivelAtivo then
-        ConnectionInvisivel = RunService.Heartbeat:Connect(function()
-            local Char = player.Character
-            local RootPart = Char and Char:FindFirstChild("HumanoidRootPart")
-            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
-
-            if RootPart and Humanoid then
-                local cf = RootPart.CFrame
-                local camOffset = Humanoid.CameraOffset
-                local hidden = cf * CFrame.new(0, -200000, 0)
-
-                -- 1. Envia o personagem para baixo no tick do Heartbeat (Servidor)
-                RootPart.CFrame = hidden
-                Humanoid.CameraOffset = hidden:ToObjectSpace(CFrame.new(cf.Position)).Position
-
-                -- 2. Espera a renderização do frame atual passar
-                RunService.RenderStepped:Wait()
-
-                -- 3. Restaura o CFrame localmente para você continuar vendo o mapa/personagem
-                if RootPart and RootPart.Parent then
-                    RootPart.CFrame = cf
-                    Humanoid.CameraOffset = camOffset
-                end
-            end
-        end)
-    end
-end
-
--- 🔄 Limpeza ao renascer/mudar de personagem
-player.CharacterAdded:Connect(function()
-    InvisivelAtivo = false
-    if ConnectionInvisivel then
-        ConnectionInvisivel:Disconnect()
-        ConnectionInvisivel = nil
-    end
-end)
-
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
 -- ==================================
@@ -1702,15 +1654,7 @@ Sec_ESP:Toggle({
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
-local Sec_Extras = Aba_Local:Section({Title = "Extras" })
 
-Sec_Extras:Toggle({
-    Title = "Invisível",
-    Default = false,
-    Callback = function(Ativo)
-        AlternarInvisibilidade(Ativo)
-    end
-})
 
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
