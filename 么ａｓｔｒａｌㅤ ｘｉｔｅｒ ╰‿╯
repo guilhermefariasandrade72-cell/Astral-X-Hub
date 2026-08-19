@@ -104,7 +104,6 @@ local DadosCargos = {}
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
-local InvisivelAtivo = false
 
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
@@ -1335,36 +1334,6 @@ end)
 -- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE
 -- ======================================
 
--- 👻 Função para alterar a visibilidade do personagem
-local function DefinirInvisibilidade(Estado)
-    local Char = player.Character
-    if not Char then return end
-
-    -- Percorre todas as partes do corpo e acessórios
-    for _, item in ipairs(Char:GetDescendants()) do
-        if item:IsA("BasePart") then
-            -- Se for o Torso/HumanoidRootPart, preservamos a transparência padrão ao desativar
-            if item.Name == "HumanoidRootPart" then
-                item.Transparency = 1
-            else
-                item.Transparency = Estado and 1 or 0
-            end
-        elseif item:IsA("Decal") then
-            -- Esconde a textura do rosto (Face)
-            item.Transparency = Estado and 1 or 0
-        end
-    end
-end
-
--- 🔄 Mantém o efeito ativo se o jogador renascer (Respawn)
-player.CharacterAdded:Connect(function(NovoChar)
-    if InvisivelAtivo then
-        NovoChar:WaitForChild("Humanoid")
-        task.wait(0.5)
-        DefinirInvisibilidade(true)
-    end
-end)
-
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
 -- ==================================
@@ -1685,16 +1654,7 @@ Sec_ESP:Toggle({
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
-local Sec_Extras = Aba_Local:Section({Title = "Extras" })
 
-Sec_Extras:Toggle({
-    Title = "Invisível",
-    Default = false,
-    Callback = function(Ativo)
-        InvisivelAtivo = Ativo
-        DefinirInvisibilidade(Ativo)
-    end
-})
 
 
 local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
