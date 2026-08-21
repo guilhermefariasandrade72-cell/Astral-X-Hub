@@ -87,10 +87,28 @@ local ExecutandoGrab = false
 local KillAura = false
 local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
 
--- ==================================
--- VARIÁVEIS DA ABA ESP
--- ==================================
+-- =================
+-- VARIÁVEIS DO ESP
+-- =================
+local ESP = {
+    Highlight_Murderer = true,
+    Highlight_Sheriff = true,
+    Highlight_Hero = true,
+    Highlight_Innocent = true,
+    Highlight_Lobby = true
+}
 
+local Highlights = {}
+local DadosCargos = {}
+
+-- CORES POR CARGO
+local Cores = {
+    Murderer = Color3.fromRGB(255, 50, 50),    -- 🔴 Vermelho
+    Sheriff = Color3.fromRGB(50, 120, 255),     -- 🔵 Azul
+    Hero = Color3.fromRGB(255, 215, 50),       -- 🟡 Dourado
+    Innocent = Color3.fromRGB(60, 255, 90),    -- 🟢 Verde
+    Lobby = Color3.fromRGB(200, 200, 200)      -- ⚪ Cinza
+}
 
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
@@ -883,10 +901,87 @@ local function RemoveKillAllButton()
     end
 end
 
--- ==================================
--- SISTEMAS DA ABA ESP
--- ==================================
+-- =================
+-- FUNÇÃO PEGAR COR E CARGO
+-- =================
+local function PegarCorECargo(Jogador)
+    local Info = DadosCargos and DadosCargos[Jogador.Name]
+    if not Info or Info.Dead or Info.Killed then
+        return Cores.Lobby, "Lobby"
+    end
+    if Info.Role == "Murderer" then return Cores.Murderer, "Murderer" end
+    if Info.Role == "Sheriff" then return Cores.Sheriff, "Sheriff" end
+    if Info.Role == "Hero" then return Cores.Hero, "Hero" end
+    if Info.Role == "Innocent" then return Cores.Innocent, "Innocent" end
+    return Cores.Lobby, "Lobby"
+end
 
+-- =================
+-- SISTEMA DO HIGHLIGHT
+-- =================
+RunService.RenderStepped:Connect(function()
+    PegarCargos()
+
+    local JogadoresAtuais = {}
+
+    for _, Jogador in ipairs(Players:GetPlayers()) do
+        if Jogador == player then goto Proximo end
+
+        local Char = Jogador.Character
+        local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+        local Hum = Char and Char:FindFirstChild("Humanoid")
+
+        -- Sem personagem ou morto
+        if not Char or not HRP or not Hum or Hum.Health <= 0 then
+            if Highlights[Char] then
+                Highlights[Char]:Destroy()
+                Highlights[Char] = nil
+            end
+            goto Proximo
+        end
+
+        local Cor, Cargo = PegarCorECargo(Jogador)
+
+        -- Verifica se esse cargo deve aparecer
+        local Ativar = false
+        if Cargo == "Murderer" then Ativar = ESP.Highlight_Murderer
+        elseif Cargo == "Sheriff" then Ativar = ESP.Highlight_Sheriff
+        elseif Cargo == "Hero" then Ativar = ESP.Highlight_Hero
+        elseif Cargo == "Innocent" then Ativar = ESP.Highlight_Innocent
+        elseif Cargo == "Lobby" then Ativar = ESP.Highlight_Lobby end
+
+        -- Ativa ou desativa
+        if Ativar then
+            if not Highlights[Char] then
+                local H = Instance.new("Highlight")
+                H.Adornee = Char
+                H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                H.FillTransparency = 0.5
+                H.OutlineTransparency = 0
+                H.Parent = Char
+                Highlights[Char] = H
+            end
+            Highlights[Char].FillColor = Cor
+            Highlights[Char].OutlineColor = Cor
+            Highlights[Char].Enabled = true
+        else
+            if Highlights[Char] then
+                Highlights[Char].Enabled = false
+            end
+        end
+
+        JogadoresAtuais[Char] = true
+        ::Proximo::
+    end
+
+    -- Limpa quem saiu/morreu
+    for Char, Hl in pairs(Highlights) do
+        if not JogadoresAtuais[Char] then
+            Hl:Destroy()
+            Highlights[Char] = nil
+        end
+    end
+end)
 
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
@@ -1404,6 +1499,47 @@ Sec_Murderer:Button({
 -- ==================================
 -- BOTOES DA ABA ESP
 -- ==================================
+local Sec_ESP = Aba_ESP:Section({Title = "Highlight"})
+
+Sec_ESP:Toggle({
+    Title = "Assassino",
+    Default = true,
+    Callback = function(v)
+        ESP.Highlight_Murderer = v
+    end
+})
+
+Sec_ESP:Toggle({
+    Title = "Xerife",
+    Default = true,
+    Callback = function(v)
+        ESP.Highlight_Sheriff = v
+    end
+})
+
+Sec_ESP:Toggle({
+    Title = "Herói",
+    Default = true,
+    Callback = function(v)
+        ESP.Highlight_Hero = v
+    end
+})
+
+Sec_ESP:Toggle({
+    Title = "Inocente",
+    Default = true,
+    Callback = function(v)
+        ESP.Highlight_Innocent = v
+    end
+})
+
+Sec_ESP:Toggle({
+    Title = "No Lobby",
+    Default = true,
+    Callback = function(v)
+        ESP.Highlight_Lobby = v
+    end
+})
 
 
 -- ==================================
