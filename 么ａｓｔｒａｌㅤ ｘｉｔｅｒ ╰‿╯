@@ -1499,9 +1499,9 @@ Sec_Murderer:Button({
 -- ==================================
 -- BOTOES DA ABA ESP
 -- ==================================
-local Sec_ESP = Aba_ESP:Section({Title = "Highlight"})
+local Sec_Esp = Aba_ESP:Section({Title = "Highlight"})
 
-Sec_ESP:Toggle({
+Sec_Esp:Toggle({
     Title = "Assassino",
     Default = true,
     Callback = function(v)
@@ -1509,7 +1509,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Sec_Esp:Toggle({
     Title = "Xerife",
     Default = true,
     Callback = function(v)
@@ -1517,7 +1517,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Sec_Esp:Toggle({
     Title = "Herói",
     Default = true,
     Callback = function(v)
@@ -1525,7 +1525,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Sec_Esp:Toggle({
     Title = "Inocente",
     Default = true,
     Callback = function(v)
@@ -1533,7 +1533,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Sec_Esp:Toggle({
     Title = "No Lobby",
     Default = true,
     Callback = function(v)
