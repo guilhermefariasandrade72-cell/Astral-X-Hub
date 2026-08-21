@@ -997,13 +997,18 @@ local function CriarDistanciaESP(Jogador, Cor, Distancia)
     Data.Gui.Enabled = true
 end
 
--- 🟡 LINHA / TRACER
+-- 🟡 LINHA / TRACER (CORRIGIDO PARA DELTA)
 local function CriarTracerESP(Jogador, Cor)
     local Char = Jogador.Character
     if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+    
     local Cam = Workspace.CurrentCamera
+    local GuiService = game:GetService("GuiService")
+    local Inset = GuiService:GetGuiInset() -- Compensa a barra do Roblox no celular
+
     local Vector, OnScreen = Cam:WorldToViewportPoint(Char.HumanoidRootPart.Position)
 
+    -- Se não existir a linha, cria e define as propriedades iniciais
     if not TracersESP[Jogador] then
         local Line = Drawing.new("Line")
         Line.Thickness = 1.5
@@ -1012,8 +1017,11 @@ local function CriarTracerESP(Jogador, Cor)
     end
 
     local Line = TracersESP[Jogador]
+
     if OnScreen then
-        Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+        -- Origem: Parte inferior central da tela
+        Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y - Inset.Y)
+        -- Destino: Posição do jogador convertida na tela
         Line.To = Vector2.new(Vector.X, Vector.Y)
         Line.Color = Cor
         Line.Visible = true
