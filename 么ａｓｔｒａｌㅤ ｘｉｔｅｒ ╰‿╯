@@ -997,18 +997,17 @@ local function CriarDistanciaESP(Jogador, Cor, Distancia)
     Data.Gui.Enabled = true
 end
 
--- 🟡 LINHA / TRACER (CORRIGIDO PARA DELTA)
+-- 🟡 LINHA / TRACER
 local function CriarTracerESP(Jogador, Cor)
     local Char = Jogador.Character
     if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
     
     local Cam = Workspace.CurrentCamera
     local GuiService = game:GetService("GuiService")
-    local Inset = GuiService:GetGuiInset() -- Compensa a barra do Roblox no celular
+    local Inset = GuiService:GetGuiInset()
 
     local Vector, OnScreen = Cam:WorldToViewportPoint(Char.HumanoidRootPart.Position)
 
-    -- Se não existir a linha, cria e define as propriedades iniciais
     if not TracersESP[Jogador] then
         local Line = Drawing.new("Line")
         Line.Thickness = 1.5
@@ -1019,9 +1018,7 @@ local function CriarTracerESP(Jogador, Cor)
     local Line = TracersESP[Jogador]
 
     if OnScreen then
-        -- Origem: Parte inferior central da tela
         Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y - Inset.Y)
-        -- Destino: Posição do jogador convertida na tela
         Line.To = Vector2.new(Vector.X, Vector.Y)
         Line.Color = Cor
         Line.Visible = true
@@ -1065,26 +1062,18 @@ local function LimparTabela(Tabela)
     table.clear(Tabela)
 end
 
--- 📌 LOOP DE ATUALIZAÇÃO PRINCIPAL
+-- 📌 LOOP PRINCIPAL DO ESP
 RunService.RenderStepped:Connect(function()
     if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
         PegarCargos()
         local MeuChar = player.Character
         local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
 
-        -- Limpa elementos de jogadores que saíram do servidor
-        for p, _ in pairs(TracersESP) do
-            if not Players:FindFirstChild(p.Name) then
-                LimparJogadorESP(p)
-            end
-        end
-
         for _, p in ipairs(Players:GetPlayers()) do
             local Char = p.Character
             local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
             local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
 
-            -- Se o jogador não tiver personagem, estiver morto ou for você mesmo
             if p == player or not Char or not HRP or not Humanoid or Humanoid.Health <= 0 then
                 LimparJogadorESP(p)
             else
@@ -1110,33 +1099,17 @@ RunService.RenderStepped:Connect(function()
 
                 local Distancia = (MinhaPos - HRP.Position).Magnitude
 
-                -- 1. Highlight
-                if ESPHighlightAtivo then
-                    CriarHighlight(Char, Cor)
-                elseif Highlights[Char] then
-                    Highlights[Char].Enabled = false
-                end
+                if ESPHighlightAtivo then CriarHighlight(Char, Cor)
+                elseif Highlights[Char] then Highlights[Char].Enabled = false end
 
-                -- 2. Nome
-                if ESPNomeAtivo then
-                    CriarNomeESP(p, Cor, CargoNome)
-                elseif NamesESP[p] and NamesESP[p].Gui then
-                    NamesESP[p].Gui.Enabled = false
-                end
+                if ESPNomeAtivo then CriarNomeESP(p, Cor, CargoNome)
+                elseif NamesESP[p] and NamesESP[p].Gui then NamesESP[p].Gui.Enabled = false end
 
-                -- 3. Distância
-                if ESPDistanciaAtiva then
-                    CriarDistanciaESP(p, Cor, Distancia)
-                elseif DistanceESP[p] and DistanceESP[p].Gui then
-                    DistanceESP[p].Gui.Enabled = false
-                end
+                if ESPDistanciaAtiva then CriarDistanciaESP(p, Cor, Distancia)
+                elseif DistanceESP[p] and DistanceESP[p].Gui then DistanceESP[p].Gui.Enabled = false end
 
-                -- 4. Linha / Tracer
-                if ESPTracerAtivo then
-                    CriarTracerESP(p, Cor)
-                elseif TracersESP[p] then
-                    TracersESP[p].Visible = false
-                end
+                if ESPTracerAtivo then CriarTracerESP(p, Cor)
+                elseif TracersESP[p] then TracersESP[p].Visible = false end
             end
         end
     else
@@ -1146,7 +1119,6 @@ RunService.RenderStepped:Connect(function()
         if next(TracersESP) then LimparTabela(TracersESP) end
     end
 end)
-
 
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
