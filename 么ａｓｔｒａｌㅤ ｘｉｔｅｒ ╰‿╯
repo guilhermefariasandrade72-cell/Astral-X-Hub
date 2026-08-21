@@ -1,5 +1,5 @@
 -- ==================================
--- 🌐 ASTRAL X HUB V1
+-- 🌐 ASTRAL X HUB V1 (ESP CORRIGIDO)
 -- ==================================
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
@@ -93,15 +93,15 @@ local ExecutandoGrab = false
 local KillAura = false
 local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
 
--- =================
--- VARIÁVEIS DO ESP
--- =================
+-- ==================================
+-- VARIÁVEIS DO ESP (INICIAM DESLIGADAS)
+-- ==================================
 local ESP = {
-    Highlight_Murderer = true,
-    Highlight_Sheriff = true,
-    Highlight_Hero = true,
-    Highlight_Innocent = true,
-    Highlight_Lobby = true
+    Highlight_Murderer = false,
+    Highlight_Sheriff = false,
+    Highlight_Hero = false,
+    Highlight_Innocent = false,
+    Highlight_Lobby = false
 }
 
 local Highlights = {}
@@ -844,7 +844,7 @@ RunService.RenderStepped:Connect(function()
                         local H = Instance.new("Highlight")
                         H.Adornee = Char
                         H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                        H.FillTransparency = 0.5
+                        H.FillTransparency = 2.0
                         H.OutlineTransparency = 0
                         H.Parent = Char
                         Highlights[Char] = H
@@ -1249,7 +1249,7 @@ local function ExecutarRejoin()
 end
 
 -- ==================================
--- BOTOES DA ABA MAIN
+-- BOTÕES DA ABA MAIN
 -- ==================================
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
@@ -1346,13 +1346,13 @@ Sec_Murderer:Button({
 })
 
 -- ==================================
--- BOTOES DA ABA ESP
+-- BOTÕES DA ABA ESP (AGORA PADRÃO FALSE)
 -- ==================================
 local Sec_Esp = Aba_ESP:Section({Title = "Highlight"})
 
 Sec_Esp:Toggle({
     Title = "Assassino",
-    Default = true,
+    Default = false,
     Callback = function(v)
         ESP.Highlight_Murderer = v
     end
@@ -1360,7 +1360,7 @@ Sec_Esp:Toggle({
 
 Sec_Esp:Toggle({
     Title = "Xerife",
-    Default = true,
+    Default = false,
     Callback = function(v)
         ESP.Highlight_Sheriff = v
     end
@@ -1368,7 +1368,7 @@ Sec_Esp:Toggle({
 
 Sec_Esp:Toggle({
     Title = "Herói",
-    Default = true,
+    Default = false,
     Callback = function(v)
         ESP.Highlight_Hero = v
     end
@@ -1376,7 +1376,7 @@ Sec_Esp:Toggle({
 
 Sec_Esp:Toggle({
     Title = "Inocente",
-    Default = true,
+    Default = false,
     Callback = function(v)
         ESP.Highlight_Innocent = v
     end
@@ -1384,7 +1384,7 @@ Sec_Esp:Toggle({
 
 Sec_Esp:Toggle({
     Title = "No Lobby",
-    Default = true,
+    Default = false,
     Callback = function(v)
         ESP.Highlight_Lobby = v
     end
@@ -1504,7 +1504,7 @@ Sec_Camera:Slider({
 })
 
 -- ==================================
--- BOTOES DA ABA TELEPORTE
+-- BOTÕES DA ABA TELEPORTE
 -- ==================================
 local Sec_TPPlayer = Aba_Tele:Section({Title = "Teleporta para player"})
 
