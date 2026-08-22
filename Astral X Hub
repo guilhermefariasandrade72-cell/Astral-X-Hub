@@ -95,7 +95,7 @@ BotaoX.MouseButton1Click:Connect(function()
     -- Executa o script em segundo plano
     task.spawn(function()
         pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/guilhermefariasandrade72-cell/Astral-X-Hub/refs/heads/main/%E4%B9%88%EF%BD%81%EF%BD%93%EF%BD%94%EF%BD%92%EF%BD%81%EF%BD%8C%E3%85%A4%20%EF%BD%98%EF%BD%89%EF%BD%94%EF%BD%85%EF%BD%92%E2%80%80%E2%95%B0%E2%80%BF%E2%95%AF"))()
         end)
     end)
     
