@@ -1,499 +1,214 @@
--- ==================================
--- 🌐 ASTRAL X HUB V1
--- ==================================
+-- ===========================================
+-- 🌐 INTERFACE PERFIL — COM BOTÃO "X" MULTIAÇÃO
+-- ===========================================
+
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
 local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
 local player = Players.LocalPlayer
 
--- ==================================
--- CARREGAR INTERFACE
--- ==================================
-local WindUI = loadstring(game:HttpGet(
-"https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
-))()
+local NomeJanela = "Perfil_Usuario"
+local Largura = 220
+local Altura = 260
 
--- ==================================
--- FUNÇÃO DE COR GRADIENTE
--- ==================================
-local function gradient(text, startColor, endColor)
-    local result = ""
-    local length = #text
-    for i = 1, length do
-        local t = (i - 1) / math.max(length - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. "<font color=\"rgb("..r..", "..g..", "..b..")\">"..text:sub(i, i).."</font>"
-    end
-    return result
+-- ✅ INFORMAÇÕES DO JOGADOR
+local NomeExibicao = player.DisplayName
+local NomeJogador = player.Name
+local NomeExecutor = (identifyexecutor and identifyexecutor()) or "Delta Executor"
+
+-- DESTRUIR SE JÁ EXISTIR
+if CoreGui:FindFirstChild(NomeJanela) then
+    CoreGui[NomeJanela]:Destroy()
 end
 
--- ==================================
--- INTERFACE (JANELA E BOTÃO)
--- ==================================
-local Window = WindUI:CreateWindow({
-    Title = gradient("Astral X Hub V1", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
-    Icon = "star",
-    Author = gradient("MM2 · PREMIUM", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
-    Size = UDim2.fromOffset(480, 340),
-    MinSize = Vector2.new(420, 300),
-    Transparent = true,
-    Theme = "Dark",
-    SideBarWidth = 120,
-    HasOutline = true,
-    HideSearchBar = true,
+local Gui = Instance.new("ScreenGui")
+Gui.Name = NomeJanela
+Gui.ResetOnSpawn = false
+Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+Gui.Parent = CoreGui
+
+-- JANELA PRETA
+local Janela = Instance.new("Frame")
+Janela.Size = UDim2.fromOffset(Largura, Altura)
+Janela.Position = UDim2.new(0.5, -Largura/2, 0.4, -Altura/2)
+Janela.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+Janela.ClipsDescendants = true
+Janela.Active = true
+Janela.Parent = Gui
+
+local JanelaCorner = Instance.new("UICorner")
+JanelaCorner.CornerRadius = UDim.new(0, 14)
+JanelaCorner.Parent = Janela
+
+-- BORDA ANIMADA (UIStroke)
+local JanelaStroke = Instance.new("UIStroke")
+JanelaStroke.Thickness = 3.5
+JanelaStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+JanelaStroke.Parent = Janela
+
+local UIGradient = Instance.new("UIGradient")
+UIGradient.Color = ColorSequence.new({
+    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
+    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
 })
 
-Window:EditOpenButton({
-    Title = "Astral",
-    Icon = "star",
-    CornerRadius = UDim.new(0, 12),
-    StrokeThickness = 2,
-    Color = ColorSequence.new(
-        Color3.fromHex("#ffcc00"),
-        Color3.fromHex("#ff6600")
-    ),
-    Draggable = true,
+UIGradient.Transparency = NumberSequence.new({
+    NumberSequenceKeypoint.new(0, 1),
+    NumberSequenceKeypoint.new(0.2, 0),
+    NumberSequenceKeypoint.new(0.65, 0),
+    NumberSequenceKeypoint.new(0.85, 0.8),
+    NumberSequenceKeypoint.new(1, 1)
 })
 
--- ==================================
--- VARIÁVEIS DA ABA MAIN
--- ==================================
-local AimbotAtivo = false
-local CircleFOVAtivo = false
-local RadioFOV = 100 -- Tamanho inicial do círculo de FOV
+UIGradient.Rotation = 0
+UIGradient.Parent = JanelaStroke
 
-local FOVCircle = nil
+-- ANIMAÇÃO DE ROTAÇÃO
+local tweenInfo = TweenInfo.new(5.0, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1)
+local animation = TweenService:Create(UIGradient, tweenInfo, {Rotation = 360})
+animation:Play()
 
+-- ===========================================
+-- BOTÃO "X" (EXECUTA SCRIPT + FECHA INTERFACE)
+-- ===========================================
 
--- ==================================
--- VARIÁVEIS DA ABA ESP
--- ==================================
-local ESPHighlightAtivo = false
-local ESPNomeAtivo = false
-local ESPDistanciaAtiva = false
-local ESPTracerAtivo = false
+local BotaoX = Instance.new("TextButton")
+BotaoX.Name = "BotaoX"
+BotaoX.Size = UDim2.fromOffset(26, 26)
+BotaoX.Position = UDim2.new(1, -34, 0, 8) -- Canto superior direito
+BotaoX.BackgroundColor3 = Color3.fromRGB(220, 40, 40) -- Vermelho
+BotaoX.Text = "X"
+BotaoX.TextColor3 = Color3.fromRGB(255, 255, 255)
+BotaoX.Font = Enum.Font.GothamBold
+BotaoX.TextSize = 14
+BotaoX.ZIndex = 5
+BotaoX.Parent = Janela
 
-local Highlights = {}
-local NamesESP = {}
-local DistanceESP = {}
-local TracersESP = {}
+local BtnXCorner = Instance.new("UICorner")
+BtnXCorner.CornerRadius = UDim.new(0, 6)
+BtnXCorner.Parent = BotaoX
 
-
--- ==================================
--- VARIÁVEIS DA ABA LOCAL PLAYER
--- ==================================
-
-
--- ==================================
--- VARIÁVEIS DA ABA TELEPORTE 
--- ==================================
-
-
-
--- ==================================
--- VARIÁVEIS DA ABA CONFIG UI
--- ==================================
-
-
--- ==================================
--- ABAS
--- ==================================
-local Aba_Main = Window:Tab({Title = gradient("Main", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "monitor"})
-local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "eye"})
-local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "user"})
-local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
-local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
-
--- ==================================
--- ⚙️ SISTEMA LÓGICO DO AIMBOT E FOV
--- ==================================
-
--- 🎯 Função para encontrar o jogador mais próximo da mira/centro da tela
-local function ObterJogadorMaisProximo()
-    local Cam = Workspace.CurrentCamera
-    local CentroTela = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y / 2)
-    local AlvoMaisProximo = nil
-    local MenorDistancia = RadioFOV -- Limita a busca apenas a quem estiver dentro do raio do FOV
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player and p.Character and p.Character:FindFirstChild("Head") then
-            local Head = p.Character.Head
-            local Humanoid = p.Character:FindFirstChildOfClass("Humanoid")
-
-            if Humanoid and Humanoid.Health > 0 then
-                local Vector, OnScreen = Cam:WorldToViewportPoint(Head.Position)
-
-                if OnScreen then
-                    local PosicaoTela = Vector2.new(Vector.X, Vector.Y)
-                    local DistanciaDaMira = (PosicaoTela - CentroTela).Magnitude
-
-                    if DistanciaDaMira < MenorDistancia then
-                        MenorDistancia = DistanciaDaMira
-                        AlvoMaisProximo = Head
-                    end
-                end
-            end
-        end
-    end
-
-    return AlvoMaisProximo
-end
-
--- ⭕ Função para Criar / Atualizar o Círculo de FOV na Tela
-local function AtualizarCircleFOV()
-    if not FOVCircle then
-        FOVCircle = Drawing.new("Circle")
-        FOVCircle.Color = Color3.fromRGB(255, 255, 255) -- Cor Branca
-        FOVCircle.Thickness = 1.5
-        FOVCircle.NumSides = 64
-        FOVCircle.Filled = false
-        FOVCircle.Transparency = 1
-    end
-
-    if CircleFOVAtivo then
-        local Cam = Workspace.CurrentCamera
-        FOVCircle.Position = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y / 2)
-        FOVCircle.Radius = RadioFOV
-        FOVCircle.Visible = true
-    else
-        FOVCircle.Visible = false
-    end
-end
-
--- 🔄 Loop Principal em RenderStepped (Atualização Instantânea)
-RunService.RenderStepped:Connect(function()
-    -- Atualiza o Círculo Enfeite
-    AtualizarCircleFOV()
-
-    -- Atualiza o Aimbot grudando no jogador mais próximo
-    if AimbotAtivo then
-        local Alvo = ObterJogadorMaisProximo()
-        if Alvo then
-            local Cam = Workspace.CurrentCamera
-            Cam.CFrame = CFrame.new(Cam.CFrame.Position, Alvo.Position)
-        end
-    end
-end)
-
--- ==================================
--- 🔍 SISTEMA ESP — TODOS INIMIGOS / TODOS BRANCO
--- ==================================
-
--- ⚪ COR FIXA: BRANCO PARA TODO MUNDO
-local COR_BRANCO = Color3.fromRGB(255, 255, 255)
-
--- 🔴 Função para Criar/Atualizar Highlight
-local function CriarHighlight(Alvo)
-    if not Alvo then return end
-    if not Highlights[Alvo] then
-        local H = Instance.new("Highlight")
-        H.Name = "ESP_Highlight"
-        H.Adornee = Alvo
-        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-        H.OutlineTransparency = 0
-        H.FillTransparency = 0.5
-        H.Parent = Alvo
-        Highlights[Alvo] = H
-    end
-    Highlights[Alvo].FillColor = COR_BRANCO
-    Highlights[Alvo].OutlineColor = COR_BRANCO
-    Highlights[Alvo].Enabled = true
-end
-
--- 🟢 Função para Criar/Atualizar Nome (Em cima da cabeça)
-local function CriarNomeESP(Jogador)
-    local Char = Jogador.Character
-    if not Char or not Char:FindFirstChild("Head") then return end
-    local Head = Char.Head
-
-    if not NamesESP[Jogador] or not NamesESP[Jogador].Gui or NamesESP[Jogador].Gui.Parent ~= Head then
-        if NamesESP[Jogador] and NamesESP[Jogador].Gui then 
-            NamesESP[Jogador].Gui:Destroy() 
-        end
-        
-        local BGui = Instance.new("BillboardGui")
-        BGui.Name = "ESP_Name"
-        BGui.Adornee = Head
-        BGui.Size = UDim2.new(0, 150, 0, 30)
-        BGui.StudsOffset = Vector3.new(0, 2.2, 0)
-        BGui.AlwaysOnTop = true
-
-        local TextLabel = Instance.new("TextLabel")
-        TextLabel.Name = "Label"
-        TextLabel.Size = UDim2.new(1, 0, 1, 0)
-        TextLabel.BackgroundTransparency = 1
-        TextLabel.Font = Enum.Font.SourceSansBold
-        TextLabel.TextSize = 14
-        TextLabel.TextStrokeTransparency = 0
-        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-        TextLabel.Parent = BGui
-
-        BGui.Parent = Head
-        NamesESP[Jogador] = {Gui = BGui, Label = TextLabel}
-    end
-
-    local Data = NamesESP[Jogador]
-    Data.Label.Text = Jogador.Name
-    Data.Label.TextColor3 = COR_BRANCO
-    Data.Gui.Enabled = true
-end
-
--- 🔵 Função para Criar/Atualizar Distância (Embaixo dos pés)
-local function CriarDistanciaESP(Jogador, Distancia)
-    local Char = Jogador.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-    local HRP = Char.HumanoidRootPart
-
-    if not DistanceESP[Jogador] or not DistanceESP[Jogador].Gui or DistanceESP[Jogador].Gui.Parent ~= HRP then
-        if DistanceESP[Jogador] and DistanceESP[Jogador].Gui then 
-            DistanceESP[Jogador].Gui:Destroy() 
-        end
-
-        local BGui = Instance.new("BillboardGui")
-        BGui.Name = "ESP_Distance"
-        BGui.Adornee = HRP
-        BGui.Size = UDim2.new(0, 100, 0, 20)
-        BGui.StudsOffset = Vector3.new(0, -3.2, 0)
-        BGui.AlwaysOnTop = true
-
-        local TextLabel = Instance.new("TextLabel")
-        TextLabel.Name = "Label"
-        TextLabel.Size = UDim2.new(1, 0, 1, 0)
-        TextLabel.BackgroundTransparency = 1
-        TextLabel.Font = Enum.Font.SourceSansBold
-        TextLabel.TextSize = 13
-        TextLabel.TextStrokeTransparency = 0
-        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
-        TextLabel.Parent = BGui
-
-        BGui.Parent = HRP
-        DistanceESP[Jogador] = {Gui = BGui, Label = TextLabel}
-    end
-
-    local Data = DistanceESP[Jogador]
-    Data.Label.Text = math.floor(Distancia) .. "m"
-    Data.Label.TextColor3 = COR_BRANCO
-    Data.Gui.Enabled = true
-end
-
--- 🟡 Função para Criar/Atualizar Linha (Tracer saindo de baixo da tela)
-local function CriarTracerESP(Jogador)
-    local Char = Jogador.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-    local Cam = Workspace.CurrentCamera
-    
-    local Vector, OnScreen = Cam:WorldToViewportPoint(Char.HumanoidRootPart.Position)
-
-    if not TracersESP[Jogador] then
-        local Line = Drawing.new("Line")
-        Line.Thickness = 1.5
-        Line.Transparency = 1
-        TracersESP[Jogador] = Line
-    end
-
-    local Line = TracersESP[Jogador]
-    if OnScreen then
-        Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
-        Line.To = Vector2.new(Vector.X, Vector.Y)
-        Line.Color = COR_BRANCO
-        Line.Visible = true
-    else
-        Line.Visible = false
-    end
-end
-
--- 🧹 Limpeza Individual de Jogador
-local function LimparJogadorESP(p)
-    if p.Character and Highlights[p.Character] then
-        Highlights[p.Character]:Destroy()
-        Highlights[p.Character] = nil
-    end
-    if NamesESP[p] then
-        if NamesESP[p].Gui then NamesESP[p].Gui:Destroy() end
-        NamesESP[p] = nil
-    end
-    if DistanceESP[p] then
-        if DistanceESP[p].Gui then DistanceESP[p].Gui:Destroy() end
-        DistanceESP[p] = nil
-    end
-    if TracersESP[p] then
-        TracersESP[p].Visible = false
-        TracersESP[p]:Remove()
-        TracersESP[p] = nil
-    end
-end
-
--- 🧹 Limpeza Geral de Tabelas
-local function LimparTabela(Tabela)
-    for _, item in pairs(Tabela) do
-        if typeof(item) == "Instance" then
-            item:Destroy()
-        elseif type(item) == "table" and item.Gui then
-            item.Gui:Destroy()
-        elseif type(item) == "userdata" and item.Remove then
-            item:Remove()
-        end
-    end
-    table.clear(Tabela)
-end
-
--- 🔄 Loop Principal do ESP — MOSTRA TODO MUNDO
-RunService.RenderStepped:Connect(function()
-    if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
-        local MeuChar = player.Character
-        local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) 
-            and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
-
-        for _, p in ipairs(Players:GetPlayers()) do
-            local Char = p.Character
-            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
-            local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
-
-            -- ❌ Ignora apenas VOCÊ e quem estiver MORTO
-            if p == player or not Char or not HRP or not Humanoid or Humanoid.Health <= 0 then
-                LimparJogadorESP(p)
-            else
-                -- ✅ TODO MUNDO VIVO = INIMIGO = BRANCO
-                local Distancia = (MinhaPos - HRP.Position).Magnitude
-
-                if ESPHighlightAtivo then CriarHighlight(Char)
-                elseif Highlights[Char] then Highlights[Char].Enabled = false end
-
-                if ESPNomeAtivo then CriarNomeESP(p)
-                elseif NamesESP[p] and NamesESP[p].Gui then NamesESP[p].Gui.Enabled = false end
-
-                if ESPDistanciaAtiva then CriarDistanciaESP(p, Distancia)
-                elseif DistanceESP[p] and DistanceESP[p].Gui then DistanceESP[p].Gui.Enabled = false end
-
-                if ESPTracerAtivo then CriarTracerESP(p)
-                elseif TracersESP[p] then TracersESP[p].Visible = false end
-            end
-        end
-    else
-        -- 🧹 Desligou tudo → limpa tudo
-        if next(Highlights) then LimparTabela(Highlights) end
-        if next(NamesESP) then LimparTabela(NamesESP) end
-        if next(DistanceESP) then LimparTabela(DistanceESP) end
-        if next(TracersESP) then LimparTabela(TracersESP) end
-    end
-end)
-
--- 🔄 Atualiza automaticamente quando alguém ENTRA ou SAI
-Players.PlayerAdded:Connect(function(p)
-    p.CharacterAdded:Connect(function()
-        task.wait(0.2) -- Espera carregar o personagem
+-- 🔴 AÇÃO DO "X": EXECUTA O SCRIPT E FECHA A INTERFACE
+BotaoX.MouseButton1Click:Connect(function()
+    -- Executa o script em segundo plano
+    task.spawn(function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+        end)
     end)
+    
+    -- Destrói a interface imediatamente
+    Gui:Destroy()
 end)
 
-Players.PlayerRemoving:Connect(function(p)
-    LimparJogadorESP(p) -- Remove imediatamente
+-- ===========================================
+-- CÍRCULO E PERFIL DO JOGADOR
+-- ===========================================
+
+local CirculoPerfil = Instance.new("Frame")
+CirculoPerfil.Size = UDim2.fromOffset(90, 90)
+CirculoPerfil.Position = UDim2.new(0.5, -45, 0, 15)
+CirculoPerfil.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+CirculoPerfil.Parent = Janela
+
+local CirculoCorner = Instance.new("UICorner")
+CirculoCorner.CornerRadius = UDim.new(1, 0)
+CirculoCorner.Parent = CirculoPerfil
+
+local ImagemPerfil = Instance.new("ImageLabel")
+ImagemPerfil.Size = UDim2.new(0.92, 0, 0.92, 0)
+ImagemPerfil.Position = UDim2.new(0.04, 0, 0.04, 0)
+ImagemPerfil.BackgroundTransparency = 1
+ImagemPerfil.Parent = CirculoPerfil
+
+local ImagemCorner = Instance.new("UICorner")
+ImagemCorner.CornerRadius = UDim.new(1, 0)
+ImagemCorner.Parent = ImagemPerfil
+
+task.spawn(function()
+    local IdUsuario = player.UserId
+    local Sucesso, Icone = pcall(function()
+        return Players:GetUserThumbnailAsync(IdUsuario, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
+    end)
+    if Sucesso and Icone then
+        ImagemPerfil.Image = Icone
+    end
 end)
 
--- ==================================
--- BOTOES DA ABA MAIN
--- ==================================
-local Sec_Aimbot = Aba_Main:Section({ Title = "Aimbot" })
+local function PegarHoras()
+    local Tempo = os.date("*t")
+    return string.format("%02d:%02d", Tempo.hour, Tempo.min)
+end
 
-Sec_Aimbot:Toggle({
-    Title = "Aimbot Player",
-    Default = false,
-    Callback = function(Ativo)
-        AimbotAtivo = Ativo
-    end
-})
+local function CriarTexto(Ordem, Titulo, Valor)
+    local Container = Instance.new("Frame")
+    Container.Size = UDim2.new(1, -20, 0, 20)
+    Container.Position = UDim2.new(0, 10, 0, 120 + (Ordem - 1) * 28)
+    Container.BackgroundTransparency = 1
+    Container.Parent = Janela
 
-Sec_Aimbot:Toggle({
-    Title = "Cicle Fov",
-    Default = false,
-    Callback = function(Ativo)
-        CircleFOVAtivo = Ativo
-    end
-})
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = Titulo .. ": " .. Valor
+    Texto.TextColor3 = Color3.fromRGB(230, 230, 230)
+    Texto.Font = Enum.Font.Gotham
+    Texto.TextSize = 11
+    Texto.TextXAlignment = Enum.TextXAlignment.Left
+    Texto.Name = "Label_" .. Ordem
+    Texto.Parent = Container
+    return Texto
+end
 
-Sec_Aimbot:Slider({
-    Title = "Tamanho do FOV",
-    Value = {Min = 50, Max = 300, Default = 100, Step = 1},
-    Callback = function(Valor)
-        RadioFOV = Valor
-    end
-})
+local Label_Exibicao = CriarTexto(1, "Nome de exibição", NomeExibicao)
+local Label_Original = CriarTexto(2, "Nome da conta", NomeJogador)
+local Label_Executor = CriarTexto(3, "Executor", NomeExecutor)
+local Label_Horas = CriarTexto(4, "Horário", PegarHoras())
 
-
--- ==================================
--- BOTOES DA ABA ESP
--- ==================================
-local Sec_ESP = Aba_ESP:Section({ Title = "ESP" })
-
-Sec_ESP:Toggle({
-    Title = "Highlight",
-    Default = false,
-    Callback = function(Ativo)
-        ESPHighlightAtivo = Ativo
-        if not Ativo then
-            for _, h in pairs(Highlights) do h.Enabled = false end
+task.spawn(function()
+    while task.wait(10) do
+        if Label_Horas and Label_Horas.Parent then
+            Label_Horas.Text = "Horário: " .. PegarHoras()
+        else
+            break
         end
     end
-})
+end)
 
-Sec_ESP:Toggle({
-    Title = "Nome",
-    Default = false,
-    Callback = function(Ativo)
-        ESPNomeAtivo = Ativo
-        if not Ativo then
-            for _, n in pairs(NamesESP) do n.Gui.Enabled = false end
+-- ===========================================
+-- ARRASTAR A INTERFACE (MÓVEL)
+-- ===========================================
+
+local Arrastando = false
+local InicioPos, InicioToque
+
+Janela.InputBegan:Connect(function(t)
+    if t.UserInputType == Enum.UserInputType.MouseButton1 or t.UserInputType == Enum.UserInputType.Touch then
+        -- Impede de arrastar ao clicar diretamente no botão X
+        if UserInputService:GetFocusedTextBox() == nil then
+            Arrastando = true
+            InicioPos = Janela.Position
+            InicioToque = t.Position
         end
     end
-})
+end)
 
-Sec_ESP:Toggle({
-    Title = "Distância",
-    Default = false,
-    Callback = function(Ativo)
-        ESPDistanciaAtiva = Ativo
-        if not Ativo then
-            for _, d in pairs(DistanceESP) do d.Gui.Enabled = false end
-        end
+UserInputService.InputChanged:Connect(function(t)
+    if Arrastando and (t.UserInputType == Enum.UserInputType.MouseMovement or t.UserInputType == Enum.UserInputType.Touch) then
+        local Delta = t.Position - InicioToque
+        Janela.Position = UDim2.new(
+            InicioPos.X.Scale,
+            InicioPos.X.Offset + Delta.X,
+            InicioPos.Y.Scale,
+            InicioPos.Y.Offset + Delta.Y
+        )
     end
-})
+end)
 
-Sec_ESP:Toggle({
-    Title = "Linha",
-    Default = false,
-    Callback = function(Ativo)
-        ESPTracerAtivo = Ativo
-        if not Ativo then
-            for _, t in pairs(TracersESP) do t.Visible = false end
-        end
+UserInputService.InputEnded:Connect(function(t)
+    if t.UserInputType == Enum.UserInputType.MouseButton1 or t.UserInputType == Enum.UserInputType.Touch then
+        Arrastando = false
     end
-})
-
-
--- ==================================
--- BOTOES DA ABA LOCAL PLAYER
--- ==================================
-
-
--- ==================================
--- BOTOES DA ABA TELEPORTE
--- ==================================
-
-
--- ==================================
--- BOTOES DA ABA CONFIG UI
--- ==================================
-
-
-
-
-
-
-
-
-
-
-
+end)
