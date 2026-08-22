@@ -1333,58 +1333,78 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
-
 -- ==============================================================================
--- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE
+-- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE (CORRIGIDO)
 -- ==============================================================================
 local function ConfigurarPersonagem()
     Personagem = player.Character or player.CharacterAdded:Wait()
-    Humanoid = Personagem:FindFirstChild("Humanoid")
-    Raiz = Personagem:FindFirstChild("HumanoidRootPart")
+    Humanoid = Personagem:WaitForChild("Humanoid")
+    Raiz = Personagem:WaitForChild("HumanoidRootPart")
+    
     PartesCorpo = {}
     for _, obj in ipairs(Personagem:GetDescendants()) do
-        if obj:IsA("BasePart") and obj.Transparency == 0 then
+        if obj:IsA("BasePart") then
             table.insert(PartesCorpo, obj)
         end
     end
 end
 
-RunService.Heartbeat:Connect(function()
-    if not InvisivelAtivo or not Raiz or not Humanoid then return end
-
-    -- Corpo transparente
-    for _, parte in ipairs(PartesCorpo) do
-        parte.Transparency = 0.5
-    end
-
-    -- Invisível para o servidor
-    local PosOriginal = Raiz.CFrame
-    local CamOffset = Humanoid.CameraOffset
-    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
-    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
-    RunService.RenderStepped:Wait()
-    Raiz.CFrame = PosOriginal
-    Humanoid.CameraOffset = CamOffset
+-- Atualiza referências sempre que um novo personagem for adicionado pelo servidor
+player.CharacterAdded:Connect(function(novoChar)
+    task.wait(0.2)
+    ConfigurarPersonagem()
 end)
 
--- Volta ao normal ao desligar
+-- Loop principal para manter a invisibilidade sem quebrar no TP/Respawn
+RunService.Heartbeat:Connect(function()
+    if not InvisivelAtivo then return end
+    
+    -- Se o personagem mudou ou morreu, tenta reconectar
+    if not Personagem or not Personagem.Parent or not Raiz or not Humanoid or Humanoid.Health <= 0 then
+        ConfigurarPersonagem()
+        return
+    end
+
+    -- Deixa o corpo transparente localmente
+    for _, parte in ipairs(PartesCorpo) do
+        if parte and parte.Parent then
+            parte.Transparency = 0.5
+        end
+    end
+
+    -- Desloca a CFrame do servidor sem perder o controle da câmera
+    local PosOriginal = Raiz.CFrame
+    local CamOffset = Humanoid.CameraOffset
+    
+    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
+    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
+    
+    RunService.RenderStepped:Wait()
+    
+    if Raiz and Raiz.Parent then
+        Raiz.CFrame = PosOriginal
+        Humanoid.CameraOffset = CamOffset
+    end
+end)
+
+-- Restaura a transparência normal caso desative o toggle
 task.spawn(function()
     while true do
-        task.wait(0.1)
-        if not InvisivelAtivo then
+        task.wait(0.2)
+        if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
             for _, parte in ipairs(PartesCorpo) do
-                parte.Transparency = 0
+                if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
+                    parte.Transparency = 0
+                end
             end
         end
     end
 end)
 
--- Recarrega ao renascer
-player.CharacterAdded:Connect(ConfigurarPersonagem)
-
--- Inicia
-ConfigurarPersonagem()
-
+-- Inicialização
+if player.Character then
+    ConfigurarPersonagem()
+end
 
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
