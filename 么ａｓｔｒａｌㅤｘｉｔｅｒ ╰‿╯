@@ -1,110 +1,114 @@
--- Protected by Mnx Obfuscator | Public Enemy
-local buKuA22rW7V6=type(nil)
-local dlOAbTqhetRMZ4Hrj=math.floor(8)
-local szgZ2WbdVn=math.abs(-67)
-local o2DUCtgsHu=math.abs(-22)
-local eCmtDeRJ_TC2wj=#"suZV"
-local oNG4N9YlL8q7ZL=math.abs(-31)
-local zFbOlDbP106oJPQI=883
-local u1xQ0aI7lyYyi7X3F=bit32.bxor(184,148)
-local uQRPU3X_pFIgMwH=string.len("jvJWaN")
-local buXBFOuPS0mLhgybkv=tostring(94)
-local kPNCiivCV25r=587
-local vzI45hgMvilGZvT=string.len("m12Wb")
+-- // Astral X Hub Oficial. Script Roblox MM2 update 21/08/2026 | horas : 22:04 😎 \\ --
+
+local tWNh9bTGuQRS4ybbT6=math.abs(-23)
+local zh676P5lskHP4VGNSW=tostring(28)
+local hv_xIr3qa_UHYW=math.abs(-38)
+local obtjyHaNOmNi0=#"i8rIBOj"
+local mbzjzolGGBAK1X=string.len("o2BVtN")
+local jUNDSwTaohSIE53=#"g0Lz"
+local sLTjOK41hVAnV=533
+local q30CaW5_riQokOFA=#"fWvkka2F"
+local fbWv6KH2o4KMm=tostring(26)
+local o80dpXYkk=#"eYaM5h3v"
+local pV6G6BEuog8h8y=math.abs(-2)
+local e3wZuhY_BSK=string.len("uk6PQ")
 do local _=nil end
-local vMLREnVhyywHUHZTJJ=tostring(2)
-local eVTQYZcdju493=726
-local qx2Rmxfr_WCrVTSFyU=type(nil)
-do local _=nil end
-local dOFIsLo8X={"e2dc0f6bbcd73b602cf121a8ccdc746296baa8391b54e622d1c42e87092b0e92aa7658a221aa78c1cce279d6c1cfa9bd","2bf5a3ccf7a76a8aff6d9664c46ae5ed407ab97c46bc5e81b91fd3b80409ccdf8999e57720aec25d351148d07691b89d","c333645220b4ea60574cddc7710721a1ad1d6de535021e01d5d93d2babfc8dcca4e3fc81e7ba0e29de0ac673"}
-local wvvp1kxaOWK1W={2,1,3}
-local vU8b0tFEAwC={"83c89ed57876b38c44769f632fb1c66db8beab5a28b1f3e1321c56a477537b4b7e0c318f017be9759e2befbd7ebf6a6a","3e1666b74d4908eca6cbebe88732ed8e8b4be31920203553e4490b0accb5ea599a256853209736952ee48de898acdd67","bf3c8d5b31d47c9fe71efca24867369209bb6e353db70b7e621c69b014f9bb588a4558d6fb1b5986e4eb5d"}
-local my2HHC3OGE04rRVny7={2,1,3}
-local yxiosK3OU=string.len("tEzzRra9")
-local yqaTbDQODErQdb7z8=#"n7xg"
-local ggCrBWxffQn4Zgd8=bit32.bxor(199,178)
+local hG_OlCJGPmbnP=math.abs(-55)
+local vmAguu1xeN8=#"pEB"
+local hJjmOSEg205XT=tostring(86)
 if false then error("") end
+local iNH0wjdlQFh2={"6d9f1f57ec72e590bac2eebce328d1ad4f61e85dccc71852fba84c4291d99d5ae34939027bf0","ed4d4c3d0f78dbcd7438b5ff24dbda33a5d67ffeae63163d7e5847d9176c1da2"}
+local xxfJnIrVOFJ={1,2}
+local lkpD4XweW2wqDUM={"405a71a8307221fbab9531d33f2332970e814a3ebfa113f028fab149ba711709f5322887ba4f","a1e01ed8765710dc9dcb653180cd4534277c8dd764a5e6023756803be1fdcf"}
+local b6OZ92JOJV4MIVIig={1,2}
+local yxQ2exv3_jcOcGcEd=string.len("o0gBfTU")
+local hakJQbMMEY=type(nil)
+local qb_VvI_YGIdB3YWS3y=tostring(42)
+local zXhZYM_qhHKpZ=tostring(87)
+if false then error("") end
+local sWjYevJq7tA={}
+for r5Ysol09lU=1,#xxfJnIrVOFJ do sWjYevJq7tA[xxfJnIrVOFJ[r5Ysol09lU]]=iNH0wjdlQFh2[r5Ysol09lU] end
+sWjYevJq7tA=table.concat(sWjYevJq7tA)
+local zJ7svF9dRCGVSdE={}
+for r5Ysol09lU=1,#b6OZ92JOJV4MIVIig do zJ7svF9dRCGVSdE[b6OZ92JOJV4MIVIig[r5Ysol09lU]]=lkpD4XweW2wqDUM[r5Ysol09lU] end
+zJ7svF9dRCGVSdE=table.concat(zJ7svF9dRCGVSdE)
+local spOBmphCLYek2jvmU={}
+for r5Ysol09lU=1,#sWjYevJq7tA,2 do
+  spOBmphCLYek2jvmU[#spOBmphCLYek2jvmU+1]=tonumber(string.sub(sWjYevJq7tA,r5Ysol09lU,r5Ysol09lU+1),16)
+end
+local mGCiPRFOH1criG={206,123,46,152,174,89,12,45,215,139,167,80,147,91,182,152,99,57,11,41,190,37,169,97,18,197,206,157,64,196,209,35,227,220,83,73,122,22,109,151,173}
+for r5Ysol09lU=1,#spOBmphCLYek2jvmU do
+  spOBmphCLYek2jvmU[r5Ysol09lU]=bit32.bxor(spOBmphCLYek2jvmU[r5Ysol09lU],mGCiPRFOH1criG[(r5Ysol09lU-1)%#mGCiPRFOH1criG+1])
+end
+local wTTFoPzmO={}
+for r5Ysol09lU=1,#zJ7svF9dRCGVSdE,2 do
+  wTTFoPzmO[#wTTFoPzmO+1]=tonumber(string.sub(zJ7svF9dRCGVSdE,r5Ysol09lU,r5Ysol09lU+1),16)
+end
+local ayauxMb4tGaEAM3H0f={151,89,162,27,65,3,33,124,101,76,100,99,131,32,38,135,116,97,19,13,142,191,117,75,242,246,5,73,201,52,209,11,215,70,227,139,102,75,202,154,32}
+for r5Ysol09lU=1,#wTTFoPzmO do
+  wTTFoPzmO[r5Ysol09lU]=bit32.bxor(wTTFoPzmO[r5Ysol09lU],ayauxMb4tGaEAM3H0f[(r5Ysol09lU-1)%#ayauxMb4tGaEAM3H0f+1])
+end
+local t1YWDxU5UrLuvw56jc={}
+for r5Ysol09lU=1,math.max(#spOBmphCLYek2jvmU,#wTTFoPzmO) do
+  if spOBmphCLYek2jvmU[r5Ysol09lU] then t1YWDxU5UrLuvw56jc[#t1YWDxU5UrLuvw56jc+1]=spOBmphCLYek2jvmU[r5Ysol09lU] end
+  if wTTFoPzmO[r5Ysol09lU] then t1YWDxU5UrLuvw56jc[#t1YWDxU5UrLuvw56jc+1]=wTTFoPzmO[r5Ysol09lU] end
+end
+local hVFdX07h6mSC5gQUJ={}
+local vMMwadYccu8=872782786
+for r5Ysol09lU=#t1YWDxU5UrLuvw56jc-1,1,-1 do
+  vMMwadYccu8=(vMMwadYccu8*1664525+1013904223)%4294967296
+  local xtCDMNko4neWDDAJ6V=vMMwadYccu8%(r5Ysol09lU+1)+1
+  hVFdX07h6mSC5gQUJ[#hVFdX07h6mSC5gQUJ+1]={r5Ysol09lU+1,xtCDMNko4neWDDAJ6V}
+end
+for r5Ysol09lU=#hVFdX07h6mSC5gQUJ,1,-1 do
+  local uloHlsKML9oUM2qH3=hVFdX07h6mSC5gQUJ[r5Ysol09lU]
+  local iJoFhDfWRzWNCK=t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[1]]
+  t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[1]]=t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[2]]
+  t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[2]]=iJoFhDfWRzWNCK
+end
+local c30dtEaxtekgNhwK={}
+local p9pTgCrJc30xs=137540383
+for r5Ysol09lU=#t1YWDxU5UrLuvw56jc-1,1,-1 do
+  p9pTgCrJc30xs=(p9pTgCrJc30xs*1664525+1013904223)%4294967296
+  local g0lVXBQso=p9pTgCrJc30xs%(r5Ysol09lU+1)+1
+  c30dtEaxtekgNhwK[#c30dtEaxtekgNhwK+1]={r5Ysol09lU+1,g0lVXBQso}
+end
+for r5Ysol09lU=#c30dtEaxtekgNhwK,1,-1 do
+  local tsOtfW4CbV=c30dtEaxtekgNhwK[r5Ysol09lU]
+  local pSVNi_jQRLRSB7=t1YWDxU5UrLuvw56jc[tsOtfW4CbV[1]]
+  t1YWDxU5UrLuvw56jc[tsOtfW4CbV[1]]=t1YWDxU5UrLuvw56jc[tsOtfW4CbV[2]]
+  t1YWDxU5UrLuvw56jc[tsOtfW4CbV[2]]=pSVNi_jQRLRSB7
+end
+local jnraoCUixaFxA={15,211,247,80,102,6,195,74,100,107,63,185,152,106,79,80,249,65,117,105,251,63,152,10,204,164,106,36,41,158,156,137,88,242,44,93,224,178,239,61,103}
+for r5Ysol09lU=1,#t1YWDxU5UrLuvw56jc do
+  t1YWDxU5UrLuvw56jc[r5Ysol09lU]=bit32.bxor(t1YWDxU5UrLuvw56jc[r5Ysol09lU],jnraoCUixaFxA[(r5Ysol09lU-1)%#jnraoCUixaFxA+1])
+end
+local kRPyCAkHCj_o={153,138,63,81,171,106,160,240,109,239,200,116,46,136,91,24,146,2,226,68,244,125,236,16,10,206}
+for r5Ysol09lU=1,#t1YWDxU5UrLuvw56jc do
+  t1YWDxU5UrLuvw56jc[r5Ysol09lU]=bit32.bxor(t1YWDxU5UrLuvw56jc[r5Ysol09lU],kRPyCAkHCj_o[(r5Ysol09lU-1)%#kRPyCAkHCj_o+1])
+end
+local g5DaS8ol8DoaRs6=968
+local h20t3QGMqUJHEixm=225
+local akdRRlYm6g=type(nil)
+local goM4oiTkAH_Z6Pse9o=#"oHi"
+local zZJJdlJTDZ=831
+do local _=nil end
 for _=1,0 do end
 do local _=nil end
-local ieqAImUQDUrtndGe={}
-for c6cmN3asQVG=1,#wvvp1kxaOWK1W do ieqAImUQDUrtndGe[wvvp1kxaOWK1W[c6cmN3asQVG]]=dOFIsLo8X[c6cmN3asQVG] end
-ieqAImUQDUrtndGe=table.concat(ieqAImUQDUrtndGe)
-local wnFB9AXon={}
-for c6cmN3asQVG=1,#my2HHC3OGE04rRVny7 do wnFB9AXon[my2HHC3OGE04rRVny7[c6cmN3asQVG]]=vU8b0tFEAwC[c6cmN3asQVG] end
-wnFB9AXon=table.concat(wnFB9AXon)
-local mQxcEX2OL={}
-for c6cmN3asQVG=1,#ieqAImUQDUrtndGe,2 do
-  mQxcEX2OL[#mQxcEX2OL+1]=tonumber(string.sub(ieqAImUQDUrtndGe,c6cmN3asQVG,c6cmN3asQVG+1),16)
+local uk9K4miqGJ={74,159,151,71,199,163,107,208,141,16,238,168,188,146,241,39,242,17,184,189,72,232,7,81,149,91,206,218,168,34,243,31,167,156,32,142,142,173,156,172,229}
+local nnnoSv8nuBxQoz={}
+for r5Ysol09lU=1,#t1YWDxU5UrLuvw56jc do
+  nnnoSv8nuBxQoz[r5Ysol09lU]=string.char(bit32.bxor(t1YWDxU5UrLuvw56jc[r5Ysol09lU],uk9K4miqGJ[(r5Ysol09lU-1)%#uk9K4miqGJ+1]))
 end
-local gTCn9VXcp={137,45,249,229,238,92,15,163,166,34,54,123,87,138,207,183,94,37,58,180,30,221,75,158,143,9,134,117,76,208,25,16,177,53,20,30,53,243,65,219,21,12,89,87,26,183}
-for c6cmN3asQVG=1,#mQxcEX2OL do
-  mQxcEX2OL[c6cmN3asQVG]=bit32.bxor(mQxcEX2OL[c6cmN3asQVG],gTCn9VXcp[(c6cmN3asQVG-1)%#gTCn9VXcp+1])
-end
-local ofVi4jiwWozi_8FJv={}
-for c6cmN3asQVG=1,#wnFB9AXon,2 do
-  ofVi4jiwWozi_8FJv[#ofVi4jiwWozi_8FJv+1]=tonumber(string.sub(wnFB9AXon,c6cmN3asQVG,c6cmN3asQVG+1),16)
-end
-local kkY4PouLJ={8,94,25,157,15,220,74,219,109,241,33,71,96,184,49,215,175,15,187,43,146,94,4,72,103,40,17,191,224,168,54,216,171,14,160,45,185,98,125,105,249,173,201,70,126,111}
-for c6cmN3asQVG=1,#ofVi4jiwWozi_8FJv do
-  ofVi4jiwWozi_8FJv[c6cmN3asQVG]=bit32.bxor(ofVi4jiwWozi_8FJv[c6cmN3asQVG],kkY4PouLJ[(c6cmN3asQVG-1)%#kkY4PouLJ+1])
-end
-local vaxiuMkI8={}
-for c6cmN3asQVG=1,math.max(#mQxcEX2OL,#ofVi4jiwWozi_8FJv) do
-  if mQxcEX2OL[c6cmN3asQVG] then vaxiuMkI8[#vaxiuMkI8+1]=mQxcEX2OL[c6cmN3asQVG] end
-  if ofVi4jiwWozi_8FJv[c6cmN3asQVG] then vaxiuMkI8[#vaxiuMkI8+1]=ofVi4jiwWozi_8FJv[c6cmN3asQVG] end
-end
-local uFM0mKtWgZ95do={}
-local iAMzr4Z1hejSDwkAqd=27464400
-for c6cmN3asQVG=#vaxiuMkI8-1,1,-1 do
-  iAMzr4Z1hejSDwkAqd=(iAMzr4Z1hejSDwkAqd*1664525+1013904223)%4294967296
-  local wopgWOQuR=iAMzr4Z1hejSDwkAqd%(c6cmN3asQVG+1)+1
-  uFM0mKtWgZ95do[#uFM0mKtWgZ95do+1]={c6cmN3asQVG+1,wopgWOQuR}
-end
-for c6cmN3asQVG=#uFM0mKtWgZ95do,1,-1 do
-  local wr8HTf7nfp=uFM0mKtWgZ95do[c6cmN3asQVG]
-  local hpt8q42dUTZ3Zv7a=vaxiuMkI8[wr8HTf7nfp[1]]
-  vaxiuMkI8[wr8HTf7nfp[1]]=vaxiuMkI8[wr8HTf7nfp[2]]
-  vaxiuMkI8[wr8HTf7nfp[2]]=hpt8q42dUTZ3Zv7a
-end
-local xqxah9u60KtSKPD={}
-local e4Zw3aupoy=907402547
-for c6cmN3asQVG=#vaxiuMkI8-1,1,-1 do
-  e4Zw3aupoy=(e4Zw3aupoy*1664525+1013904223)%4294967296
-  local s0fXoO1l1UCqb7=e4Zw3aupoy%(c6cmN3asQVG+1)+1
-  xqxah9u60KtSKPD[#xqxah9u60KtSKPD+1]={c6cmN3asQVG+1,s0fXoO1l1UCqb7}
-end
-for c6cmN3asQVG=#xqxah9u60KtSKPD,1,-1 do
-  local gB1knHPUT7FE=xqxah9u60KtSKPD[c6cmN3asQVG]
-  local rDc1RzuVMNkCn6zt=vaxiuMkI8[gB1knHPUT7FE[1]]
-  vaxiuMkI8[gB1knHPUT7FE[1]]=vaxiuMkI8[gB1knHPUT7FE[2]]
-  vaxiuMkI8[gB1knHPUT7FE[2]]=rDc1RzuVMNkCn6zt
-end
-local fheFNBdGljX={114,14,134,120,73,223,8,76,65,132,33,73,14,179,98,231,129,108,123,139,162,134,209,38,235,55,105,123,66,251,166,9,196,218,12,236,195,22,26,173,242,14,64,157,177,115}
-for c6cmN3asQVG=1,#vaxiuMkI8 do
-  vaxiuMkI8[c6cmN3asQVG]=bit32.bxor(vaxiuMkI8[c6cmN3asQVG],fheFNBdGljX[(c6cmN3asQVG-1)%#fheFNBdGljX+1])
-end
-local fdHbp1BF6P={213,239,10,86,162,53,97,90,164,175,134,164,189,151,126,98,152,69,49,21,141}
-for c6cmN3asQVG=1,#vaxiuMkI8 do
-  vaxiuMkI8[c6cmN3asQVG]=bit32.bxor(vaxiuMkI8[c6cmN3asQVG],fdHbp1BF6P[(c6cmN3asQVG-1)%#fdHbp1BF6P+1])
-end
-local lUaqYuGTULAkz=bit32.bxor(200,33)
-local swO2s43aNbKEjVc1=bit32.bxor(197,37)
-local l3zHBm5qYvq=#"knc"
-local iXxkAu156lVcYRz=#"v6E4YyJ"
+local zLO8mvcYwZ=table.concat(nnnoSv8nuBxQoz)
+local erTZiAq9MOP9l=type(nil)
+local v_eYOpoF9byaCbw=type(nil)
 for _=1,0 do end
-local gXx1nYNa0CdD={209,145,125,104,228,244,185,20,20,50,163,84,251,92,16,162,155,132,6,38,81,32,146,83,14,231,158,106,241,240,135,35,174,63,170,134,211,55,44,125,213,64,71,150,145,7}
-local r5WHDXKmABu={}
-for c6cmN3asQVG=1,#vaxiuMkI8 do
-  r5WHDXKmABu[c6cmN3asQVG]=string.char(bit32.bxor(vaxiuMkI8[c6cmN3asQVG],gXx1nYNa0CdD[(c6cmN3asQVG-1)%#gXx1nYNa0CdD+1]))
-end
-local nqzsq9uzPNIdVkXT_=table.concat(r5WHDXKmABu)
-local bbWgxZRjxMg8=type(nil)
-local gpyC3wcWVKDNJZUn44=math.abs(-49)
-local mJfarLEHwQvD=bit32.bxor(58,155)
+do local _=nil end
 if false then error("") end
-local wY7O5wEUV,fR_TL3OE_Xw5ch=loadstring(nqzsq9uzPNIdVkXT_)
-if wY7O5wEUV then
-  wY7O5wEUV()
+local hpg7I1Zu1tPssW0,r3acf3A3o1DGU=loadstring(zLO8mvcYwZ)
+if hpg7I1Zu1tPssW0 then
+  hpg7I1Zu1tPssW0()
 else
-  error("Mnx | Public Enemy : "..tostring(fR_TL3OE_Xw5ch))
+  error("Mnx | Public Enemy : "..tostring(r3acf3A3o1DGU))
 end
