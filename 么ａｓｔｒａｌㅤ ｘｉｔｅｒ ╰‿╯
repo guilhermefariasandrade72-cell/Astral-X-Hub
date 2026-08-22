@@ -1365,10 +1365,14 @@ RunService.Heartbeat:Connect(function()
         return
     end
 
-    -- Deixa o corpo transparente localmente
+    -- Deixa o corpo transparente localmente e oculta o HumanoidRootPart
     for _, parte in ipairs(PartesCorpo) do
         if parte and parte.Parent then
-            parte.Transparency = 0.5
+            if parte.Name == "HumanoidRootPart" then
+                parte.Transparency = 1 -- Totalmente invisível
+            else
+                parte.Transparency = 0.5 -- Transparência do corpo
+            end
         end
     end
 
