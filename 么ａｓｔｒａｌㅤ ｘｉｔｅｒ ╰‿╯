@@ -1214,7 +1214,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ===========================================
--- 🎥 SISTEMA FREECAM INDEPENDENTE (MOBILE)
+-- 🎥 SISTEMA FREECAM (ROTAÇÃO APENAS LADO DIREITO)
 -- ===========================================
 local FreecamAtiva = false
 local FreecamConnection = nil
@@ -1226,9 +1226,6 @@ local sensibilidade = 0.35
 local lastTouchPos = nil
 local isDraggingCam = false
 
--- Vetor de movimento manual (independente do joystick do jogo)
-local moveDir = Vector3.new(0, 0, 0)
-
 local function ToggleFreecam(state)
     FreecamAtiva = state
     local cam = workspace.CurrentCamera
@@ -1239,22 +1236,23 @@ local function ToggleFreecam(state)
     if FreecamAtiva then
         if not cam or not hrp then return end
         
-        -- Congela o personagem e desativa os controles padrão do jogo
         hrp.Anchored = true
-        pcall(function() controls:Disable() end)
-
         cam.CameraType = Enum.CameraType.Scriptable
         
         local lookVector = cam.CFrame.LookVector
         camRotY = math.deg(math.atan2(-lookVector.X, -lookVector.Z))
         camRotX = math.deg(math.asin(lookVector.Y))
 
-        -- Movimentação do olhar pelo arrasto do dedo na tela
+        -- Detecta o toque apenas no lado direito da tela
         TouchBeganConn = UserInputService.InputBegan:Connect(function(input, processed)
             if processed then return end
             if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                isDraggingCam = true
-                lastTouchPos = input.Position
+                local viewportSize = cam.ViewportSize
+                -- ✅ Só ativa a rotação se o toque for da metade da tela para a direita
+                if input.Position.X >= (viewportSize.X / 2) then
+                    isDraggingCam = true
+                    lastTouchPos = input.Position
+                end
             end
         end)
 
@@ -1277,20 +1275,17 @@ local function ToggleFreecam(state)
             end
         end)
 
-        -- Loop de movimentação 100% isolado da rotação
+        -- Loop de renderização com movimento plano
         FreecamConnection = RunService.RenderStepped:Connect(function()
             if not FreecamAtiva or not cam then return end
 
-            -- Calcula a rotação exata onde você está olhando
             local rotCFrame = CFrame.Angles(0, math.rad(camRotY), 0) * CFrame.Angles(math.rad(camRotX), 0, 0)
-            
-            -- Lê apenas o vetor do controle do jogo caso ainda use PC, mas limpo de inclinações
             local rawMove = controls:GetMoveVector()
             local speed = 1.5
 
             local pos = cam.CFrame.Position
             if rawMove.Magnitude > 0 then
-                -- Usa apenas o vetor horizontal puro para o movimento não puxar a câmera para cima/baixo
+                -- Vetores travados no plano horizontal (sem inclinar a visão)
                 local flatLook = CFrame.Angles(0, math.rad(camRotY), 0).LookVector
                 local flatRight = CFrame.Angles(0, math.rad(camRotY), 0).RightVector
                 
@@ -1301,7 +1296,6 @@ local function ToggleFreecam(state)
             cam.CFrame = CFrame.new(pos) * rotCFrame
         end)
     else
-        -- Restaura o estado normal ao desligar
         if FreecamConnection then FreecamConnection:Disconnect() FreecamConnection = nil end
         if TouchBeganConn then TouchBeganConn:Disconnect() TouchBeganConn = nil end
         if TouchChangedConn then TouchChangedConn:Disconnect() TouchChangedConn = nil end
@@ -1309,9 +1303,6 @@ local function ToggleFreecam(state)
 
         isDraggingCam = false
         lastTouchPos = nil
-
-        -- Reativa os controles nativos do Roblox
-        pcall(function() controls:Enable() end)
 
         if cam then
             cam.CameraType = Enum.CameraType.Custom
@@ -1325,7 +1316,6 @@ end
 player.CharacterAdded:Connect(function()
     if FreecamAtiva then ToggleFreecam(false) end
 end)
-
 
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
