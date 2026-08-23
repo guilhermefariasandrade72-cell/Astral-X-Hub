@@ -1252,6 +1252,66 @@ local function ToggleFreecam(state)
             end
         end)
 
+        TouchChangedConn = UserInputService.InputChanged:Connect(function(input)
+            if not isDraggingCam then return end
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+                if lastTouchPos then
+                    local delta = input.Position - lastTouchPos
+                    camRotY = camRotY - (delta.X * sensibilidade)
+                    -- Limita para não virar de ponta-cabeça
+                    camRotX = math.clamp(camRotX - (delta.Y * sensibilidade), -80, 80)
+                    lastTouchPos = input.Position
+                end
+            end
+        end)
+
+        TouchEndedConn = UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isDraggingCam = false
+                lastTouchPos = nil
+            end
+        end)
+
+        FreecamConnection = RunService.RenderStepped:Connect(function()
+            if not FreecamAtiva or not cam then return end
+
+            -- Rotação isolada: primeiro Y (lado a lado), depois X (cima e baixo)
+            local rotCFrame = CFrame.Angles(0, math.rad(camRotY), 0) * CFrame.Angles(math.rad(camRotX), 0, 0)
+            local moveVector = controls:GetMoveVector()
+            local speed = 1.5
+
+            local pos = cam.CFrame.Position
+            if moveVector.Magnitude > 0 then
+                -- Move no plano 3D respeitando a direção exata da visão sem alterar a rotação
+                local direcao = (rotCFrame.RightVector * moveVector.X) + (rotCFrame.LookVector * -moveVector.Z)
+                pos = pos + (direcao * speed)
+            end
+
+            -- Aplica a nova posição mantendo a rotação intacta
+            cam.CFrame = CFrame.new(pos) * rotCFrame
+        end)
+    else
+        if FreecamConnection then FreecamConnection:Disconnect() FreecamConnection = nil end
+        if TouchBeganConn then TouchBeganConn:Disconnect() TouchBeganConn = nil end
+        if TouchChangedConn then TouchChangedConn:Disconnect() TouchChangedConn = nil end
+        if TouchEndedConn then TouchEndedConn:Disconnect() TouchEndedConn = nil end
+
+        isDraggingCam = false
+        lastTouchPos = nil
+
+        if cam then
+            cam.CameraType = Enum.CameraType.Custom
+            if hum then cam.CameraSubject = hum end
+        end
+        
+        if hrp then hrp.Anchored = false end
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    if FreecamAtiva then ToggleFreecam(false) end
+end)
+
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
 -- ==================================
