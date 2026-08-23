@@ -1951,14 +1951,6 @@ Sec_Camera:Toggle({
 })
 
 Sec_Camera:Toggle({
-    Title = "Freecam",
-    Default = false,
-    Callback = function(Ativo)
-        ToggleFreecam(Ativo)
-    end
-})
-
-Sec_Camera:Toggle({
     Title = "Noclip camera",
     Default = false,
     Callback = function(Ativo)
