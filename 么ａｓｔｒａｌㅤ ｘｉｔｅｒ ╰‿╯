@@ -449,18 +449,17 @@ local function RemoveAutoFarmButton()
 end
 
 -- ==================================
--- 🎯 SILENT AIM — ATIRA DE QUALQUER LUGAR
--- ✅ Não precisa clicar perto dele mais!
--- ✅ Muda POSIÇÃO + ROTAÇÃO = servidor aceita sempre
--- ✅ Precisão fixa em 35
+-- 🎯 SILENT AIM — PRECISÃO FIXA 35
+-- ✅ Só 1 botão — LIGA/DESLIGA
+-- ✅ Precisão otimizada: 35
+-- ✅ Acerta parado E correndo
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local Camera = workspace.CurrentCamera
 
--- ✅ PRECISÃO FIXA
+-- ✅ PRECISÃO FIXA — NÃO PRECISA MUDAR!
 getgenv().SheriffAim = false
-local PRECISAO_FIXA = 35
+local PRECISAO_FIXA = 35  -- ⭐ 35 = equilíbrio perfeito
 local Murder = nil
 
 -- 🔄 BUSCA O ASSASSINO
@@ -482,7 +481,7 @@ task.spawn(function()
     end
 end)
 
--- 🎯 HOOK — CORRIGIDO! TROCA POSIÇÃO + DIREÇÃO
+-- 🎯 HOOK — PRECISÃO FIXA
 SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
@@ -496,20 +495,12 @@ SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
                 local Root = TargetPlayer.Character.PrimaryPart
                 if not Root then return end
 
-                -- ✅ CALCULA A POSIÇÃO FINAL COM PREVISÃO
+                -- ✅ PRECISÃO FIXA — NÃO MUDA NADA!
                 local Veloc = Root.AssemblyLinearVelocity
-                local PosicaoAlvo = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
+                local Pos = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
 
-                -- ✅ CALCULA A DIREÇÃO DA SUA CÂMERA ATÉ O ALVO
-                local MinhaPosicao = Camera.CFrame.Position
-                local DirecaoParaAlvo = (PosicaoAlvo - MinhaPosicao).Unit
-
-                -- ✅ CRIA CFRAME COMPLETO: POSIÇÃO + DIREÇÃO CORRETA
-                local MiraCorreta = CFrame.new(MinhaPosicao, MinhaPosicao + DirecaoParaAlvo)
-
-                -- ✅ SUBSTITUI TUDO — AGORA APONTA EXATAMENTE NELE
                 if args[1] and typeof(args[1]) == "CFrame" then
-                    args[1] = MiraCorreta
+                    args[1] = CFrame.new(Pos) * args[1].Rotation
                 end
             end
         end
@@ -519,8 +510,9 @@ SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
 end)
 
 print("=====================================")
-print("✅ CORRIGIDO! ATIRA DE QUALQUER LUGAR")
-print("🎯 Clique em QUALQUER LUGAR → vai nele")
+print("✅ SILENT AIM PRONTO!")
+print("⚙️ Precisão fixa em: " .. PRECISAO_FIXA)
+print("🔘 Só 1 botão — LIGA/DESLIGA")
 print("=====================================")
 
 -- ===========================================
