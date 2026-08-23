@@ -449,6 +449,77 @@ local function RemoveAutoFarmButton()
 end
 
 -- ===========================================
+-- ⚙️ SISTEMA LÓGICO DO SILENT AIM (HOOK)
+-- ===========================================
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+getgenv().SheriffAim = false
+getgenv().GunAccuracy = 25
+local Murder = nil
+
+-- 🔄 Loop de busca do Assassino (A cada 0.2s)
+task.spawn(function()
+    while task.wait(0.2) do
+        pcall(function()
+            Murder = nil
+            local GetDataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+            if not GetDataRemote then return end
+            
+            local Dados = GetDataRemote:InvokeServer()
+            if not Dados then return end
+            
+            for Nome, Info in pairs(Dados) do
+                if Info.Role == "Murderer" then
+                    Murder = Nome
+                    break
+                end
+            end
+        end)
+    end
+end)
+
+-- 🛡️ Hook de interceptação do disparo (__namecall)
+local GunHook
+GunHook = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+
+    if not checkcaller() then
+        if typeof(self) == "Instance" then
+            if self.Name == "Shoot" and method == "FireServer" then
+                if getgenv().SheriffAim and getgenv().GunAccuracy then
+                    if Murder then
+                        local MurderPlayer = Players:FindFirstChild(tostring(Murder))
+                        if MurderPlayer and MurderPlayer.Character and MurderPlayer.Character:FindFirstChild("PrimaryPart") then
+                            local Root = MurderPlayer.Character.PrimaryPart
+                            local Veloc = Root.AssemblyLinearVelocity
+                            local Pos = Root.Position +
+                                (Veloc * Vector3.new(
+                                    getgenv().GunAccuracy / 200,
+                                    0,
+                                    getgenv().GunAccuracy / 200
+                                ))
+
+                            if args[1] and typeof(args[1]) == "CFrame" then
+                                args[1] = CFrame.new(Pos) * args[1].Rotation
+                            end
+                            
+                            if args[2] and typeof(args[2]) == "CFrame" then
+                                args[2] = CFrame.new(Pos)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    return GunHook(self, unpack(args))
+end)
+
+-- ===========================================
 -- 🎯 SISTEMA SHOOT MURDERER & AUTO GRAB GUN
 -- ===========================================
 local function GetPing()
@@ -1812,7 +1883,24 @@ Sec_Xerife:Toggle({
     end
 })
 
+Sec_Xerife:Toggle({
+    Title = "Silent Aim (Sheriff)",
+    Default = false,
+    Callback = function(Ativo)
+        getgenv().SheriffAim = Ativo
+    end
+})
 
+Sec_Xerife:Slider({
+    Title = "Precisão do Tiro",
+    Min = 0,
+    Max = 100,
+    Default = 25,
+    Increment = 1,
+    Callback = function(Valor)
+        getgenv().GunAccuracy = Valor
+    end
+})
 
 Sec_Xerife:Toggle({
     Title = "Grab Gun (botão)",
