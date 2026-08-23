@@ -448,18 +448,19 @@ local function RemoveAutoFarmButton()
     AutoFarmAtivo = false
 end
 
+-- ==================================
+-- 🎯 SILENT AIM — CORRIGIDO
+-- ==================================
 
--- ===========================================
--- ⚙️ SISTEMA LÓGICO DO SILENT AIM (HOOK)
--- ===========================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
+-- ⚙️ VARIÁVEIS
 getgenv().SheriffAim = false
 getgenv().GunAccuracy = 25
 local Murder = nil
 
--- 🔄 Busca o Murderer a cada 0.2s
+-- 🔄 BUSCA O ASSASSINO A CADA 0.2s
 task.spawn(function()
     while task.wait(0.2) do
         pcall(function()
@@ -471,7 +472,7 @@ task.spawn(function()
             if not Dados then return end
             
             for Nome, Info in pairs(Dados) do
-                if Info.Role == "Murderer" then
+                if Info and Info.Role == "Murderer" and not Info.Dead then
                     Murder = Nome
                     break
                 end
@@ -480,30 +481,38 @@ task.spawn(function()
     end
 end)
 
--- 🎯 Hook que altera a trajetória da bala
+-- 🎯 HOOK PRINCIPAL — ALTERA APENAS O ARGUMENTO 1
 local GunHook
 GunHook = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
+    -- ✅ SÓ INTERCEPTA QUANDO TUDO ESTIVER CERTO
     if not checkcaller() and getgenv().SheriffAim then
         if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
-            if Murder and Players:FindFirstChild(tostring(Murder)) then
-                local TargetPlayer = Players[tostring(Murder)]
-                if TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
-                    local Root = TargetPlayer.Character.HumanoidRootPart
-                    local Veloc = Root.Velocity or Vector3.new(0, 0, 0)
-                    local Predicao = Veloc * (getgenv().GunAccuracy / 200)
-                    local TargetPos = Root.Position + Vector3.new(Predicao.X, 0, Predicao.Z)
+            if Murder then
+                local TargetPlayer = Players:FindFirstChild(tostring(Murder))
+                if TargetPlayer and TargetPlayer.Character then
+                    local Root = TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
+                    if Root then
+                        -- ✅ CORRIGIDO: AssemblyLinearVelocity, não .Velocity
+                        local Veloc = Root.AssemblyLinearVelocity
+                        
+                        -- ✅ POSIÇÃO COM PREVISÃO DE MOVIMENTO
+                        local TargetPos = Root.Position + (Veloc * Vector3.new(
+                            getgenv().GunAccuracy / 200,
+                            0,
+                            getgenv().GunAccuracy / 200
+                        ))
 
-                    -- Altera a direção da mira e o ponto de impacto
-                    if args[1] and typeof(args[1]) == "CFrame" then
-                        args[1] = CFrame.new(args[1].Position, TargetPos)
-                    end
-                    if args[2] and typeof(args[2]) == "CFrame" then
-                        args[2] = CFrame.new(TargetPos)
-                    elseif args[2] and typeof(args[2]) == "Vector3" then
-                        args[2] = TargetPos
+                        -- ✅ SÓ ALTERA O 1º ARGUMENTO — NÃO MEXE NO 2º!
+                        if args[1] then
+                            if typeof(args[1]) == "CFrame" then
+                                args[1] = CFrame.new(TargetPos) * args[1].Rotation
+                            else
+                                args[1] = TargetPos
+                            end
+                        end
                     end
                 end
             end
