@@ -448,10 +448,10 @@ local function RemoveAutoFarmButton()
     AutoFarmAtivo = false
 end
 
+
 -- ===========================================
 -- ⚙️ SISTEMA LÓGICO DO SILENT AIM (HOOK)
 -- ===========================================
-
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
@@ -459,15 +459,15 @@ getgenv().SheriffAim = false
 getgenv().GunAccuracy = 25
 local Murder = nil
 
--- 🔄 Loop de busca do Assassino (A cada 0.2s)
+-- 🔄 Busca o Murderer a cada 0.2s
 task.spawn(function()
     while task.wait(0.2) do
         pcall(function()
             Murder = nil
-            local GetDataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-            if not GetDataRemote then return end
+            local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+            if not GetPlayerData then return end
             
-            local Dados = GetDataRemote:InvokeServer()
+            local Dados = GetPlayerData:InvokeServer()
             if not Dados then return end
             
             for Nome, Info in pairs(Dados) do
@@ -480,36 +480,30 @@ task.spawn(function()
     end
 end)
 
--- 🛡️ Hook de interceptação do disparo (__namecall)
+-- 🎯 Hook que altera a trajetória da bala
 local GunHook
 GunHook = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
-    if not checkcaller() then
-        if typeof(self) == "Instance" then
-            if self.Name == "Shoot" and method == "FireServer" then
-                if getgenv().SheriffAim and getgenv().GunAccuracy then
-                    if Murder then
-                        local MurderPlayer = Players:FindFirstChild(tostring(Murder))
-                        if MurderPlayer and MurderPlayer.Character and MurderPlayer.Character:FindFirstChild("PrimaryPart") then
-                            local Root = MurderPlayer.Character.PrimaryPart
-                            local Veloc = Root.AssemblyLinearVelocity
-                            local Pos = Root.Position +
-                                (Veloc * Vector3.new(
-                                    getgenv().GunAccuracy / 200,
-                                    0,
-                                    getgenv().GunAccuracy / 200
-                                ))
+    if not checkcaller() and getgenv().SheriffAim then
+        if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
+            if Murder and Players:FindFirstChild(tostring(Murder)) then
+                local TargetPlayer = Players[tostring(Murder)]
+                if TargetPlayer.Character and TargetPlayer.Character:FindFirstChild("HumanoidRootPart") then
+                    local Root = TargetPlayer.Character.HumanoidRootPart
+                    local Veloc = Root.Velocity or Vector3.new(0, 0, 0)
+                    local Predicao = Veloc * (getgenv().GunAccuracy / 200)
+                    local TargetPos = Root.Position + Vector3.new(Predicao.X, 0, Predicao.Z)
 
-                            if args[1] and typeof(args[1]) == "CFrame" then
-                                args[1] = CFrame.new(Pos) * args[1].Rotation
-                            end
-                            
-                            if args[2] and typeof(args[2]) == "CFrame" then
-                                args[2] = CFrame.new(Pos)
-                            end
-                        end
+                    -- Altera a direção da mira e o ponto de impacto
+                    if args[1] and typeof(args[1]) == "CFrame" then
+                        args[1] = CFrame.new(args[1].Position, TargetPos)
+                    end
+                    if args[2] and typeof(args[2]) == "CFrame" then
+                        args[2] = CFrame.new(TargetPos)
+                    elseif args[2] and typeof(args[2]) == "Vector3" then
+                        args[2] = TargetPos
                     end
                 end
             end
@@ -1888,14 +1882,6 @@ Sec_Xerife:Toggle({
     Default = false,
     Callback = function(Ativo)
         getgenv().SheriffAim = Ativo
-    end
-})
-
-Sec_Xerife:Slider({
-    Title = "Precisão do Tiro",
-    Value = {Min = 0, Max = 100, Default = 25, Step = 1},
-    Callback = function(Valor)
-        getgenv().GunAccuracy = Valor
     end
 })
 
