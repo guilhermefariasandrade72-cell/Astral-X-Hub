@@ -1,114 +1,110 @@
--- // Astral X Hub Oficial. Script Roblox MM2 update 21/08/2026 | horas : 22:04 😎 \\ --
-
-local tWNh9bTGuQRS4ybbT6=math.abs(-23)
-local zh676P5lskHP4VGNSW=tostring(28)
-local hv_xIr3qa_UHYW=math.abs(-38)
-local obtjyHaNOmNi0=#"i8rIBOj"
-local mbzjzolGGBAK1X=string.len("o2BVtN")
-local jUNDSwTaohSIE53=#"g0Lz"
-local sLTjOK41hVAnV=533
-local q30CaW5_riQokOFA=#"fWvkka2F"
-local fbWv6KH2o4KMm=tostring(26)
-local o80dpXYkk=#"eYaM5h3v"
-local pV6G6BEuog8h8y=math.abs(-2)
-local e3wZuhY_BSK=string.len("uk6PQ")
+-- Protected by Mnx Obfuscator | Public Enemy
+local otxQtp1rzxZwV2lV=type(nil)
+local oAS635C4VOAAxzs=bit32.bxor(189,38)
+local ko9fHpilK=253
+local pXe4b75xeLG=540
+local nSApOgu6y=390
+local yzbF0tx_47=246
+local bqCuIA0PHD=string.len("nHw0KBQY")
+local nyFABMXvbmqMwO=math.abs(-70)
+local zEDiAhOT8zSd=type(nil)
+local meDYWJM_tY4dysVW0d=string.len("fQXnV")
+local j2iGHWZkQGlXQ=tostring(35)
+local rLaZdAbH1pT5TgIzt=type(nil)
 do local _=nil end
-local hG_OlCJGPmbnP=math.abs(-55)
-local vmAguu1xeN8=#"pEB"
-local hJjmOSEg205XT=tostring(86)
-if false then error("") end
-local iNH0wjdlQFh2={"6d9f1f57ec72e590bac2eebce328d1ad4f61e85dccc71852fba84c4291d99d5ae34939027bf0","ed4d4c3d0f78dbcd7438b5ff24dbda33a5d67ffeae63163d7e5847d9176c1da2"}
-local xxfJnIrVOFJ={1,2}
-local lkpD4XweW2wqDUM={"405a71a8307221fbab9531d33f2332970e814a3ebfa113f028fab149ba711709f5322887ba4f","a1e01ed8765710dc9dcb653180cd4534277c8dd764a5e6023756803be1fdcf"}
-local b6OZ92JOJV4MIVIig={1,2}
-local yxQ2exv3_jcOcGcEd=string.len("o0gBfTU")
-local hakJQbMMEY=type(nil)
-local qb_VvI_YGIdB3YWS3y=tostring(42)
-local zXhZYM_qhHKpZ=tostring(87)
-if false then error("") end
-local sWjYevJq7tA={}
-for r5Ysol09lU=1,#xxfJnIrVOFJ do sWjYevJq7tA[xxfJnIrVOFJ[r5Ysol09lU]]=iNH0wjdlQFh2[r5Ysol09lU] end
-sWjYevJq7tA=table.concat(sWjYevJq7tA)
-local zJ7svF9dRCGVSdE={}
-for r5Ysol09lU=1,#b6OZ92JOJV4MIVIig do zJ7svF9dRCGVSdE[b6OZ92JOJV4MIVIig[r5Ysol09lU]]=lkpD4XweW2wqDUM[r5Ysol09lU] end
-zJ7svF9dRCGVSdE=table.concat(zJ7svF9dRCGVSdE)
-local spOBmphCLYek2jvmU={}
-for r5Ysol09lU=1,#sWjYevJq7tA,2 do
-  spOBmphCLYek2jvmU[#spOBmphCLYek2jvmU+1]=tonumber(string.sub(sWjYevJq7tA,r5Ysol09lU,r5Ysol09lU+1),16)
-end
-local mGCiPRFOH1criG={206,123,46,152,174,89,12,45,215,139,167,80,147,91,182,152,99,57,11,41,190,37,169,97,18,197,206,157,64,196,209,35,227,220,83,73,122,22,109,151,173}
-for r5Ysol09lU=1,#spOBmphCLYek2jvmU do
-  spOBmphCLYek2jvmU[r5Ysol09lU]=bit32.bxor(spOBmphCLYek2jvmU[r5Ysol09lU],mGCiPRFOH1criG[(r5Ysol09lU-1)%#mGCiPRFOH1criG+1])
-end
-local wTTFoPzmO={}
-for r5Ysol09lU=1,#zJ7svF9dRCGVSdE,2 do
-  wTTFoPzmO[#wTTFoPzmO+1]=tonumber(string.sub(zJ7svF9dRCGVSdE,r5Ysol09lU,r5Ysol09lU+1),16)
-end
-local ayauxMb4tGaEAM3H0f={151,89,162,27,65,3,33,124,101,76,100,99,131,32,38,135,116,97,19,13,142,191,117,75,242,246,5,73,201,52,209,11,215,70,227,139,102,75,202,154,32}
-for r5Ysol09lU=1,#wTTFoPzmO do
-  wTTFoPzmO[r5Ysol09lU]=bit32.bxor(wTTFoPzmO[r5Ysol09lU],ayauxMb4tGaEAM3H0f[(r5Ysol09lU-1)%#ayauxMb4tGaEAM3H0f+1])
-end
-local t1YWDxU5UrLuvw56jc={}
-for r5Ysol09lU=1,math.max(#spOBmphCLYek2jvmU,#wTTFoPzmO) do
-  if spOBmphCLYek2jvmU[r5Ysol09lU] then t1YWDxU5UrLuvw56jc[#t1YWDxU5UrLuvw56jc+1]=spOBmphCLYek2jvmU[r5Ysol09lU] end
-  if wTTFoPzmO[r5Ysol09lU] then t1YWDxU5UrLuvw56jc[#t1YWDxU5UrLuvw56jc+1]=wTTFoPzmO[r5Ysol09lU] end
-end
-local hVFdX07h6mSC5gQUJ={}
-local vMMwadYccu8=872782786
-for r5Ysol09lU=#t1YWDxU5UrLuvw56jc-1,1,-1 do
-  vMMwadYccu8=(vMMwadYccu8*1664525+1013904223)%4294967296
-  local xtCDMNko4neWDDAJ6V=vMMwadYccu8%(r5Ysol09lU+1)+1
-  hVFdX07h6mSC5gQUJ[#hVFdX07h6mSC5gQUJ+1]={r5Ysol09lU+1,xtCDMNko4neWDDAJ6V}
-end
-for r5Ysol09lU=#hVFdX07h6mSC5gQUJ,1,-1 do
-  local uloHlsKML9oUM2qH3=hVFdX07h6mSC5gQUJ[r5Ysol09lU]
-  local iJoFhDfWRzWNCK=t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[1]]
-  t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[1]]=t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[2]]
-  t1YWDxU5UrLuvw56jc[uloHlsKML9oUM2qH3[2]]=iJoFhDfWRzWNCK
-end
-local c30dtEaxtekgNhwK={}
-local p9pTgCrJc30xs=137540383
-for r5Ysol09lU=#t1YWDxU5UrLuvw56jc-1,1,-1 do
-  p9pTgCrJc30xs=(p9pTgCrJc30xs*1664525+1013904223)%4294967296
-  local g0lVXBQso=p9pTgCrJc30xs%(r5Ysol09lU+1)+1
-  c30dtEaxtekgNhwK[#c30dtEaxtekgNhwK+1]={r5Ysol09lU+1,g0lVXBQso}
-end
-for r5Ysol09lU=#c30dtEaxtekgNhwK,1,-1 do
-  local tsOtfW4CbV=c30dtEaxtekgNhwK[r5Ysol09lU]
-  local pSVNi_jQRLRSB7=t1YWDxU5UrLuvw56jc[tsOtfW4CbV[1]]
-  t1YWDxU5UrLuvw56jc[tsOtfW4CbV[1]]=t1YWDxU5UrLuvw56jc[tsOtfW4CbV[2]]
-  t1YWDxU5UrLuvw56jc[tsOtfW4CbV[2]]=pSVNi_jQRLRSB7
-end
-local jnraoCUixaFxA={15,211,247,80,102,6,195,74,100,107,63,185,152,106,79,80,249,65,117,105,251,63,152,10,204,164,106,36,41,158,156,137,88,242,44,93,224,178,239,61,103}
-for r5Ysol09lU=1,#t1YWDxU5UrLuvw56jc do
-  t1YWDxU5UrLuvw56jc[r5Ysol09lU]=bit32.bxor(t1YWDxU5UrLuvw56jc[r5Ysol09lU],jnraoCUixaFxA[(r5Ysol09lU-1)%#jnraoCUixaFxA+1])
-end
-local kRPyCAkHCj_o={153,138,63,81,171,106,160,240,109,239,200,116,46,136,91,24,146,2,226,68,244,125,236,16,10,206}
-for r5Ysol09lU=1,#t1YWDxU5UrLuvw56jc do
-  t1YWDxU5UrLuvw56jc[r5Ysol09lU]=bit32.bxor(t1YWDxU5UrLuvw56jc[r5Ysol09lU],kRPyCAkHCj_o[(r5Ysol09lU-1)%#kRPyCAkHCj_o+1])
-end
-local g5DaS8ol8DoaRs6=968
-local h20t3QGMqUJHEixm=225
-local akdRRlYm6g=type(nil)
-local goM4oiTkAH_Z6Pse9o=#"oHi"
-local zZJJdlJTDZ=831
+local twF2fj18n07=177
+local hc6xxEckQGrSKgaL=756
+local tHLw3WWnUDdHEmug=math.floor(4)
 do local _=nil end
+local gpIw_uSdzkqApw={"d1857d8927fae9c0e2874429669e6467a4d5356313ac9703de5be7806ef99012dd0c9","ac14a1f1b85fc4fbaabbd6de3d380aea550b94869228544338d86883d69c72ea22ee1","17376f1c76e82b291c509f13ebb21e451d76fd767ae90c2274d8d298781cb43cf74be","ecbfb97521527400051b7d3dd194b936f2a3bf49a7266d3e78627233bf4415d0894c3","9e8f7c37fd5a1cf789f28b76799eb9476dd3dc079f222d301bbf1db59c08747952bb9","85cee5bda6a21da65eaf382db273fadd800ea71e8e6fe8e746128350295838a194034","9a6123cd775b93de13812029f7ec331037630b4a24235aad7e875342eb31644929ed1","aee0bddc22590dffb4acef567e112df43c36648c844a6de8127320c1acdc0c5345cd7","bea97392b73a129d811d4e9d216e01b432d521bc6d8036ac194f7b0ab0199c5a988c8","30db7cd83ed6a35c9eb0b48a65778f482906baeb5b504f93e09a330869f72f1be5267","b3e5c31083de747ab0421acaa79f44bbb317b236e9427d76ecd9af7261b100d66a52e","ef5edb7a7a27f25ef99206342555e283db34c959f994180fc602f257e7f244d723024","ae5c345214af173c8b2968b4f7f6f7943e02a9aa22f58a33a90fd5d4629107563694a","8624b849b70876817c7b7326726d7e6b1416310efd501c2b3be073b60056c27eeab85","03286d4b9264ba45be85cedde661ff329ee030ed61a9d7babb78534be01a5f821944f","a8054e7b91c5b6bc38245be9389ea364fa673c823a680e9291095fbdca7be2bd82728","cc32f39a716a7cd6b3353ea862d549a950d86ad8a6ab54a8cca44665a4e347e71bf02","ac14aa4780f63290d5ed4ba3478e065909d386316cd288f575d771812b1fe2939ecf3","1a228c701bf74080405b7a9a1d84e3eacfc2373ff7101a63661706fe8f13f58ee6b7e","cd8c41b00a4a002d789b52b1ecfd7f3b3f7c88c29b34427ff76684b695ba84c0c0e3b","a28dbccd1101741f4c02c9bb3eebe3e8905948c53bb13baf4ac250e67fc0ed9a4cc1b","76695c3f1daa8417cbc7066e6d83338ad9e54a7bcba63237c70dc28af9d944e65598a","079a24b57945bcc764c27bbfcd7b791719055bd3946b432c919b053b9ed2d4409c738","e7b71ea0c71fdcd63a0c162d69baf347349bdd7031c49f0826e36fdb3d1bca2c4198a","7b1187ed4842b2cc60273a76325a6e91761da869c9243797f75c46d829bebf868ba44","5574d52e8fb4e66b1508debacfd0586f8ca0ea815524a7acd5b403b4fdaa267628bd2","908c3da071fb4eb847661bd691b8dfe190e4f1ec3cebf8b7cd711137e2e5b5d0b3c69","ea7007e2d664d99a607384d2f43152cf2610d82ce6b9cb4f4185d58da8f649787416c","42dec2219a310f2236f076e463275d647a81a3213d1edc77488787c056f495c2f5870","d7734f62084d1d429ed8d9c71e8fe877c26b5fa1585c05c5e186c58921d0c03aa4c17","59ce32f3eeb5232d8937c5af9c8dd63242c2e5887c4a6f13fbaeee30f5ccb92db4334","2c9c28725ca2da621295681006669599cead1fbc472cea776a814e33e826aedf1862a","91114ce09dd3a66c448e6a4f058e830620222fe8cdeff74abc24cf1e8b013371cdf99","82695be9d3fae2ab9cb8015d270d2cdb01a7bafd71d6f29be57d09f4e849d2c5d859f","0efbd450a7cf018d3f2b785f24b322e38cf9c578f94cf4b699e18bbbf1da83450b3ff","cc0eb6a4e5b4515b03f99c3bc8c46ba989efc637e3695e0d1d2a0e0ec5e373a60db1e","73d5ed45a83834c831a8b41709112785993d96f46c59e3ce57309e40442c02bd073b5","a943b07f0c4682e7cee478ab49790cfc28c53fff13d4dae97ce7e5baa5634af40bd0d","2bab61636284dda568451bb2204f57dc3e5a6d0f0031c752dd8df36e1c11795aeb932","2a5bfc62c64d31a7badd50152666a9901980776a7dcaddab1e6d62e8075e3d0d7cadb","7e4fa0acb53ef5d3721be3e1f468dc85b0311e14da631844eb80da8f7b837bdcc04ab","de6d1759d7d09deb64712b71ce62d893144197b58155f53254257da886ba16cf76e20","0049f5201471302c8d8a916cc5d1fd46decbd441d8cdc64b0d4d1b3d4c4459044463d","bf6a73d4ec498b806d0cd3a50cd3d22d1bf54d9bb3600aa0d146feb97821f18a1b7cd","096e73fd2298bc87d2c0a01ee851f74f8c1e5c0e4c7c1696303ad5ba7dfb586c2cfb6","42767e0cb3e59f0d9a63830742940f479c4222a735278862badd43eb96a7f9aa48bdd","8851232e6a9f75263f06098d70cb299108e18c907f6b5311a0583f5996a27c37b296a","1ea9dc447d038effff5be320bc10061560aac66ab70bb4dcd7f85cf60d34fe06615dc","69f85be54daae31bd0387c50fc677536c2b38880e71f2d4edf7280065082ac207ab20","a0d8c812404cc2cd26592d520d78c5f378ddd247cf594bd4fbe04f32380ad6c6f074e","2521d2d0c9516a88e3ba","2990a9404845f96b9da5ac1d2e5850d4f9bbddf6347734270ed81de79b44608034286","ad5316b7e477c2d0c9bf01f6348231740f0dfad892d374c4bf5c49838d28bbf5d2878","799f240d510fc9cc87fd2dd0ac406abf71beaef91224bc2c6564a76fab275c582a151","13388ff4b101fb58c8dbc959b6b3719472ddc3052ed1169296faf0a4a6ee4d4e974ee","8682db3506533543d49a3ad63233871110aded465f90432a0c8ad70719d2e69ba4e0e","5c987a34375e86c490967e9ad08e8a2c079e9ebdebebc699f3420d0012fd90ff200f6","71017de0a86e84e2dc6eab1f8743aedbb3ae7e65be651d483d5ec07d0cb0019c4fd33","a83d02aa8cfe859deeef936e6f365dc68dd9f411e1c2a342bac08ffe32e13796d7a2a","8cd3b59bde5ae5ea842538240ceeae5113e88d52a083f24eb42e171c8cf16abafe815","247b971125cc8a415f9a26d081d007cbea13986526a693df9ee24c585bed4872e5ced","6b168b35419481f4e33945697265e14ffeb332691a85f181412a358ece3f25aec5f15","2a489a56ffe75e5cc723d12ccd71fdaf20d63842268d71d8229a63bca5bda971012c2","cad9855ed956ba2a6164b68bb07ab600698519aa729bc58a995d46be0ee2ef048c383","5593f88ec7b95dd018e1bc588fc267dfa9e09c6660598bf12ec853276c86c794fff71","c3a9e9ac75cd3a88ba571b9d782ff531bfe241003b214a4a61e60759f9648e042bd0f","8f2b575e1891bbd4a5e291138cc6166b78e25b1065c2d2d42af4bc32a277ee5c29727","142862ad92e793bd52247346b0773defac6c274b3f7c660c0cc0ec0a458835894e68b","18bea658ebbcd24d854f6e74afea2e8d24b3e6b3384f3f433305b3aa69e0a6cb2e797","85b4a1834d21cf4fd440b1ff49fb870fe478990a38bcfdf2f57f224e59f5ef36060c7","463714192a070e8454887d3c0f0714c1aaa869f04d9de0e27b5de8788e748d11123ec","e0009008ab778de0d118ce451567e3df4e2f391c689ba9426abcbdf7cc26215752af7","b4af6de8ebb88207d7e6dbff2255bc2e57851460e0e7e7ddabc09356affe15d2ac699","983403ad7af94bdfc5e0fed8ba69b0817dd5678baba182d201a67f7329c42debefeca","360f3f398a338ceefdc5b5be2c459f079d2153d4f55e73085dd36680a4c229719bd6b","aa98e231438773ed962a97ff95b981ed1c367cc6e1c524283e5700c8449ef842c892e","078bfa3f1c5b17be6c3d5d0fb6aeeecdbab8416f4fd25723b4a11c6e119f9237c71fa","ac98f9adb868665b346bb4b8ee09c07302a1bd7b0659d57744a236b079dde30ab5aaa","522d6305da9d2b1d2164ff168cc7c0aa82cc11d54a287d4e9c6e29767eed03e82fd62"}
+local dyjFYG8QGghEAx_FO={68,5,16,60,77,24,42,28,71,69,17,41,43,58,48,64,33,74,51,3,1,31,26,62,29,61,46,56,8,53,50,25,21,70,66,45,2,38,22,52,9,11,32,47,23,19,4,65,54,44,79,72,49,73,40,75,27,57,15,30,14,55,6,7,59,78,39,20,67,18,34,13,35,12,36,10,37,76,63}
+local nS4ASZIeyEeGug={"74e10105e84c1acf7e5e3b96f2ab13d5018853b582a22d65d2083b0243b426def2719","9313f6844938f19e02e203cbb31e0a29c8e7a39205f874ed1b7fd07ec9417a5070bd8","84137d001a5e133a3e317c1f9e4e4d124fddc100de5991401b3231dfc89561557654e","e671aa2242410e6ded2390139f89892d580a0aa7d79c86eab8ecb52b736f11946fb57","e5793f45459d6b5a4a47d21ead7fd294c3c87b90889171b56c7d43e9156d68dae42fd","524698e14f4f714b19f6af4c127f17c119fa22a840ca467740bc4d38c4ffa7ecc5817","f1e31b17292a1e3210a2f43aff86c3424235939f6a5a547d99e96bccce759c1b94bae","b6889af6676bdc7e61e704223ff7ea1ff2710062a62afa14bf1f3608cdd281a4c9a76","f6076d0ff9af59b3b509ed5ba1963029405303c12fd311b92a7336ee5c46e3c1c0f6c","01cd030f08f239143fae51ead72086e849d63298214d6af0c4afed79ff3d430c6ff26","77bb8c3dda0a6ffa66ed3d0ebd53cb538ece5857133d6556ed9a26f025d1cc6845c5b","e689cb55c524251065124ce1e7afe7c0bb5233678fe5fe92589e35eb7545fb349f050","65e78f2012769c82cd94555094ec46819209f2e6c2cfe1f4bca658fdf2b6453127088","bdba2d0dbfc6f8ceb6b13083b8f426b1bfe51d6a0f07ccc5751fd13d4e05f3df116a1","5c698c4030708203ed268df13a322afdf06ca9cb8bc38f9bac0a50f1764da8396f42b","de746632c7a2ece343937ae16f8e5d0a031c5d162d87f269529aa3a6f746f88ed607f","b9533abc1a0b0ae05791c1b5addbda405cad42a29440e87e72c4bfd1138ec24c448ee","3c275c700681f004192ec4ef4a143987d9073d95b8e8bf0949c47ab08df854ac54204","10d9592962733c70b104258bcdbd6daea41ec564ce724b1ee4561863657c2e3d7043a","bb1d3368e5626be67dcb92a2ac1c82ce2db20fa882a7453be84f115bf5b98590764e7","2efbb68b372165888c03a1a105559aecf6f5062ee40fa28cb4fa502002600363b517a","2ddee1abf052fe1de7b8361afa0ec8e4ceb0607c439c2bdb9130e6ce6c52fc63727c0","ea370029bc75f1feaad4db7229e15ec42c67b5c8236be02c6369e6619a7f377d1f2d4","7c855956b5adc8e65fa71e1297c4079ae119bc8a92522990e45d9c3725fce4370abc4","349310a5207cd08a5940ad6fb6d6e58ebf1f66af4ea269b2c72e834dd5e10a61f9e8f","24533b8fcf684ec1de2a33d3a32e7ece2813b05745830510af3fe41fd340fcfce823e","f59a3a7da140ab2e5904b7dd60755e036300d44f72b7d54f8777de6959cd204343cf1","88ab755b867847e3f8dfeee775a05cd4df005851264ab4740647585dbe1e32be83657","9ce96e0cb9dc3c48416d01d1566eb698ec313265a10da11d1ed54c66a57394fe25b15","df71bd0ef29d988aaba4dcccf7e47458480bd30ca93dbef820ecdfdbfef72b96c3715","057dcac22f0af8ce784ebd3983ca1f3e0df9890be66e9a6ee47a8966a4dc1b10e0618","bc69e74ec499396275538ef9f838c1953fc5b4c2711a6c7ad99408fd801ba05bb2892","6838689c9c8f83b38878d2787cd637607583bac78584db99c633a0610db6d5daa2862","77ed22d56e214ba8b447a28625c65eaf2010e8799fb59ddb01e2e7ff3ec0ac787ab52","3bf4ca19ca0bd4437f4941ea84d6eb53766a423c5a1550e7467b22ba721f0c58cdb6e","d6fbf0a500ae680ab9acb772a876a443c12f0eecbe4d688cbcd9462e31a35f381e4bf","bcc1789522e89771de5ba9db6776f315efa4efd2cbc779a4151c29812bafa57f28d6d","b75a34c4d1a848a99500df8f05d22c38cb0e7d6531be570ef959d633f921ee5496e95","919e08af9eae9681de0e1987a67f1e373b047ab56a3c1e9b1b5151afc8e1c53abde4b","425042a8b39f0f8889504cb2a3737bf089e96d38d80dc080b91285c3ed22b9a9cfff9","ef96226b4efeabc48bd585e29c23b6cac2736316d039fa2a3cf639684902cda9a6f2f","6163f0a4d4ef27de27204d0afb8ee811f39f89e5d20e03f3b21d5b41d250b59db7367","3d6d2f1b77ad51fa591ad538dd76211a2d8b7b6de8216abaa993a63b739bcb4dd0466","72840e41eb97c3acb9c689072a0cf53232b5912d545e6c91887dd6367f63d2e3f4273","fff667f394ac175768c4c46cf852948b21cf442e2c7a729b138f5276289725408aebc","573506f1ef6c86cadc789d0ed1516fbc354a6f3a912cd4c4c64afa8129b9126015936","66c664dfe718d39bf32f28af215e729551e329c5acdce643ceb55de5004f785e07030","5bf5e264ebec3024cefc2b2431495fb832e8ae92cb46c642f5729f74f39eef5ffdbe4","dba1baf7421ad834b404f6ce786190fa2d681437b148f07a2323fc2716f9ef1ca93d4","ad009480e93c77e91f16b6f9e8ea6b83578a41926df6391707b74d15e06842104255f","1714fc68f5da0772c1fe8fcd7b1e8b727cdf5db26c34ace4c34ee50b542c4e6f1ffcb","ac49a920ba6f149086e4451a21607495ab6aefaf4b7b4a042743a59d00c40b6107d48","e72224d4508b476403454cd062ef13ecdd4654cbdae62d81b77aab0bd9c5cd51575ad","a97666c65d5eb147903fbf3a6065b2bbbe8917f4dd4520fb3d67a2553423f18c055fb","67f60cae348a3ce54dca9966a9762ea8f32f4d223d1013ac07e0559927d91de8128b3","7e73b9d9aad829ce0a02328bcc0747a727e45fb57357a6a941c0396d4f62c78f392e5","3ca796ec697cbc01bc7d26027bb518c257013099ab9550276bc75a38649f94363e265","c759845429937cff83","65032c4cb9b0285f393e44dc5ec2fd95f9340de1f26cdb29371bb963540ea6fc8ff08","f6c74dbad21d772d3c6ea01513ed887ecc9b244a3cd956761de88210fe39f11be1829","7a060c0934765c5e055f1981b28c9934ae3b3515a7827a067063597a27bcb3f78ca7e","62aeef182ca849c72d33b566e25b36a3c0e2d88913c6f459e8779d6f90d21b2a12a4e","3bb2fceae6fd0346f6bd3d4c7f62578f0b7797bbe3e461e9f1cf3c2c2730de57fd00c","3f6ee46ace7a9f621517b50d9e1b1fdc83ec7a494b553769ad72ef8703a84037dda7e","b7180659a3ebdfcfaf9dcc82794751904d7353591cb904ac9bfc19b8ce40169a5267b","71c2aeaf1ba095f660eb7227df1a6b82a0f3222e480a053e63be486b5c4c2265f82b1","43e1a67e1c77e702dceb04df6156c13c8707e93fc8949c66dcbfacdf148d9f677e256","b3c1a0680bf6def03afc77e5f7ef413b6e34ffaae4b56e082a8aac01572d83efc6710","73807dad80e2ccfaf5549eb784f1858d1b619d7894ef38476918b4be658b920a1dbc3","602eac926859897eb92605de9f310b74ec9f4fcdeec7e17615e1373a7f4522775470a","0b726928edda60ed4cfb51adbb5279d4689b30c88cb2d97ca017e5647af3aa4c86911","63c070cc45642fe68b1da4719f742bcac8b26931ffcd944fa1c7e85c987ca4cf69acd","e1bdad5205ad1fd2e8f11d8d2f6537a62a9d0c2fb07e0b249c7a94dc4df3b2634bc4a","39943affd76187fedda42bf759eb07e2656a8be54fb7035c5707adc675eef67f9405d","198daae662f7271ba8a7ee760e00101185cffc14a45e12642f13bfcc979cdf1b637b2","8256c0cb5699632fb17d73d7df30c85481d67bc7319f82343ba4b4c1f87681f528b26","d9b666e991065dc010397d554f58701bb0f981c2a17a6f44fb768b30f936d9b2e5f26","2d210cd9892820bf363af559e3ed792566c22cf5bd0a147b52022e62f5a2c4b8d1b42","adc899d8be4093f34de2695b216ba1f5ec37f48a36ff300a00999ffbf5c76beac7f01"}
+local mLYS6CLwsLuG_={17,16,71,74,66,60,69,63,73,61,30,67,49,25,11,15,22,43,20,37,13,52,8,32,41,64,21,4,3,35,62,45,31,58,6,2,34,28,18,50,10,14,38,53,68,5,78,9,55,59,27,23,36,65,76,57,51,79,70,48,77,26,72,46,24,54,19,42,75,40,29,33,47,39,44,12,56,1,7}
+local mqPZP0e9it51E_8E=math.abs(-21)
+local u4xiTCfpr=bit32.bxor(77,133)
+local exq8uB1YZ0gFRgfHo=tostring(25)
 for _=1,0 do end
-do local _=nil end
-local uk9K4miqGJ={74,159,151,71,199,163,107,208,141,16,238,168,188,146,241,39,242,17,184,189,72,232,7,81,149,91,206,218,168,34,243,31,167,156,32,142,142,173,156,172,229}
-local nnnoSv8nuBxQoz={}
-for r5Ysol09lU=1,#t1YWDxU5UrLuvw56jc do
-  nnnoSv8nuBxQoz[r5Ysol09lU]=string.char(bit32.bxor(t1YWDxU5UrLuvw56jc[r5Ysol09lU],uk9K4miqGJ[(r5Ysol09lU-1)%#uk9K4miqGJ+1]))
+local kbA8vdXKyvi={}
+for wr4Zxj_ovfd=1,#dyjFYG8QGghEAx_FO do kbA8vdXKyvi[dyjFYG8QGghEAx_FO[wr4Zxj_ovfd]]=gpIw_uSdzkqApw[wr4Zxj_ovfd] end
+kbA8vdXKyvi=table.concat(kbA8vdXKyvi)
+local zy30RRQmLTgthodK={}
+for wr4Zxj_ovfd=1,#mLYS6CLwsLuG_ do zy30RRQmLTgthodK[mLYS6CLwsLuG_[wr4Zxj_ovfd]]=nS4ASZIeyEeGug[wr4Zxj_ovfd] end
+zy30RRQmLTgthodK=table.concat(zy30RRQmLTgthodK)
+local nIZOD9o8aKK4Jmd6={}
+for wr4Zxj_ovfd=1,#kbA8vdXKyvi,2 do
+  nIZOD9o8aKK4Jmd6[#nIZOD9o8aKK4Jmd6+1]=tonumber(string.sub(kbA8vdXKyvi,wr4Zxj_ovfd,wr4Zxj_ovfd+1),16)
 end
-local zLO8mvcYwZ=table.concat(nnnoSv8nuBxQoz)
-local erTZiAq9MOP9l=type(nil)
-local v_eYOpoF9byaCbw=type(nil)
-for _=1,0 do end
-do local _=nil end
+local gzY23fOUggCu4jX17={250,155,128,217,138,61,21,37,78,238,248,185,46,120,26,234,203,115,86,102,223,103,183,252,119,228,25,147,22,34,56,181,239,228,226,197,130,236,87,110,73,97}
+for wr4Zxj_ovfd=1,#nIZOD9o8aKK4Jmd6 do
+  nIZOD9o8aKK4Jmd6[wr4Zxj_ovfd]=bit32.bxor(nIZOD9o8aKK4Jmd6[wr4Zxj_ovfd],gzY23fOUggCu4jX17[(wr4Zxj_ovfd-1)%#gzY23fOUggCu4jX17+1])
+end
+local wc_gm7jbFq={}
+for wr4Zxj_ovfd=1,#zy30RRQmLTgthodK,2 do
+  wc_gm7jbFq[#wc_gm7jbFq+1]=tonumber(string.sub(zy30RRQmLTgthodK,wr4Zxj_ovfd,wr4Zxj_ovfd+1),16)
+end
+local o_nI53eAsWK={80,228,204,29,79,26,93,177,4,91,227,209,147,189,125,182,145,104,42,119,117,58,100,152,103,96,215,203,56,206,97,169,9,65,233,119,30,138,145,41,138,96}
+for wr4Zxj_ovfd=1,#wc_gm7jbFq do
+  wc_gm7jbFq[wr4Zxj_ovfd]=bit32.bxor(wc_gm7jbFq[wr4Zxj_ovfd],o_nI53eAsWK[(wr4Zxj_ovfd-1)%#o_nI53eAsWK+1])
+end
+local kNzj3Zq0Al={}
+for wr4Zxj_ovfd=1,math.max(#nIZOD9o8aKK4Jmd6,#wc_gm7jbFq) do
+  if nIZOD9o8aKK4Jmd6[wr4Zxj_ovfd] then kNzj3Zq0Al[#kNzj3Zq0Al+1]=nIZOD9o8aKK4Jmd6[wr4Zxj_ovfd] end
+  if wc_gm7jbFq[wr4Zxj_ovfd] then kNzj3Zq0Al[#kNzj3Zq0Al+1]=wc_gm7jbFq[wr4Zxj_ovfd] end
+end
+local ckptvI807XzLlasqyZ={}
+local mJAks_7sQeA=386598572
+for wr4Zxj_ovfd=#kNzj3Zq0Al-1,1,-1 do
+  mJAks_7sQeA=(mJAks_7sQeA*1664525+1013904223)%4294967296
+  local b_ty6MXwJZqUW=mJAks_7sQeA%(wr4Zxj_ovfd+1)+1
+  ckptvI807XzLlasqyZ[#ckptvI807XzLlasqyZ+1]={wr4Zxj_ovfd+1,b_ty6MXwJZqUW}
+end
+for wr4Zxj_ovfd=#ckptvI807XzLlasqyZ,1,-1 do
+  local mli4JNPQtZ=ckptvI807XzLlasqyZ[wr4Zxj_ovfd]
+  local mfAIejh_WImKx6c6=kNzj3Zq0Al[mli4JNPQtZ[1]]
+  kNzj3Zq0Al[mli4JNPQtZ[1]]=kNzj3Zq0Al[mli4JNPQtZ[2]]
+  kNzj3Zq0Al[mli4JNPQtZ[2]]=mfAIejh_WImKx6c6
+end
+local lr7eUhS3H39_YeO40={}
+local giaaLtTYfsr8dYV=9123445
+for wr4Zxj_ovfd=#kNzj3Zq0Al-1,1,-1 do
+  giaaLtTYfsr8dYV=(giaaLtTYfsr8dYV*1664525+1013904223)%4294967296
+  local vgQ5BWt5W17MO7=giaaLtTYfsr8dYV%(wr4Zxj_ovfd+1)+1
+  lr7eUhS3H39_YeO40[#lr7eUhS3H39_YeO40+1]={wr4Zxj_ovfd+1,vgQ5BWt5W17MO7}
+end
+for wr4Zxj_ovfd=#lr7eUhS3H39_YeO40,1,-1 do
+  local xt2M0Aqbp=lr7eUhS3H39_YeO40[wr4Zxj_ovfd]
+  local ayEKyKYsIPOs=kNzj3Zq0Al[xt2M0Aqbp[1]]
+  kNzj3Zq0Al[xt2M0Aqbp[1]]=kNzj3Zq0Al[xt2M0Aqbp[2]]
+  kNzj3Zq0Al[xt2M0Aqbp[2]]=ayEKyKYsIPOs
+end
+local kuWInyuU8U={165,73,86,111,197,251,22,57,5,146,139,59,244,215,11,205,24,234,125,59,97,210,223,81,54,134,181,22,31,14,23,109,170,241,57,68,176,187,38,121,186,229}
+for wr4Zxj_ovfd=1,#kNzj3Zq0Al do
+  kNzj3Zq0Al[wr4Zxj_ovfd]=bit32.bxor(kNzj3Zq0Al[wr4Zxj_ovfd],kuWInyuU8U[(wr4Zxj_ovfd-1)%#kuWInyuU8U+1])
+end
+local kdXtitXlEbgtdq={16,240,59,122,146,87,181,90,210,216,98,123,125,104,75,137,135,230,39,81,161,164,164,249,245,147}
+for wr4Zxj_ovfd=1,#kNzj3Zq0Al do
+  kNzj3Zq0Al[wr4Zxj_ovfd]=bit32.bxor(kNzj3Zq0Al[wr4Zxj_ovfd],kdXtitXlEbgtdq[(wr4Zxj_ovfd-1)%#kdXtitXlEbgtdq+1])
+end
+local sQDZV96_N=math.floor(1)
+local xFY5Nia44BQ=type(nil)
+local fpoDOfFadveDp=tostring(0)
+local lIF4KJrEU_gEu7SB=math.abs(-78)
+local aBX8cuJJIbTGYj=math.abs(-75)
 if false then error("") end
-local hpg7I1Zu1tPssW0,r3acf3A3o1DGU=loadstring(zLO8mvcYwZ)
-if hpg7I1Zu1tPssW0 then
-  hpg7I1Zu1tPssW0()
+local xPQQsOmERpOJoH2LS={131,243,199,37,197,139,78,83,240,232,4,165,152,221,136,244,26,90,58,123,127,148,20,138,154,212,214,28,171,69,114,238,57,210,101,247,8,137,170,21,160,139}
+local f8yzP5Co3rQ={}
+for wr4Zxj_ovfd=1,#kNzj3Zq0Al do
+  f8yzP5Co3rQ[wr4Zxj_ovfd]=string.char(bit32.bxor(kNzj3Zq0Al[wr4Zxj_ovfd],xPQQsOmERpOJoH2LS[(wr4Zxj_ovfd-1)%#xPQQsOmERpOJoH2LS+1]))
+end
+local pnUroO4ngCcb4C8XNc=table.concat(f8yzP5Co3rQ)
+local co_r92sM34mH=#"gnTMJB"
+local nYgBtON43oMxRd4=math.floor(9)
+local aoqVXPeMnoNrsAZ=bit32.bxor(97,16)
+for _=1,0 do end
+if false then error("") end
+local rUu0kAQjmbM3zYL,omQs0buCusT=loadstring(pnUroO4ngCcb4C8XNc)
+if rUu0kAQjmbM3zYL then
+  rUu0kAQjmbM3zYL()
 else
-  error("Mnx | Public Enemy : "..tostring(r3acf3A3o1DGU))
+  error("Mnx | Public Enemy : "..tostring(omQs0buCusT))
 end
