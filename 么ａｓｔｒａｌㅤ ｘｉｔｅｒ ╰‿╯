@@ -1214,7 +1214,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ===========================================
--- 🎥 SISTEMA FREECAM MOBILE (ÂNGULO FIXO)
+-- 🎥 SISTEMA FREECAM INDEPENDENTE (MOBILE)
 -- ===========================================
 local FreecamAtiva = false
 local FreecamConnection = nil
@@ -1226,6 +1226,9 @@ local sensibilidade = 0.35
 local lastTouchPos = nil
 local isDraggingCam = false
 
+-- Vetor de movimento manual (independente do joystick do jogo)
+local moveDir = Vector3.new(0, 0, 0)
+
 local function ToggleFreecam(state)
     FreecamAtiva = state
     local cam = workspace.CurrentCamera
@@ -1236,14 +1239,17 @@ local function ToggleFreecam(state)
     if FreecamAtiva then
         if not cam or not hrp then return end
         
+        -- Congela o personagem e desativa os controles padrão do jogo
         hrp.Anchored = true
+        pcall(function() controls:Disable() end)
+
         cam.CameraType = Enum.CameraType.Scriptable
         
-        -- Pega a orientação atual para não dar "pulo" na tela ao ligar
         local lookVector = cam.CFrame.LookVector
         camRotY = math.deg(math.atan2(-lookVector.X, -lookVector.Z))
         camRotX = math.deg(math.asin(lookVector.Y))
 
+        -- Movimentação do olhar pelo arrasto do dedo na tela
         TouchBeganConn = UserInputService.InputBegan:Connect(function(input, processed)
             if processed then return end
             if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1258,7 +1264,6 @@ local function ToggleFreecam(state)
                 if lastTouchPos then
                     local delta = input.Position - lastTouchPos
                     camRotY = camRotY - (delta.X * sensibilidade)
-                    -- Limita para não virar de ponta-cabeça
                     camRotX = math.clamp(camRotX - (delta.Y * sensibilidade), -80, 80)
                     lastTouchPos = input.Position
                 end
@@ -1272,25 +1277,31 @@ local function ToggleFreecam(state)
             end
         end)
 
+        -- Loop de movimentação 100% isolado da rotação
         FreecamConnection = RunService.RenderStepped:Connect(function()
             if not FreecamAtiva or not cam then return end
 
-            -- Rotação isolada: primeiro Y (lado a lado), depois X (cima e baixo)
+            -- Calcula a rotação exata onde você está olhando
             local rotCFrame = CFrame.Angles(0, math.rad(camRotY), 0) * CFrame.Angles(math.rad(camRotX), 0, 0)
-            local moveVector = controls:GetMoveVector()
+            
+            -- Lê apenas o vetor do controle do jogo caso ainda use PC, mas limpo de inclinações
+            local rawMove = controls:GetMoveVector()
             local speed = 1.5
 
             local pos = cam.CFrame.Position
-            if moveVector.Magnitude > 0 then
-                -- Move no plano 3D respeitando a direção exata da visão sem alterar a rotação
-                local direcao = (rotCFrame.RightVector * moveVector.X) + (rotCFrame.LookVector * -moveVector.Z)
+            if rawMove.Magnitude > 0 then
+                -- Usa apenas o vetor horizontal puro para o movimento não puxar a câmera para cima/baixo
+                local flatLook = CFrame.Angles(0, math.rad(camRotY), 0).LookVector
+                local flatRight = CFrame.Angles(0, math.rad(camRotY), 0).RightVector
+                
+                local direcao = (flatRight * rawMove.X) + (flatLook * -rawMove.Z)
                 pos = pos + (direcao * speed)
             end
 
-            -- Aplica a nova posição mantendo a rotação intacta
             cam.CFrame = CFrame.new(pos) * rotCFrame
         end)
     else
+        -- Restaura o estado normal ao desligar
         if FreecamConnection then FreecamConnection:Disconnect() FreecamConnection = nil end
         if TouchBeganConn then TouchBeganConn:Disconnect() TouchBeganConn = nil end
         if TouchChangedConn then TouchChangedConn:Disconnect() TouchChangedConn = nil end
@@ -1298,6 +1309,9 @@ local function ToggleFreecam(state)
 
         isDraggingCam = false
         lastTouchPos = nil
+
+        -- Reativa os controles nativos do Roblox
+        pcall(function() controls:Enable() end)
 
         if cam then
             cam.CameraType = Enum.CameraType.Custom
@@ -1311,6 +1325,7 @@ end
 player.CharacterAdded:Connect(function()
     if FreecamAtiva then ToggleFreecam(false) end
 end)
+
 
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
