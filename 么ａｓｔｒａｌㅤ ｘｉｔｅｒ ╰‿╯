@@ -1214,7 +1214,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ===========================================
--- 🎥 SISTEMA FREECAM MOBILE (CORRIGIDO)
+-- 🎥 SISTEMA FREECAM MOBILE (ÂNGULO FIXO)
 -- ===========================================
 local FreecamAtiva = false
 local FreecamConnection = nil
@@ -1222,8 +1222,7 @@ local TouchBeganConn, TouchChangedConn, TouchEndedConn
 
 local camRotX = 0
 local camRotY = 0
-local sensibilidade = 0.4
-local touchStartPos = nil
+local sensibilidade = 0.35
 local lastTouchPos = nil
 local isDraggingCam = false
 
@@ -1237,17 +1236,14 @@ local function ToggleFreecam(state)
     if FreecamAtiva then
         if not cam or not hrp then return end
         
-        -- Congela o personagem
         hrp.Anchored = true
-
-        -- Configura a Câmera
         cam.CameraType = Enum.CameraType.Scriptable
         
+        -- Pega a orientação atual para não dar "pulo" na tela ao ligar
         local lookVector = cam.CFrame.LookVector
         camRotY = math.deg(math.atan2(-lookVector.X, -lookVector.Z))
         camRotX = math.deg(math.asin(lookVector.Y))
 
-        -- Captura o toque no celular diretamente
         TouchBeganConn = UserInputService.InputBegan:Connect(function(input, processed)
             if processed then return end
             if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
@@ -1255,64 +1251,6 @@ local function ToggleFreecam(state)
                 lastTouchPos = input.Position
             end
         end)
-
-        TouchChangedConn = UserInputService.InputChanged:Connect(function(input)
-            if not isDraggingCam then return end
-            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-                if lastTouchPos then
-                    local delta = input.Position - lastTouchPos
-                    camRotY = camRotY - (delta.X * sensibilidade)
-                    camRotX = math.clamp(camRotX - (delta.Y * sensibilidade), -80, 80)
-                    lastTouchPos = input.Position
-                end
-            end
-        end)
-
-        TouchEndedConn = UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                isDraggingCam = false
-                lastTouchPos = nil
-            end
-        end)
-
-        -- Loop de renderização
-        FreecamConnection = RunService.RenderStepped:Connect(function()
-            if not FreecamAtiva or not cam then return end
-
-            local rotCFrame = CFrame.Angles(0, math.rad(camRotY), 0) * CFrame.Angles(math.rad(camRotX), 0, 0)
-            local moveVector = controls:GetMoveVector()
-            local speed = 1.5
-
-            local pos = cam.CFrame.Position
-            if moveVector.Magnitude > 0 then
-                local direcao = (rotCFrame.RightVector * moveVector.X) + (rotCFrame.LookVector * -moveVector.Z)
-                pos = pos + (direcao * speed)
-            end
-
-            cam.CFrame = CFrame.new(pos) * rotCFrame
-        end)
-    else
-        -- Limpa as conexões
-        if FreecamConnection then FreecamConnection:Disconnect() FreecamConnection = nil end
-        if TouchBeganConn then TouchBeganConn:Disconnect() TouchBeganConn = nil end
-        if TouchChangedConn then TouchChangedConn:Disconnect() TouchChangedConn = nil end
-        if TouchEndedConn then TouchEndedConn:Disconnect() TouchEndedConn = nil end
-
-        isDraggingCam = false
-        lastTouchPos = nil
-
-        if cam then
-            cam.CameraType = Enum.CameraType.Custom
-            if hum then cam.CameraSubject = hum end
-        end
-        
-        if hrp then hrp.Anchored = false end
-    end
-end
-
-player.CharacterAdded:Connect(function()
-    if FreecamAtiva then ToggleFreecam(false) end
-end)
 
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
