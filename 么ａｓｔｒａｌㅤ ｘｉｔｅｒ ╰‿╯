@@ -1214,7 +1214,7 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ===========================================
--- 🎥 SISTEMA FREECAM (ROTAÇÃO APENAS LADO DIREITO)
+-- 🎥 SISTEMA FREECAM 3D MÓVEL (DUPLO TOQUE FIX)
 -- ===========================================
 local FreecamAtiva = false
 local FreecamConnection = nil
@@ -1223,8 +1223,9 @@ local TouchBeganConn, TouchChangedConn, TouchEndedConn
 local camRotX = 0
 local camRotY = 0
 local sensibilidade = 0.35
+
+local rightTouchInput = nil
 local lastTouchPos = nil
-local isDraggingCam = false
 
 local function ToggleFreecam(state)
     FreecamAtiva = state
@@ -1243,22 +1244,22 @@ local function ToggleFreecam(state)
         camRotY = math.deg(math.atan2(-lookVector.X, -lookVector.Z))
         camRotX = math.deg(math.asin(lookVector.Y))
 
-        -- Detecta o toque apenas no lado direito da tela
+        -- Detecta e filtra o toque EXCLUSIVO do lado direito
         TouchBeganConn = UserInputService.InputBegan:Connect(function(input, processed)
             if processed then return end
             if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
                 local viewportSize = cam.ViewportSize
-                -- ✅ Só ativa a rotação se o toque for da metade da tela para a direita
-                if input.Position.X >= (viewportSize.X / 2) then
-                    isDraggingCam = true
+                -- Registra APENAS se for o toque do lado direito
+                if input.Position.X >= (viewportSize.X / 2) and not rightTouchInput then
+                    rightTouchInput = input
                     lastTouchPos = input.Position
                 end
             end
         end)
 
         TouchChangedConn = UserInputService.InputChanged:Connect(function(input)
-            if not isDraggingCam then return end
-            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+            -- Só move a câmera se for O MESMO dedo que começou no lado direito
+            if rightTouchInput and input == rightTouchInput then
                 if lastTouchPos then
                     local delta = input.Position - lastTouchPos
                     camRotY = camRotY - (delta.X * sensibilidade)
@@ -1269,13 +1270,13 @@ local function ToggleFreecam(state)
         end)
 
         TouchEndedConn = UserInputService.InputEnded:Connect(function(input)
-            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
-                isDraggingCam = false
+            if rightTouchInput and input == rightTouchInput then
+                rightTouchInput = nil
                 lastTouchPos = nil
             end
         end)
 
-        -- Loop de renderização com movimento plano
+        -- Loop de renderização (Movimento 3D completo: Frente, Trás, Lados, Cima, Baixo)
         FreecamConnection = RunService.RenderStepped:Connect(function()
             if not FreecamAtiva or not cam then return end
 
@@ -1285,11 +1286,8 @@ local function ToggleFreecam(state)
 
             local pos = cam.CFrame.Position
             if rawMove.Magnitude > 0 then
-                -- Vetores travados no plano horizontal (sem inclinar a visão)
-                local flatLook = CFrame.Angles(0, math.rad(camRotY), 0).LookVector
-                local flatRight = CFrame.Angles(0, math.rad(camRotY), 0).RightVector
-                
-                local direcao = (flatRight * rawMove.X) + (flatLook * -rawMove.Z)
+                -- Agora usa o vetor 3D real da visão (se olhar pra cima e andar pra frente, a câmera SOBE)
+                local direcao = (rotCFrame.RightVector * rawMove.X) + (rotCFrame.LookVector * -rawMove.Z)
                 pos = pos + (direcao * speed)
             end
 
@@ -1301,7 +1299,7 @@ local function ToggleFreecam(state)
         if TouchChangedConn then TouchChangedConn:Disconnect() TouchChangedConn = nil end
         if TouchEndedConn then TouchEndedConn:Disconnect() TouchEndedConn = nil end
 
-        isDraggingCam = false
+        rightTouchInput = nil
         lastTouchPos = nil
 
         if cam then
@@ -1316,6 +1314,7 @@ end
 player.CharacterAdded:Connect(function()
     if FreecamAtiva then ToggleFreecam(false) end
 end)
+
 
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
