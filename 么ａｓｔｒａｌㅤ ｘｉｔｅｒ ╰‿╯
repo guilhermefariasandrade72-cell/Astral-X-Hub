@@ -449,29 +449,28 @@ local function RemoveAutoFarmButton()
 end
 
 -- ==================================
--- 🎯 SISTEMA SILENT AIM — VERSÃO HUB
--- ✅ EXATAMENTE IGUAL AO QUE FUNCIONA
--- ✅ Usa PrimaryPart + declara variáveis
+-- 🎯 SILENT AIM — PRECISÃO FIXA 35
+-- ✅ Só 1 botão — LIGA/DESLIGA
+-- ✅ Precisão otimizada: 35
+-- ✅ Acerta parado E correndo
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ✅ FALTAVA ISSO: DECLARAR AS VARIÁVEIS!
+-- ✅ PRECISÃO FIXA — NÃO PRECISA MUDAR!
 getgenv().SheriffAim = false
-getgenv().GunAccuracy = 25
+local PRECISAO_FIXA = 35  -- ⭐ 35 = equilíbrio perfeito
 local Murder = nil
 
--- 🔄 BUSCA O ASSASSINO A CADA 0.2s
+-- 🔄 BUSCA O ASSASSINO
 task.spawn(function()
     while task.wait(0.2) do
         pcall(function()
             Murder = nil
             local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
             if not GetPlayerData then return end
-            
             local Dados = GetPlayerData:InvokeServer()
             if not Dados then return end
-            
             for Nome, Info in pairs(Dados) do
                 if Info and Info.Role == "Murderer" then
                     Murder = Nome
@@ -482,7 +481,7 @@ task.spawn(function()
     end
 end)
 
--- 🎯 HOOK — EXATAMENTE IGUAL AO QUE FUNCIONA
+-- 🎯 HOOK — PRECISÃO FIXA
 SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
@@ -490,20 +489,15 @@ SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
     if not checkcaller() then
         if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
             if getgenv().SheriffAim and Murder then
-                -- ✅ TIRAR O PCALL DAQUI — ele estava escondendo os erros!
                 local TargetPlayer = Players[tostring(Murder)]
                 if not TargetPlayer or not TargetPlayer.Character then return end
                 
-                -- ✅ PRIMARYPART — IGUAL AO QUE FUNCIONA!
                 local Root = TargetPlayer.Character.PrimaryPart
-                
+                if not Root then return end
+
+                -- ✅ PRECISÃO FIXA — NÃO MUDA NADA!
                 local Veloc = Root.AssemblyLinearVelocity
-                local Pos = Root.Position +
-                    (Veloc * Vector3.new(
-                        getgenv().GunAccuracy / 200,
-                        0,
-                        getgenv().GunAccuracy / 200
-                    ))
+                local Pos = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
 
                 if args[1] and typeof(args[1]) == "CFrame" then
                     args[1] = CFrame.new(Pos) * args[1].Rotation
@@ -514,6 +508,12 @@ SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
 
     return SilentAimHook(self, unpack(args))
 end)
+
+print("=====================================")
+print("✅ SILENT AIM PRONTO!")
+print("⚙️ Precisão fixa em: " .. PRECISAO_FIXA)
+print("🔘 Só 1 botão — LIGA/DESLIGA")
+print("=====================================")
 
 -- ===========================================
 -- 🎯 SISTEMA SHOOT MURDERER & AUTO GRAB GUN
@@ -1880,10 +1880,10 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "Silent Aim",
+    Title = "🔇 Silent Aim (Xerife)",
     Default = false,
-    Callback = function(Ativo)
-        getgenv().SheriffAim = Ativo
+    Callback = function(state)
+        getgenv().SheriffAim = state
     end
 })
 
