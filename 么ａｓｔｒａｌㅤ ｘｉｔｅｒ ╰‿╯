@@ -1214,15 +1214,18 @@ RunService.RenderStepped:Connect(function()
 end)
 
 -- ===========================================
--- 🎥 SISTEMA FREECAM 360° (MÓVEL & PC)
+-- 🎥 SISTEMA FREECAM MOBILE (CORRIGIDO)
 -- ===========================================
 local FreecamAtiva = false
 local FreecamConnection = nil
-local TouchConnection = nil
+local TouchBeganConn, TouchChangedConn, TouchEndedConn
 
 local camRotX = 0
 local camRotY = 0
-local sensibilidade = 0.3
+local sensibilidade = 0.4
+local touchStartPos = nil
+local lastTouchPos = nil
+local isDraggingCam = false
 
 local function ToggleFreecam(state)
     FreecamAtiva = state
@@ -1234,35 +1237,52 @@ local function ToggleFreecam(state)
     if FreecamAtiva then
         if not cam or not hrp then return end
         
-        -- Salva a rotação inicial baseada em para onde a câmera está olhando
-        local _, y, _ = cam.CFrame:ToOrientation()
-        camRotY = math.deg(y)
-        camRotX = 0
+        -- Congela o personagem
+        hrp.Anchored = true
 
+        -- Configura a Câmera
         cam.CameraType = Enum.CameraType.Scriptable
-        if hrp then hrp.Anchored = true end
+        
+        local lookVector = cam.CFrame.LookVector
+        camRotY = math.deg(math.atan2(-lookVector.X, -lookVector.Z))
+        camRotX = math.deg(math.asin(lookVector.Y))
 
-        -- Captura o arrasto do dedo na tela para girar 360°
-        TouchConnection = UserInputService.InputChanged:Connect(function(input)
-            if not FreecamAtiva then return end
-            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
-                local delta = input.Delta
-                camRotY = camRotY - (delta.X * sensibilidade)
-                camRotX = math.clamp(camRotX - (delta.Y * sensibilidade), -80, 80)
+        -- Captura o toque no celular diretamente
+        TouchBeganConn = UserInputService.InputBegan:Connect(function(input, processed)
+            if processed then return end
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isDraggingCam = true
+                lastTouchPos = input.Position
             end
         end)
 
-        -- Loop de atualização de posição e rotação
+        TouchChangedConn = UserInputService.InputChanged:Connect(function(input)
+            if not isDraggingCam then return end
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseMovement then
+                if lastTouchPos then
+                    local delta = input.Position - lastTouchPos
+                    camRotY = camRotY - (delta.X * sensibilidade)
+                    camRotX = math.clamp(camRotX - (delta.Y * sensibilidade), -80, 80)
+                    lastTouchPos = input.Position
+                end
+            end
+        end)
+
+        TouchEndedConn = UserInputService.InputEnded:Connect(function(input)
+            if input.UserInputType == Enum.UserInputType.Touch or input.UserInputType == Enum.UserInputType.MouseButton1 then
+                isDraggingCam = false
+                lastTouchPos = nil
+            end
+        end)
+
+        -- Loop de renderização
         FreecamConnection = RunService.RenderStepped:Connect(function()
             if not FreecamAtiva or not cam then return end
 
-            -- Aplica a rotação 360°
             local rotCFrame = CFrame.Angles(0, math.rad(camRotY), 0) * CFrame.Angles(math.rad(camRotX), 0, 0)
-            
-            -- Movimentação pelo Joystick/W,A,S,D
             local moveVector = controls:GetMoveVector()
-            local speed = 1.2
-            
+            local speed = 1.5
+
             local pos = cam.CFrame.Position
             if moveVector.Magnitude > 0 then
                 local direcao = (rotCFrame.RightVector * moveVector.X) + (rotCFrame.LookVector * -moveVector.Z)
@@ -1272,14 +1292,20 @@ local function ToggleFreecam(state)
             cam.CFrame = CFrame.new(pos) * rotCFrame
         end)
     else
-        -- Desativa e restaura a câmera normal
+        -- Limpa as conexões
         if FreecamConnection then FreecamConnection:Disconnect() FreecamConnection = nil end
-        if TouchConnection then TouchConnection:Disconnect() TouchConnection = nil end
+        if TouchBeganConn then TouchBeganConn:Disconnect() TouchBeganConn = nil end
+        if TouchChangedConn then TouchChangedConn:Disconnect() TouchChangedConn = nil end
+        if TouchEndedConn then TouchEndedConn:Disconnect() TouchEndedConn = nil end
+
+        isDraggingCam = false
+        lastTouchPos = nil
 
         if cam then
             cam.CameraType = Enum.CameraType.Custom
             if hum then cam.CameraSubject = hum end
         end
+        
         if hrp then hrp.Anchored = false end
     end
 end
