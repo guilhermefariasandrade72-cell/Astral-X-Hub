@@ -451,10 +451,6 @@ end
 -- ===========================================
 -- 🎯 SISTEMA SHOOT MURDERER & AUTO GRAB GUN
 -- ===========================================
-
--- ====================
--- SILENT AIM
--- ====================
 local function GetPing()
     local ok, value = pcall(function()
         return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
@@ -517,7 +513,30 @@ local function ShootMurderer()
     local PredictionTime = (Ping / 1000) * (ShootPredictMultiplier or 1)
     local Velocity = TargetHRP.Velocity
     local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * PredictionTime)
-    local OriginCFrame = CFrame.new(Char.HumanoidRootPart.Position, PredictedPos)
+    
+    ------------------------------------------------------------------
+    -- 🧱 LÓGICA DE WALLBANG (ATRAVESSAR PAREDE)
+    ------------------------------------------------------------------
+    local MyPos = Char.HumanoidRootPart.Position
+    local RayDirection = (PredictedPos - MyPos)
+    
+    local RayParams = RaycastParams.new()
+    RayParams.FilterType = Enum.RaycastFilterType.Exclude
+    RayParams.FilterDescendantsInstances = {Char, Murderer.Character}
+    RayParams.IgnoreWater = true
+
+    local RayResult = Workspace:Raycast(MyPos, RayDirection, RayParams)
+    local OriginCFrame
+
+    if RayResult then
+        -- Existe obstáculo no caminho: ajusta a origem do disparo para sair APÓS a parede
+        local SafeOriginPos = RayResult.Position + (RayDirection.Unit * 1.5)
+        OriginCFrame = CFrame.new(SafeOriginPos, PredictedPos)
+    else
+        -- Caminho livre: dispara da posição normal do personagem
+        OriginCFrame = CFrame.new(MyPos, PredictedPos)
+    end
+    ------------------------------------------------------------------
 
     local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
     if ShootEvent then
@@ -626,7 +645,6 @@ end
 RunService.Heartbeat:Connect(function()
     GetGun()
 end)
-
 
 -- ===========================================
 -- 🔫 SISTEMA GRAB GUN (CORRIGIDO SEM PUXAR XERIFE)
