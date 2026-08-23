@@ -451,55 +451,6 @@ end
 -- ===========================================
 -- 🎯 SISTEMA SHOOT MURDERER & AUTO GRAB GUN
 -- ===========================================
--- ===========================================
--- 🎯 NOVA FUNÇÃO: TIRO COM ORIGEM ALTERADA
--- ===========================================
-local TeleportShootAtivo = false
-local TeleportShootLoop = nil
-
-local function ExecutarTeleportShoot()
-    if Pressionado then return end
-    
-    local Char = player.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-
-    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
-    if not Gun then return end
-
-    if Gun.Parent ~= Char then
-        Gun.Parent = Char
-        task.wait(0.05)
-    end
-
-    local Murderer = GetMurderer()
-    if not Murderer or not Murderer.Character then return end
-
-    local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
-    if not TargetTorso then return end
-
-    Pressionado = true
-
-    local Destination = TargetTorso.Position
-    
-    -- 1º Argumento MODIFICADO: A bala surge a 0.5 blocos de distância da cabeça/torso do alvo
-    local ModifiedOrigin = CFrame.new(Destination + Vector3.new(0, 0.5, 0), Destination)
-    
-    -- 2º Argumento INTACTO: CFrame do destino normal
-    local NormalDestination = CFrame.new(Destination)
-
-    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
-    
-    if ShootEvent then
-        if ShootEvent:IsA("RemoteEvent") then
-            ShootEvent:FireServer(ModifiedOrigin, NormalDestination)
-        elseif ShootEvent:IsA("RemoteFunction") then
-            ShootEvent:InvokeServer(ModifiedOrigin, NormalDestination)
-        end
-    end
-
-    task.wait(0.3)
-    Pressionado = false
-end
 
 -- ====================
 -- SILENT AIM
@@ -1843,27 +1794,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Toggle({
-    Title = "Tiro de Perto (Origem Modificada)",
-    Default = false,
-    Callback = function(Ativo)
-        TeleportShootAtivo = Ativo
-        
-        if Ativo then
-            -- Loop automático para atirar assim que o Murderer aparecer
-            TeleportShootLoop = RunService.Heartbeat:Connect(function()
-                if TeleportShootAtivo then
-                    ExecutarTeleportShoot()
-                end
-            end)
-        else
-            if TeleportShootLoop then
-                TeleportShootLoop:Disconnect()
-                TeleportShootLoop = nil
-            end
-        end
-    end
-})
+
 
 Sec_Xerife:Toggle({
     Title = "Grab Gun (botão)",
