@@ -1893,10 +1893,7 @@ Sec_Xerife:Toggle({
 
 Sec_Xerife:Slider({
     Title = "Precisão do Tiro",
-    Min = 0,
-    Max = 100,
-    Default = 25,
-    Increment = 1,
+    Value = {Min = 0, Max = 100, Default = 25, Step = 1},
     Callback = function(Valor)
         getgenv().GunAccuracy = Valor
     end
