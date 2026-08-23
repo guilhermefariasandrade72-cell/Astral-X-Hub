@@ -449,22 +449,23 @@ local function RemoveAutoFarmButton()
 end
 
 -- ==================================
--- 🎯 SILENT AIM — PRECISÃO FIXA 35
--- ✅ Só 1 botão — LIGA/DESLIGA
--- ✅ Precisão otimizada: 35
--- ✅ Acerta parado E correndo
+-- 🎯 SILENT AIM — INSTANT KILL
+-- ✅ A bala NASCE DENTRO do Assassino
+-- ✅ MATA NA HORA — sem tempo de desvio
+-- ✅ Precisão fixa em 35
+-- ✅ Só 1 botão
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- ✅ PRECISÃO FIXA — NÃO PRECISA MUDAR!
+-- ✅ PRECISÃO FIXA
 getgenv().SheriffAim = false
-local PRECISAO_FIXA = 50 -- ⭐ 35 = equilíbrio perfeito
+local PRECISAO_FIXA = 35
 local Murder = nil
 
 -- 🔄 BUSCA O ASSASSINO
 task.spawn(function()
-    while task.wait(0.5) do
+    while task.wait(0.2) do
         pcall(function()
             Murder = nil
             local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
@@ -481,7 +482,7 @@ task.spawn(function()
     end
 end)
 
--- 🎯 HOOK — PRECISÃO FIXA
+-- 🎯 HOOK — BALA NASCE DENTRO!
 SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
@@ -495,12 +496,13 @@ SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
                 local Root = TargetPlayer.Character.PrimaryPart
                 if not Root then return end
 
-                -- ✅ PRECISÃO FIXA — NÃO MUDA NADA!
+                -- ✅ PREVISÃO DE MOVIMENTO
                 local Veloc = Root.AssemblyLinearVelocity
                 local Pos = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
 
+                -- ✅ A BALA NASCE DENTRO DO CORPO DELE — MATA INSTANTÂNEO!
                 if args[1] and typeof(args[1]) == "CFrame" then
-                    args[1] = CFrame.new(Pos) * args[1].Rotation
+                    args[1] = CFrame.new(Pos)  -- ← SÓ A POSIÇÃO DELE, SEM ROTAÇÃO!
                 end
             end
         end
@@ -510,9 +512,9 @@ SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
 end)
 
 print("=====================================")
-print("✅ SILENT AIM PRONTO!")
-print("⚙️ Precisão fixa em: " .. PRECISAO_FIXA)
-print("🔘 Só 1 botão — LIGA/DESLIGA")
+print("✅ INSTANT KILL ATIVADO!")
+print("💥 Bala nasce DENTRO do Assassino")
+print("⚙️ Precisão fixa: " .. PRECISAO_FIXA)
 print("=====================================")
 
 -- ===========================================
