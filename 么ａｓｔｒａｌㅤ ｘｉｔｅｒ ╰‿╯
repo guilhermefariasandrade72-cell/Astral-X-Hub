@@ -1514,6 +1514,55 @@ local function RemoveInvisivelButton()
     InvisivelAtivo = false
 end
 
+-- ===========================================
+-- 🛡️ SISTEMA GODMODE (ANTI-DANO FACA E ARMA)
+-- ===========================================
+local GodModeAtivo = false
+local TouchTouchConnections = {}
+
+local function AplicarGodMode()
+    local Char = player.Character
+    if not Char then return end
+
+    -- 1. Remove TouchTransmitters/TouchInterests das partes para não registrar o toque da faca
+    for _, parte in ipairs(Char:GetDescendants()) do
+        if parte:IsA("BasePart") then
+            -- Altera a CollisionGroup ou desativa a detecção de toque de armas
+            parte.CanTouch = not GodModeAtivo
+        end
+    end
+
+    -- 2. Desativa o Humanoid.TouchConsumes e previne estados de morte
+    local Hum = Char:FindFirstChildOfClass("Humanoid")
+    if Hum and GodModeAtivo then
+        Hum:SetStateEnabled(Enum.HumanoidStateType.Dead, false)
+    end
+end
+
+local function ToggleGodMode(state)
+    GodModeAtivo = state
+    AplicarGodMode()
+end
+
+-- Mantém a proteção ativa ao renascer ou interagir no jogo
+player.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    if GodModeAtivo then
+        AplicarGodMode()
+    end
+end)
+
+-- Loop de reforço para garantir que partes novas não recebam dano
+RunService.Heartbeat:Connect(function()
+    if GodModeAtivo then
+        local Char = player.Character
+        local Hum = Char and Char:FindFirstChildOfClass("Humanoid")
+        if Hum and Hum.Health < Hum.MaxHealth then
+            Hum.Health = Hum.MaxHealth -- Restaura vida instantaneamente
+        end
+    end
+end)
+
 -- ==================================
 -- SISTEMAS DA ABA TELEPORTE 
 -- ==================================
@@ -1845,14 +1894,10 @@ Sec_ESP:Toggle({
 local Sec_Extras = Aba_Local:Section({Title = "Extras"})
 
 Sec_Extras:Toggle({
-    Title = "Invisível (botão)",
+    Title = "GodMode",
     Default = false,
     Callback = function(Ativo)
-        if Ativo then
-            CreateInvisivelButton()
-        else
-            RemoveInvisivelButton()
-        end
+        ToggleGodMode(Ativo)
     end
 })
 
@@ -1861,6 +1906,18 @@ Sec_Extras:Toggle({
     Default = false,
     Callback = function(Ativo)
         InvisivelAtivo = Ativo
+    end
+})
+
+Sec_Extras:Toggle({
+    Title = "Invisível (botão)",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateInvisivelButton()
+        else
+            RemoveInvisivelButton()
+        end
     end
 })
 
