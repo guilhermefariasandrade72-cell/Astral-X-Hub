@@ -459,12 +459,12 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 -- ✅ PRECISÃO FIXA — NÃO PRECISA MUDAR!
 getgenv().SheriffAim = false
-local PRECISAO_FIXA = 35  -- ⭐ 35 = equilíbrio perfeito
+local PRECISAO_FIXA = 50 -- ⭐ 35 = equilíbrio perfeito
 local Murder = nil
 
 -- 🔄 BUSCA O ASSASSINO
 task.spawn(function()
-    while task.wait(0.2) do
+    while task.wait(0.5) do
         pcall(function()
             Murder = nil
             local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
