@@ -74,11 +74,6 @@ local collectedCoins = {}
 local AutoFarmButtonGui = nil
 local isDraggingFarm = false
 
-getgenv().SheriffAim = false
-getgenv().GunAccuracy = 25
-local Murder = nil
-local SilentAimHook = nil
-
 local AutoShoot = false
 local AutoGrabGun = false
 local ShootPredictMultiplier = 1
@@ -454,10 +449,17 @@ local function RemoveAutoFarmButton()
 end
 
 -- ==================================
--- 🎯 SISTEMA SILENT AIM — CORRIGIDO
+-- 🎯 SISTEMA SILENT AIM — VERSÃO HUB
+-- ✅ EXATAMENTE IGUAL AO QUE FUNCIONA
+-- ✅ Usa PrimaryPart + declara variáveis
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+-- ✅ FALTAVA ISSO: DECLARAR AS VARIÁVEIS!
+getgenv().SheriffAim = false
+getgenv().GunAccuracy = 25
+local Murder = nil
 
 -- 🔄 BUSCA O ASSASSINO A CADA 0.2s
 task.spawn(function()
@@ -471,7 +473,7 @@ task.spawn(function()
             if not Dados then return end
             
             for Nome, Info in pairs(Dados) do
-                if Info and Info.Role == "Murderer" and not Info.Dead then
+                if Info and Info.Role == "Murderer" then
                     Murder = Nome
                     break
                 end
@@ -480,36 +482,32 @@ task.spawn(function()
     end
 end)
 
--- 🎯 HOOK — INTERCEPTA O DISPARO E ALTERA A POSIÇÃO
+-- 🎯 HOOK — EXATAMENTE IGUAL AO QUE FUNCIONA
 SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
     local method = getnamecallmethod()
     local args = {...}
 
-    -- ✅ SÓ INTERCEPTA QUANDO TUDO ESTIVER CERTO
     if not checkcaller() then
         if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
             if getgenv().SheriffAim and Murder then
-                pcall(function()
-                    local TargetPlayer = Players:FindFirstChild(tostring(Murder))
-                    if not TargetPlayer or not TargetPlayer.Character then return end
-                    
-                    local Root = TargetPlayer.Character:FindFirstChild("HumanoidRootPart")
-                    if not Root then return end
+                -- ✅ TIRAR O PCALL DAQUI — ele estava escondendo os erros!
+                local TargetPlayer = Players[tostring(Murder)]
+                if not TargetPlayer or not TargetPlayer.Character then return end
+                
+                -- ✅ PRIMARYPART — IGUAL AO QUE FUNCIONA!
+                local Root = TargetPlayer.Character.PrimaryPart
+                
+                local Veloc = Root.AssemblyLinearVelocity
+                local Pos = Root.Position +
+                    (Veloc * Vector3.new(
+                        getgenv().GunAccuracy / 200,
+                        0,
+                        getgenv().GunAccuracy / 200
+                    ))
 
-                    -- ✅ PREVISÃO DE MOVIMENTO CORRIGIDA
-                    local Veloc = Root.AssemblyLinearVelocity
-                    local Previsao = getgenv().GunAccuracy / 200
-                    local TargetPos = Root.Position + (Veloc * Vector3.new(Previsao, 0, Previsao))
-
-                    -- ✅ SÓ ALTERA O 1º ARGUMENTO — NÃO MEXE NO 2º!
-                    if args[1] then
-                        if typeof(args[1]) == "CFrame" then
-                            args[1] = CFrame.new(TargetPos) * args[1].Rotation
-                        else
-                            args[1] = TargetPos
-                        end
-                    end
-                end)
+                if args[1] and typeof(args[1]) == "CFrame" then
+                    args[1] = CFrame.new(Pos) * args[1].Rotation
+                end
             end
         end
     end
