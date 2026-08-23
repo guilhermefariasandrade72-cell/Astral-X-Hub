@@ -1304,6 +1304,30 @@ RunService.RenderStepped:Connect(function()
     Cam.FieldOfView = FOV_Padrao
 end)
 
+-- =====================================
+-- Sistema de Anti-Fling separadinho
+-- =====================================
+task.spawn(function()
+    while true do
+        if getgenv().AntiFling then
+            pcall(function()
+                for _, OtherPlayer in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if OtherPlayer ~= game:GetService("Players").LocalPlayer and OtherPlayer.Character then
+                        for _, Part in ipairs(OtherPlayer.Character:GetChildren()) do
+                            if Part:IsA("BasePart") then
+                                Part.CanCollide = false
+                                Part.AssemblyLinearVelocity = Vector3.zero
+                                Part.AssemblyAngularVelocity = Vector3.zero
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        game:GetService("RunService").Stepped:Wait()
+    end
+end)
+
 -- ==================================
 -- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
 -- ==================================
@@ -2048,14 +2072,6 @@ Sec_Movimento:Slider({
 })
 
 Sec_Movimento:Toggle({
-    Title = "Walk Fling",
-    Default = false,
-    Callback = function(Ativo)
-        ToggleWalkFling(Ativo)
-    end
-})
-
-Sec_Movimento:Toggle({
     Title = "Fly",
     Default = false,
     Callback = function(Ativo)
@@ -2076,6 +2092,22 @@ Sec_Movimento:Toggle({
     Default = false,
     Callback = function(Ativo)
         _G.PuloInfinito = Ativo
+    end
+})
+
+Sec_Movimento:Toggle({
+    Title = "Walk Fling",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleWalkFling(Ativo)
+    end
+})
+
+Sec_Movimento:Toggle({
+    Title = "Anti-Fling",
+    Default = false,
+    Callback = function(Ativo)
+        getgenv().AntiFling = Ativo
     end
 })
 
