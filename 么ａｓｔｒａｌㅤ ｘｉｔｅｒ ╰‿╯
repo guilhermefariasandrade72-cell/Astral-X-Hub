@@ -166,9 +166,8 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 
-
 -- ==================================
--- 🚶 AUTO FARM — ANDANDO EM PÉ (SEM DEITAR)
+-- 🚶 AUTO FARM — ANDANDO EM PÉ (SEM DEITAR + DETECÇÃO DE SACO CHEIO)
 -- ==================================
 -- Services
 local Players = game:GetService("Players")
@@ -190,8 +189,27 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- 1. DETECTOR DE BOLSA CHEIA
+-- 1. DETECTOR DE BOLSA CHEIA (TEXTO NA TELA + REMOTES)
 -- ==================================
+local function VerificarTextoBolsaCheia()
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if not playerGui then return false end
+
+    for _, gui in ipairs(playerGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible then
+            local texto = string.lower(gui.Text)
+            if string.find(texto, "saco") and string.find(texto, "cheio") then 
+                return true
+            elseif string.find(texto, "bag") and string.find(texto, "full") then 
+                return true
+            elseif string.find(texto, "full!") or string.find(texto, "cheio!") then 
+                return true 
+            end
+        end
+    end
+    return false
+end
+
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
     if Remotes then
@@ -205,6 +223,14 @@ task.spawn(function()
                 end
             end)
         end
+    end
+end)
+
+-- Reset da bolsa quando iniciar uma nova partida
+player:GetAttributeChangedSignal("Alive"):Connect(function()
+    if player:GetAttribute("Alive") == true then
+        BolsaCheia = false
+        table.clear(collectedCoins)
     end
 end)
 
@@ -268,11 +294,15 @@ task.spawn(function()
                 continue
             end
 
-            if BolsaCheia then
+            -- Pausa ao detectar bolsa cheia e aguarda fim da rodada
+            if BolsaCheia or VerificarTextoBolsaCheia() then
+                BolsaCheia = true
+                table.clear(collectedCoins)
                 repeat
                     RunService.Heartbeat:Wait()
-                until not BolsaCheia or not AutoFarmAtivo or not EmPartida()
-                table.clear(collectedCoins)
+                until not AutoFarmAtivo or not EmPartida()
+                
+                RunService.Heartbeat:Wait()
                 continue
             end
 
@@ -280,13 +310,12 @@ task.spawn(function()
 
             if alvo then
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
-                and not BolsaCheia 
+                and not BolsaCheia and not VerificarTextoBolsaCheia()
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
                     
-                    -- Troca para moeda mais próxima se aparecer uma mais perto
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -296,7 +325,6 @@ task.spawn(function()
                         break
                     end
 
-                    -- ✅ VAI DIRETO NA POSIÇÃO DA MOEDA — SEM DESLOCAMENTO PARA BAIXO!
                     local posAlvo = alvo.Position
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
@@ -306,13 +334,11 @@ task.spawn(function()
                         break
                     end
 
-                    -- ✅ SEM DEITAR — APENAS MOVE NORMALMENTE!
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    -- ✅ MANTÉM A POSIÇÃO VERTICAL NORMAL — SEM INCLINAR!
                     hrp.CFrame = CFrame.new(novaPos)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
