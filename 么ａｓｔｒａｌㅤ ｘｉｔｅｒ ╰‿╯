@@ -716,59 +716,8 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- ===========================================
--- 🔫 SISTEMA GRAB GUN (CORRIGIDO SEM PUXAR XERIFE)
+-- 🔫 SISTEMA DE BOTÃO FLUTUANTE GRAB GUN (ARRUMADO)
 -- ===========================================
-local function GetDroppedGun()
-    for _, item in ipairs(workspace:GetDescendants()) do
-        if (item.Name == "GunDrop" or item.Name == "Gun") then
-            -- Verifica se a arma está segurada por algum jogador ou na mochila
-            local ancestral = item:FindFirstAncestorOfClass("Model")
-            local eJogador = ancestral and Players:GetPlayerFromCharacter(ancestral)
-            local naMochila = item:FindFirstAncestorOfClass("Backpack")
-
-            -- Só aceita se a arma NÃO estiver com nenhum player
-            if not eJogador and not naMochila then
-                if item:IsA("Tool") or item:IsA("BasePart") then
-                    return item
-                end
-            end
-        end
-    end
-    return nil
-end
-
-local function GrabGunAction()
-    if ExecutandoGrab then return end
-    ExecutandoGrab = true
-    
-    task.delay(0.25, function() 
-        ExecutandoGrab = false 
-    end)
-
-    local DroppedGun = GetDroppedGun()
-
-    if DroppedGun then
-        local Char = player.Character
-        local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
-        
-        if HRP then
-            local targetPart = DroppedGun:IsA("BasePart") and DroppedGun or DroppedGun:FindFirstChild("Handle") or DroppedGun:FindFirstChildOfClass("BasePart")
-            
-            if targetPart then
-                pcall(function()
-                    -- Traz apenas a arma solta até o personagem e ativa o toque
-                    targetPart.CFrame = HRP.CFrame
-                    if targetPart:FindFirstChild("TouchInterest") or targetPart:IsA("TouchTransmitter") then
-                        firetouchinterest(HRP, targetPart, 0)
-                        task.wait(0.02)
-                        firetouchinterest(HRP, targetPart, 1)
-                    end
-                end)
-            end
-        end
-    end
-end
-
 local function CreateGrabGunButton()
     if GrabGunButtonGui then return end
 
