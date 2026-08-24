@@ -1669,6 +1669,63 @@ local function GetLobbySpawn()
     return CFrame.new(posLobby + Vector3.new(0, 3, 0))
 end
 
+-- ==================================
+-- 🛡️ SISTEMA DE TELEPORTE SAFE (COM BACKUP DE POSIÇÃO)
+-- ==================================
+local SafePlatform = nil
+local SafePosition = Vector3.new(0, 500, 0) -- Plataforma a 500 studs de altura
+local UltimaPosicaoAntesDoSafe = nil        -- Salva o CFrame original
+
+local function SetSafePlatform(enable)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    if enable then
+        if hrp then
+            -- 📍 Salva a posição exata onde você estava
+            UltimaPosicaoAntesDoSafe = hrp.CFrame
+        end
+
+        -- Cria a plataforma no ar se não existir
+        if not SafePlatform or not SafePlatform.Parent then
+            SafePlatform = Instance.new("Part")
+            SafePlatform.Name = "AstralX_SafePlatform"
+            SafePlatform.Size = Vector3.new(20, 2, 20)
+            SafePlatform.Position = SafePosition
+            SafePlatform.Anchored = true
+            SafePlatform.Transparency = 0.5
+            SafePlatform.Color = Color3.fromRGB(138, 43, 226)
+            SafePlatform.Material = Enum.Material.Neon
+            SafePlatform.Parent = workspace
+        end
+
+        -- Teleporta para cima da plataforma
+        if hrp then
+            hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 4, 0))
+        end
+    else
+        -- Destrói a plataforma
+        if SafePlatform then
+            SafePlatform:Destroy()
+            SafePlatform = nil
+        end
+
+        -- Retorna para a posição original salva
+        if hrp then
+            if UltimaPosicaoAntesDoSafe then
+                hrp.CFrame = UltimaPosicaoAntesDoSafe
+                UltimaPosicaoAntesDoSafe = nil
+            else
+                -- Fallback caso não tenha gravado a posição por algum motivo
+                local lobbyPos = GetLobbySpawn and GetLobbySpawn()
+                if lobbyPos then
+                    hrp.CFrame = lobbyPos
+                end
+            end
+        end
+    end
+end
+
 -- ==============================================
 
 local function PegarListaJogadores()
@@ -2141,7 +2198,7 @@ Sec_TPPlayer:Button({
     end
 })
 
-local Sec_TPMapaLobby = Aba_Tele:Section({Title = "TP Mapa & Lobby"})
+local Sec_TPMapaLobby = Aba_Tele:Section({Title = "TP Locais"})
 
 Sec_TPMapaLobby:Button({
     Title = "TP Mapa",
@@ -2160,6 +2217,14 @@ Sec_TPMapaLobby:Button({
         if posLobby then
             TeleportarPara(posLobby)
         end
+    end
+})
+
+Sec_TPMapaLobby:Toggle({
+    Title = "Teleport Safe Platform",
+    Default = false,
+    Callback = function(estado)
+        SetSafePlatform(estado)
     end
 })
 
