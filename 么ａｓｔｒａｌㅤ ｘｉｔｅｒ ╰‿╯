@@ -1689,6 +1689,7 @@ local function TeleportarPara(posicaoCFrame)
     end
 end
 
+-- Mantido 100% original conforme solicitado
 local function GetMapSpawn()
     -- Procura o container do mapa atual no Workspace
     local coinContainer = workspace:FindFirstChild("CoinContainer", true)
@@ -1712,30 +1713,49 @@ local function GetMapSpawn()
     return nil
 end
 
+-- Função de Lobby Atualizada e Robusta
 local function GetLobbySpawn()
-    local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyMap")
+    -- 1. Procura profunda por qualquer objeto chamado Lobby no Workspace (independente do tipo)
+    local lobby = workspace:FindFirstChild("Lobby", true) or workspace:FindFirstChild("LobbyMap", true)
+    
     if lobby then
-        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn")
+        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn") or lobby:FindFirstChild("SpawnsContainer")
         if spawns then
             local partesSpawn = spawns:GetChildren()
             if #partesSpawn > 0 then
-                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+                local spawnRandom = partesSpawn[math.random(1, #partesSpawn)]
+                if spawnRandom:IsA("BasePart") then
+                    return spawnRandom.CFrame + Vector3.new(0, 3, 0)
+                end
             end
         end
+        
+        -- Se o Lobby for um Model ou Part única
         if lobby:IsA("Model") then
             local cf, _ = lobby:GetBoundingBox()
             return cf + Vector3.new(0, 5, 0)
+        elseif lobby:IsA("BasePart") then
+            return lobby.CFrame + Vector3.new(0, 3, 0)
         end
     end
-    
-    -- Fallback para o SpawnLocation padrão do Roblox no jogo
-    local defaultSpawn = workspace:FindFirstChildOfClass("SpawnLocation")
-    if defaultSpawn then
-        return defaultSpawn.CFrame + Vector3.new(0, 3, 0)
+
+    -- 2. Fallback: Procura por SpawnLocations gerais que NÃO estejam dentro do mapa da partida
+    local coinContainer = workspace:FindFirstChild("CoinContainer", true)
+    local mapaAtual = coinContainer and coinContainer.Parent
+
+    for _, obj in ipairs(workspace:GetDescendants()) do
+        if obj:IsA("SpawnLocation") then
+            -- Se não tiver mapa ativo ou o spawn não pertencer ao mapa de moedas, assume que é do lobby
+            if not mapaAtual or not obj:IsDescendantOf(mapaAtual) then
+                return obj.CFrame + Vector3.new(0, 3, 0)
+            end
+        end
     end
-    
-    return nil
+
+    -- 3. Último caso: Coordenada padrão de segurança do Lobby
+    return CFrame.new(-108, 140, 82)
 end
+
 
 local function PegarListaJogadores()
     local lista = {}
