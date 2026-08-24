@@ -1640,7 +1640,7 @@ local function GetMapSpawn()
             end
         end
         
-        -- Caso nÃ£o ache uma pasta de spawns, usa a posiÃ§Ã£o central do prÃ³prio mapa
+        -- Caso não ache uma pasta de spawns, usa a posição central do próprio mapa
         if map:IsA("Model") then
             local cf, _ = map:GetBoundingBox()
             return cf + Vector3.new(0, 5, 0)
@@ -1650,6 +1650,10 @@ local function GetMapSpawn()
 end
 
 local function GetLobbySpawn()
+    -- 📍 Coordenada fixa gravada (Posiciona 3 studs acima para evitar cair no chão)
+    local posLobby = Vector3.new(-0.32, -67.11, -31.52)
+    
+    -- Se encontrar a pasta ou modelo do Lobby no Workspace, tenta pegar um Spawn oficial
     local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyMap")
     if lobby then
         local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn")
@@ -1659,19 +1663,10 @@ local function GetLobbySpawn()
                 return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
             end
         end
-        if lobby:IsA("Model") then
-            local cf, _ = lobby:GetBoundingBox()
-            return cf + Vector3.new(0, 5, 0)
-        end
     end
-    
-    -- Fallback para o SpawnLocation padrÃ£o do Roblox no jogo
-    local defaultSpawn = workspace:FindFirstChildOfClass("SpawnLocation")
-    if defaultSpawn then
-        return defaultSpawn.CFrame + Vector3.new(0, 3, 0)
-    end
-    
-    return nil
+
+    -- Retorna a coordenada exata enviada
+    return CFrame.new(posLobby + Vector3.new(0, 3, 0))
 end
 
 -- ==============================================
