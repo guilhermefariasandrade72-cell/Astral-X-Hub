@@ -166,7 +166,7 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 -- ==================================
--- SISTEMAS DA ABA MAIN (CORRIGIDO: COLETA E MOCHILA)
+-- SISTEMAS DA ABA MAIN (CORRIGIDO: BONECO EM PÉ & DETECTOR DE SACO CHEIO)
 -- ==================================
 -- Services
 local Players = game:GetService("Players")
@@ -178,9 +178,9 @@ local player = Players.LocalPlayer
 
 -- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 20,                     -- Respeita o slider (16 a 20)
+    velocidade = 16,                     -- Respeita o slider (16 a 20)
     alcance_maximo = 500,
-    offsetY = -2.0,                      -- Distância abaixo da moeda
+    offsetY = 0,                         -- Alinhado à altura da moeda
     hitboxSize = Vector3.new(10, 18, 10)  -- Hitbox expandida da moeda
 }
 
@@ -189,19 +189,39 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- 1. DETECTOR DE BOLSA CHEIA VIA REMOTES (MM2 NATIVO)
+-- 1. DETECTOR DE BOLSA CHEIA (TEXTO NA TELA + REMOTES)
 -- ==================================
+-- Verificação de UI (Mensagens "SACO CHEIO", "FULL", "BAG FULL")
+local function VerificarTextoBolsaCheia()
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if not playerGui then return false end
+
+    for _, gui in ipairs(playerGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible then
+            local texto = string.lower(gui.Text)
+            if string.find(texto, "saco") and string.find(texto, "cheio") then
+                return true
+            elseif string.find(texto, "bag") and string.find(texto, "full") then
+                return true
+            elseif string.find(texto, "full!") or string.find(texto, "cheio!") then
+                return true
+            end
+        end
+    end
+    return false
+end
+
+-- Detecção via Remotes do Servidor (MM2)
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
     if Remotes then
         local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
         if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
             coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
-                -- Escuta a resposta do servidor para saber se fomos nós que coletamos
                 if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
                     if tonumber(atual) and tonumber(maximo) then
                         if tonumber(atual) >= tonumber(maximo) then
-                            BolsaCheia = true  -- ✅ Bolsa cheia (40/40 ou 50/50 Elite)
+                            BolsaCheia = true  -- ✅ Bolsa cheia (Ex: 40/40 ou 50/50)
                         else
                             BolsaCheia = false
                         end
@@ -213,15 +233,13 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 2. VERIFICAÇÃO DE PARTIDA COM ATRIBUTO "Alive" (OFICIAL DO MM2)
+-- 2. VERIFICAÇÃO DE PARTIDA
 -- ==================================
 local function EmPartida()
-    -- 📌 1. Checa o atributo 'Alive' diretamente no jogador (O mais importante!)
     if player:GetAttribute("Alive") ~= true then
         return false
     end
 
-    -- 📌 2. Verifica se o personagem está totalmente carregado
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then 
         return false 
@@ -251,7 +269,6 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
-            -- Aumenta a hitbox transparente da moeda no lado do cliente
             if moeda.Size ~= CONFIG_FARM.hitboxSize then
                 moeda.Size = CONFIG_FARM.hitboxSize
                 moeda.Transparency = 1
@@ -278,7 +295,7 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se "Alive" for false/nil (lobby/morto) -> Levanta o boneco e reseta
+            -- Se estiver no lobby/morto -> Mantém em pé e reseta
             if not EmPartida() or not hrp or not humanoid then
                 if humanoid then humanoid.PlatformStand = false end
                 BolsaCheia = false
@@ -287,12 +304,16 @@ task.spawn(function()
                 continue
             end
 
-            -- Bolsa cheia detectada pelo Remote Event -> Aguarda nova partida
-            if BolsaCheia then
-                humanoid.PlatformStand = false
+            -- Checagem contínua de bolsa cheia (UI + Eventos)
+            if BolsaCheia or VerificarTextoBolsaCheia() then
+                BolsaCheia = true
+                if humanoid then humanoid.PlatformStand = false end
+                
                 repeat
                     RunService.Heartbeat:Wait()
-                until not BolsaCheia or not AutoFarmAtivo or not EmPartida()
+                until not AutoFarmAtivo or not EmPartida()
+                
+                BolsaCheia = false
                 table.clear(collectedCoins)
                 continue
             end
@@ -302,12 +323,12 @@ task.spawn(function()
             if alvo then
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and not BolsaCheia 
+                and not VerificarTextoBolsaCheia()
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
                     
-                    -- Recalcula moeda mais próxima em tempo real
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -317,7 +338,6 @@ task.spawn(function()
                         break
                     end
 
-                    -- Posiciona um pouco abaixo da moeda
                     local posAlvoAjustada = alvo.Position + Vector3.new(0, CONFIG_FARM.offsetY, 0)
                     local direcao = (posAlvoAjustada - minhaPosAtual)
                     local distancia = direcao.Magnitude
@@ -327,19 +347,20 @@ task.spawn(function()
                         break
                     end
 
-                    -- Deita de costas no chão (olhando para cima)
-                    humanoid.PlatformStand = true
+                    -- Personagem em pé mantendo colisão e animação normal
+                    humanoid.PlatformStand = false
 
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    hrp.CFrame = CFrame.new(novaPos) * CFrame.Angles(math.rad(90), 0, 0)
+                    -- Move em pé mantendo a rotação padrão
+                    hrp.CFrame = CFrame.new(novaPos, novaPos + hrp.CFrame.LookVector)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
-                humanoid.PlatformStand = false
+                if humanoid then humanoid.PlatformStand = false end
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
             end
