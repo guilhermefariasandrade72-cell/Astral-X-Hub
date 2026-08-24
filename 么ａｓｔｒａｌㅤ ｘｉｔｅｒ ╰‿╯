@@ -1713,47 +1713,9 @@ local function GetMapSpawn()
     return nil
 end
 
--- Função de Lobby Atualizada e Robusta
+-- Retorna a coordenada fixa do Lobby
 local function GetLobbySpawn()
-    -- 1. Procura profunda por qualquer objeto chamado Lobby no Workspace (independente do tipo)
-    local lobby = workspace:FindFirstChild("Lobby", true) or workspace:FindFirstChild("LobbyMap", true)
-    
-    if lobby then
-        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn") or lobby:FindFirstChild("SpawnsContainer")
-        if spawns then
-            local partesSpawn = spawns:GetChildren()
-            if #partesSpawn > 0 then
-                local spawnRandom = partesSpawn[math.random(1, #partesSpawn)]
-                if spawnRandom:IsA("BasePart") then
-                    return spawnRandom.CFrame + Vector3.new(0, 3, 0)
-                end
-            end
-        end
-        
-        -- Se o Lobby for um Model ou Part única
-        if lobby:IsA("Model") then
-            local cf, _ = lobby:GetBoundingBox()
-            return cf + Vector3.new(0, 5, 0)
-        elseif lobby:IsA("BasePart") then
-            return lobby.CFrame + Vector3.new(0, 3, 0)
-        end
-    end
-
-    -- 2. Fallback: Procura por SpawnLocations gerais que NÃO estejam dentro do mapa da partida
-    local coinContainer = workspace:FindFirstChild("CoinContainer", true)
-    local mapaAtual = coinContainer and coinContainer.Parent
-
-    for _, obj in ipairs(workspace:GetDescendants()) do
-        if obj:IsA("SpawnLocation") then
-            -- Se não tiver mapa ativo ou o spawn não pertencer ao mapa de moedas, assume que é do lobby
-            if not mapaAtual or not obj:IsDescendantOf(mapaAtual) then
-                return obj.CFrame + Vector3.new(0, 3, 0)
-            end
-        end
-    end
-
-    -- 3. Último caso: Coordenada padrão de segurança do Lobby
-    return CFrame.new(-108, 140, 82)
+    return CFrame.new(13.70, 504.52, -12.01)
 end
 
 
