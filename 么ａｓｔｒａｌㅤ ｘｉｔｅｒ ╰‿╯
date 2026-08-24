@@ -62,12 +62,6 @@ Window:EditOpenButton({
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
-local AutoFarm2Ativo = false
-local AcaoAposBolsaCheia = "nada" -- Opções: nada, killaura, shoot, tp_killaura, tp_shoot
-local BolsaCheiaAutoFarm2 = false
-local ColetandoMoedas = false
-local AcaoEmAndamento = false
-
 -- AITO FARM 
 local CONFIG_FARM = {
     velocidade = 24,
@@ -172,10 +166,31 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 -- ==================================
--- 🎯 SISTEMA COMPLETO — AUTO FARM 2 + AÇÃO APÓS MOEDAS
+-- 📌 VARIÁVEIS BASE E CONFIGURAÇÕES (NO TOPO)
 -- ==================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
--- 📍 FUNÇÃO: TELEPORTAR PARA PLATAFORMA DO XERIFE
+local player = Players.LocalPlayer
+
+local CONFIG_FARM = CONFIG_FARM or {
+    velocidade = 20,
+    alcance_maximo = 500,
+    hitboxSize = Vector3.new(10, 18, 10)
+}
+
+local AutoFarm2Ativo = false
+local AcaoAposBolsaCheia = "nada"
+local BolsaCheiaAutoFarm2 = false
+local ColetandoMoedas = false
+local AcaoEmAndamento = false
+local collectedCoins = collectedCoins or {}
+
+-- ==================================
+-- 🎯 FUNÇÕES AUXILIARES
+-- ==================================
 local function TeleportParaPlataforma()
     local Char = player.Character
     if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
@@ -188,7 +203,6 @@ local function TeleportParaPlataforma()
     end
 end
 
--- 🔫 FUNÇÃO: PEGAR ARMA/GUN
 local function PegarArma()
     local Char = player.Character
     if not Char then return end
@@ -200,7 +214,6 @@ local function PegarArma()
     end
 end
 
--- 🔪 FUNÇÃO: PEGAR FACA
 local function PegarFaca()
     local Char = player.Character
     if not Char then return end
@@ -213,19 +226,16 @@ local function PegarFaca()
     end
 end
 
--- 🎯 FUNÇÃO: SHOOT MURDERER
 local function ExecutarShootMurderer()
     PegarArma()
     task.spawn(function()
-        ShootMurderer() -- ✅ Usa a função que você JÁ TEM no seu script!
+        if ShootMurderer then ShootMurderer() end
     end)
 end
 
--- 🎯 FUNÇÃO: KILL AURA — MATA TODO MUNDO
 local function ExecutarKillAura()
     PegarFaca()
     task.spawn(function()
-        -- ✅ Percorre TODOS os jogadores e mata
         for _, Alvo in ipairs(Players:GetPlayers()) do
             if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Humanoid") then
                 local Info = nil
@@ -238,12 +248,11 @@ local function ExecutarKillAura()
                 if Info and Info[Alvo.Name] then
                     local Role = Info[Alvo.Name].Role
                     if Role == "Murderer" or Role == "Sheriff" then
-                        EhInocente = false -- Não mata assassino nem xerife
+                        EhInocente = false
                     end
                 end
                 
-                if EhInocente and not Alvo.Character.Humanoid.Health <= 0 then
-                    -- ✅ MATA O JOGADOR
+                if EhInocente and Alvo.Character.Humanoid.Health > 0 then
                     local Root = Alvo.Character:FindFirstChild("HumanoidRootPart")
                     if Root then
                         pcall(function()
@@ -256,39 +265,30 @@ local function ExecutarKillAura()
     end)
 end
 
--- 📋 EXECUTAR AÇÃO ESCOLHIDA
 local function ExecutarAcaoEscolhida()
     AcaoEmAndamento = true
     
     if AcaoAposBolsaCheia == "killaura" then
-        print("🔪 Executando: Kill Aura")
         ExecutarKillAura()
-        
     elseif AcaoAposBolsaCheia == "shoot" then
-        print("🔫 Executando: Shoot Murderer")
         ExecutarShootMurderer()
-        
     elseif AcaoAposBolsaCheia == "tp_killaura" then
-        print("📍 TP + Kill Aura")
         TeleportParaPlataforma()
         task.wait(0.3)
         ExecutarKillAura()
-        
     elseif AcaoAposBolsaCheia == "tp_shoot" then
-        print("📍 TP + Shoot Murderer")
         TeleportParaPlataforma()
         task.wait(0.3)
         ExecutarShootMurderer()
-        
-    else
-        print("⚫ Nada a fazer")
     end
     
     task.wait(1)
     AcaoEmAndamento = false
 end
 
--- 🔄 LOOP PRINCIPAL — MOEDAS + AÇÃO
+-- ==================================
+-- 🔄 LOOP PRINCIPAL — AUTO FARM 2
+-- ==================================
 task.spawn(function()
     while true do
         if AutoFarm2Ativo then
@@ -296,27 +296,22 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- ❌ Não está em partida
-            if not EmPartida() or not hrp or not humanoid then
+            if not EmPartida or not EmPartida() or not hrp or not humanoid then
                 BolsaCheiaAutoFarm2 = false
                 ColetandoMoedas = false
                 RunService.Heartbeat:Wait()
                 continue
             end
 
-            -- ✅ BOLSA CHEIA — PARAR DE PEGAR MOEDAS E EXECUTAR AÇÃO!
-            if BolsaCheiaAutoFarm2 or VerificarTextoBolsaCheia() then
+            -- BOLSA CHEIA
+            if BolsaCheiaAutoFarm2 or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()) then
                 BolsaCheiaAutoFarm2 = true
                 ColetandoMoedas = false
                 
-                print("✅ Bolsa cheia! Executando ação: " .. AcaoAposBolsaCheia)
-                
-                -- ⏸️ Para de coletar e executa a ação
                 if not AcaoEmAndamento then
                     ExecutarAcaoEscolhida()
                 end
                 
-                -- ⏳ Espera nova partida
                 repeat
                     RunService.Heartbeat:Wait()
                 until not AutoFarm2Ativo or not EmPartida() or player:GetAttribute("Alive") ~= true
@@ -326,19 +321,19 @@ task.spawn(function()
                 continue
             end
 
-            -- 🪙 COLETAR MOEDAS — MESMO SISTEMA QUE JÁ FUNCIONA!
+            -- COLETAR MOEDAS
             ColetandoMoedas = true
-            local alvo = getNearestCoin(hrp.Position)
+            local alvo = getNearestCoin and getNearestCoin(hrp.Position)
 
             if alvo then
                 while AutoFarm2Ativo and EmPartida() and alvo and alvo.Parent 
-                and not BolsaCheiaAutoFarm2 and not VerificarTextoBolsaCheia()
+                and not BolsaCheiaAutoFarm2 
+                and not (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
                     
-                    -- Troca para moeda mais próxima
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -348,7 +343,6 @@ task.spawn(function()
                         break
                     end
 
-                    -- Anda até a moeda
                     local posAlvo = alvo.Position
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
@@ -370,13 +364,54 @@ task.spawn(function()
                 RunService.Heartbeat:Wait()
             end
         else
-            -- ❌ DESLIGADO
             BolsaCheiaAutoFarm2 = false
             ColetandoMoedas = false
             RunService.Heartbeat:Wait()
         end
     end
 end)
+
+-- ==================================
+-- 🔘 INTERFACE WINDUI
+-- ==================================
+Sec_AutoFarm2 = Aba_Main:Section({Title = "Auto Farm 2"})
+
+Sec_AutoFarm2:Toggle({
+    Title = "Ligar Auto Farm",
+    Default = false,
+    Callback = function(Ativo)
+        AutoFarm2Ativo = Ativo
+        if not Ativo then
+            BolsaCheiaAutoFarm2 = false
+            AcaoEmAndamento = false
+        end
+    end
+})
+
+DropdownComportamento = Sec_AutoFarm2:Dropdown({
+    Title = "Comportamento após bolsa cheia",
+    Values = {
+        "⚫ Nada (parar)",
+        "🔪 Auto Kill Aura",
+        "🔫 Shoot Murderer",
+        "📍 TP Plataforma + Kill Aura",
+        "📍 TP Plataforma + Shoot Murderer"
+    },
+    Value = "⚫ Nada (parar)",
+    Callback = function(Selecionado)
+        if Selecionado == "⚫ Nada (parar)" then
+            AcaoAposBolsaCheia = "nada"
+        elseif Selecionado == "🔪 Auto Kill Aura" then
+            AcaoAposBolsaCheia = "killaura"
+        elseif Selecionado == "🔫 Shoot Murderer" then
+            AcaoAposBolsaCheia = "shoot"
+        elseif Selecionado == "📍 TP Plataforma + Kill Aura" then
+            AcaoAposBolsaCheia = "tp_killaura"
+        elseif Selecionado == "📍 TP Plataforma + Shoot Murderer" then
+            AcaoAposBolsaCheia = "tp_shoot"
+        end
+    end
+})
 
 -- ==================================
 -- 🚶 AUTO FARM — ANDANDO EM PÉ (CORRIGIDO)
