@@ -1684,10 +1684,10 @@ local function TeleportarParaSafe()
     if not SafePlatform or not SafePlatform.Parent then
         SafePlatform = Instance.new("Part")
         SafePlatform.Name = "AstralX_SafePlatform"
-        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Size = Vector3.new(0, 0, 0)
         SafePlatform.Position = SafePosition
         SafePlatform.Anchored = true
-        SafePlatform.Transparency = 1 -- 1 = Totalmente invisível (ou 0.5 para enxergar o chão)
+        SafePlatform.Transparency = 0.5
         SafePlatform.CanCollide = true
         SafePlatform.Parent = workspace
     end
