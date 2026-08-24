@@ -357,6 +357,65 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 📌 CONFIGURAÇÕES E VARIÁVEIS
+-- ==================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+
+local TPSafeAoEncher = false
+local SafePlatform = nil
+local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
+
+-- ==================================
+-- 🛡️ FUNÇÃO TELEPORTE SAFE
+-- ==================================
+local function TeleportarParaSafe()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Cria a plataforma se não existir
+    if not SafePlatform or not SafePlatform.Parent then
+        SafePlatform = Instance.new("Part")
+        SafePlatform.Name = "AstralX_SafePlatform"
+        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Position = SafePosition
+        SafePlatform.Anchored = true
+        SafePlatform.Color = Color3.fromRGB(0, 0, 0)
+        SafePlatform.Transparency = 0.5
+        SafePlatform.Material = Enum.Material.SmoothPlastic
+        SafePlatform.CanCollide = true
+        SafePlatform.Parent = Workspace
+    end
+
+    -- Teleporta o jogador para cima da plataforma
+    hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
+end
+
+-- ==================================
+-- 🔄 MONITOR DE BOLSA CHEIA -> TP SAFE
+-- ==================================
+task.spawn(function()
+    while true do
+        if TPSafeAoEncher then
+            -- Verifica se a bolsa encheu (usando as variáveis do seu Auto Farm)
+            if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
+                TeleportarParaSafe()
+                
+                -- Aguarda até a partida terminar para evitar teleportes repetidos na mesma rodada
+                repeat
+                    RunService.Heartbeat:Wait()
+                until not TPSafeAoEncher or not EmPartida() or player:GetAttribute("Alive") ~= true
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end)
+
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
 -- ===========================================
@@ -1881,6 +1940,14 @@ Sec_AutoFarm:Button({
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
         end)
+    end
+})
+
+Sec_AutoFarm:Toggle({
+    Title = "TP Safe ao Encher Bolsa",
+    Default = false,
+    Callback = function(estado)
+        TPSafeAoEncher = estado
     end
 })
 
