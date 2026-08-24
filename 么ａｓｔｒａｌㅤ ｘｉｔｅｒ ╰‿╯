@@ -2146,7 +2146,7 @@ Sec_ESP:Toggle({
     end
 })
 
-local Sec_FPSBooster = AbaESP:Section({ Title = "FPS Booster", Side = "Left" })
+local Sec_FPSBooster = Aba_ESP:Section({ Title = "FPS Booster"})
 
 Sec_FPSBooster:Toggle({
     Title = "Modo Batata (FPS Extremo)",
