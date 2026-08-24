@@ -446,7 +446,62 @@ end)
 -- 🔪 KILL ALL AUTOMÁTICO (ASSASSINO + BOLSA CHEIA)
 -- ==================================
 
+-- Função para verificar e equipar a faca
+local function EquiparFaca()
+    local Char = player.Character
+    if not Char then return nil end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    if Faca then
+        if Faca.Parent ~= Char then
+            Faca.Parent = Char -- Puxa a faca para a mão
+            task.wait(0.1)
+        end
+        return Faca
+    end
+    return nil
+end
 
+local JaDisparouNestaRodada = false
+
+task.spawn(function()
+    while true do
+        task.wait(0.3) -- Reduzido levemente para pegar o aviso mais rápido
+        
+        local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
+        
+        -- Reset da trava se a partida acabar ou a bolsa não estiver mais cheia
+        if not EmPartida() or not estaComBolsaCheia then
+            JaDisparouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não disparou ainda + Em Partida + Bolsa Cheia
+        if KillAllAoEncher and not JaDisparouNestaRodada and EmPartida() and estaComBolsaCheia then
+            -- Tenta equipar a faca (se conseguir, confirma que é o Assassino)
+            local facaEquipada = EquiparFaca()
+            
+            if facaEquipada then
+                JaDisparouNestaRodada = true -- Bloqueia execuções repetidas
+                print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
+
+                -- ⏳ Espera 1 segundo solicitado antes do ataque
+                task.wait(1)
+
+                -- Confirma se continua vivo antes de matar todos
+                if EmPartida() and player:GetAttribute("Alive") == true then
+                    print("🔪 Executando Kill All...")
+                    
+                    -- Garante que a faca ainda está equipada na hora de atacar
+                    EquiparFaca()
+                    
+                    if KillAllInstantaneo then
+                        KillAllInstantaneo()
+                    end
+                end
+            end
+        end
+    end
+end)
 
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
