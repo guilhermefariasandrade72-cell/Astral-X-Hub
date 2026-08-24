@@ -2223,6 +2223,17 @@ Sec_FPSBooster:Toggle({
     end
 })
 
+Sec_FPSBooster:Toggle({
+    Title = "Remover Animações & Itens Cinzas",
+    Default = false,
+    Callback = function(estado)
+        SemAnimacoesAtivo = estado
+        if estado then
+            pcall(AplicarSemAnimacoes)
+        end
+    end
+})
+
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
