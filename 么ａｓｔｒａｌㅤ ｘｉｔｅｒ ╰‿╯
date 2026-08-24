@@ -2075,36 +2075,32 @@ Sec_AutoFarm2:Toggle({
     end
 })
 
--- ✅ DROPDOWN CORRIGIDO — USA "Options" COM "Default" em separado
+-- ✅ DROPDOWN CORRIGIDO (PADRÃO WINDUI)
 DropdownComportamento = Sec_AutoFarm2:Dropdown({
     Title = "Comportamento após bolsa cheia",
-    Options = {
+    Values = {
         "⚫ Nada (parar)",
         "🔪 Auto Kill Aura",
         "🔫 Shoot Murderer",
         "📍 TP Plataforma + Kill Aura",
         "📍 TP Plataforma + Shoot Murderer"
-    }
+    },
+    Value = "⚫ Nada (parar)", -- Define o padrão diretamente aqui
+    Callback = function(Selecionado)
+        if Selecionado == "⚫ Nada (parar)" then
+            AcaoAposBolsaCheia = "nada"
+        elseif Selecionado == "🔪 Auto Kill Aura" then
+            AcaoAposBolsaCheia = "killaura"
+        elseif Selecionado == "🔫 Shoot Murderer" then
+            AcaoAposBolsaCheia = "shoot"
+        elseif Selecionado == "📍 TP Plataforma + Kill Aura" then
+            AcaoAposBolsaCheia = "tp_killaura"
+        elseif Selecionado == "📍 TP Plataforma + Shoot Murderer" then
+            AcaoAposBolsaCheia = "tp_shoot"
+        end
+    end
 })
 
--- ✅ SELECIONA O PADRÃO DEPOIS DE CRIAR O DROPDOWN
-task.wait(0.1)
-DropdownComportamento:SetValue("⚫ Nada (parar)")
-
--- ✅ DETECTA A ESCOLHA DO USUÁRIO
-DropdownComportamento.OnChanged = function(Selecionado)
-    if Selecionado == "⚫ Nada (parar)" then
-        AcaoAposBolsaCheia = "nada"
-    elseif Selecionado == "🔪 Auto Kill Aura" then
-        AcaoAposBolsaCheia = "killaura"
-    elseif Selecionado == "🔫 Shoot Murderer" then
-        AcaoAposBolsaCheia = "shoot"
-    elseif Selecionado == "📍 TP Plataforma + Kill Aura" then
-        AcaoAposBolsaCheia = "tp_killaura"
-    elseif Selecionado == "📍 TP Plataforma + Shoot Murderer" then
-        AcaoAposBolsaCheia = "tp_shoot"
-    end
-end
 
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
