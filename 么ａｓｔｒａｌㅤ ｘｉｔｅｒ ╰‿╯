@@ -70,6 +70,7 @@ local CONFIG_FARM = {
 }
 local AutoFarmAtivo = false
 local collectedCoins = {}
+local KillAllAoEncher = false
 
 local AutoFarmButtonGui = nil
 local isDraggingFarm = false
@@ -410,6 +411,29 @@ task.spawn(function()
                 repeat
                     RunService.Heartbeat:Wait()
                 until not TPSafeAoEncher or not EmPartida() or player:GetAttribute("Alive") ~= true
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+-- ==================================
+-- 🔪 MONITOR DE BOLSA CHEIA -> KILL ALL
+-- ==================================
+task.spawn(function()
+    while true do
+        if KillAllAoEncher then
+            -- Verifica se a bolsa encheu e se o jogador está em partida
+            if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
+                -- Executa o Kill All Instantâneo que você já tem no script
+                if KillAllInstantaneo then
+                    KillAllInstantaneo()
+                end
+                
+                -- Aguarda a partida terminar para não ficar tentando atacar repetidamente
+                repeat
+                    RunService.Heartbeat:Wait()
+                until not KillAllAoEncher or not EmPartida() or player:GetAttribute("Alive") ~= true
             end
         end
         RunService.Heartbeat:Wait()
@@ -1940,6 +1964,14 @@ Sec_AutoFarm:Button({
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
         end)
+    end
+})
+
+Sec_AutoFarm:Toggle({
+    Title = "Kill All ao Encher Bolsa",
+    Default = false,
+    Callback = function(estado)
+        KillAllAoEncher = estado
     end
 })
 
