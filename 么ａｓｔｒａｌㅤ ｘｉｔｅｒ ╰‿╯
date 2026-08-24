@@ -166,9 +166,11 @@ local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffff
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
 
+
 -- ==================================
--- 🪙 AUTO FARM MM2 (INTEGRADO AO HUB)
+-- 🚶 AUTO FARM — ANDANDO EM PÉ (SEM DEITAR)
 -- ==================================
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -176,10 +178,10 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 
+-- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
     velocidade = 20,
     alcance_maximo = 500,
-    offsetY = 0,
     hitboxSize = Vector3.new(10, 18, 10)
 }
 
@@ -188,7 +190,7 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- DETECTOR DE BOLSA CHEIA
+-- 1. DETECTOR DE BOLSA CHEIA
 -- ==================================
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
@@ -206,22 +208,8 @@ task.spawn(function()
     end
 end)
 
-local function VerificarTextoBolsaCheia()
-    local playerGui = player:FindFirstChild("PlayerGui")
-    if not playerGui then return false end
-    for _, gui in ipairs(playerGui:GetDescendants()) do
-        if gui:IsA("TextLabel") and gui.Visible then
-            local texto = string.lower(gui.Text)
-            if string.find(texto, "saco") and string.find(texto, "cheio") then return true
-            elseif string.find(texto, "bag") and string.find(texto, "full") then return true
-            elseif string.find(texto, "full!") or string.find(texto, "cheio!") then return true end
-        end
-    end
-    return false
-end
-
 -- ==================================
--- VERIFICA PARTIDA
+-- 2. VERIFICAÇÃO DE PARTIDA
 -- ==================================
 local function EmPartida()
     if player:GetAttribute("Alive") ~= true then return false end
@@ -232,7 +220,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- BUSCA MOEDA
+-- 3. BUSCA MOEDA MAIS PRÓXIMA
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -264,7 +252,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 🔄 LOOP PRINCIPAL DO FARM
+-- 4. LOOP PRINCIPAL — ANDANDO EM PÉ!
 -- ==================================
 task.spawn(function()
     while true do
@@ -280,16 +268,11 @@ task.spawn(function()
                 continue
             end
 
-            -- ✅ BOLSA CHEIA → PARA E AGUARDA
-            if BolsaCheia or VerificarTextoBolsaCheia() then
-                BolsaCheia = true
-                table.clear(collectedCoins)
+            if BolsaCheia then
                 repeat
                     RunService.Heartbeat:Wait()
-                until not AutoFarmAtivo or EmPartida() == false
-                BolsaCheia = false
+                until not BolsaCheia or not AutoFarmAtivo or not EmPartida()
                 table.clear(collectedCoins)
-                RunService.Heartbeat:Wait()
                 continue
             end
 
@@ -297,11 +280,13 @@ task.spawn(function()
 
             if alvo then
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
-                and not BolsaCheia and not VerificarTextoBolsaCheia()
+                and not BolsaCheia 
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
+                    
+                    -- Troca para moeda mais próxima se aparecer uma mais perto
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -311,8 +296,9 @@ task.spawn(function()
                         break
                     end
 
-                    local posAlvoAjustada = alvo.Position + Vector3.new(0, CONFIG_FARM.offsetY, 0)
-                    local direcao = (posAlvoAjustada - minhaPosAtual)
+                    -- ✅ VAI DIRETO NA POSIÇÃO DA MOEDA — SEM DESLOCAMENTO PARA BAIXO!
+                    local posAlvo = alvo.Position
+                    local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
                     if distancia <= 1.5 then
@@ -320,13 +306,14 @@ task.spawn(function()
                         break
                     end
 
-                    -- ✅ SEMPRE EM PÉ
+                    -- ✅ SEM DEITAR — APENAS MOVE NORMALMENTE!
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    hrp.CFrame = CFrame.new(novaPos, novaPos + hrp.CFrame.LookVector)
+                    -- ✅ MANTÉM A POSIÇÃO VERTICAL NORMAL — SEM INCLINAR!
+                    hrp.CFrame = CFrame.new(novaPos)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
@@ -1786,7 +1773,7 @@ end
 local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
-    Title = "Auto Farm Coin (botão)",
+    Title = "Auto Farm Coin Button",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1814,7 +1801,7 @@ Sec_AutoFarm:Slider({
 })
 
 Sec_AutoFarm:Button({
-    Title = "Ativar Anti-AFK",
+    Title = "Anti-AFK",
     Callback = function()
         pcall(function()
             loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
@@ -1825,7 +1812,7 @@ Sec_AutoFarm:Button({
 local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
 
 Sec_Xerife:Toggle({
-    Title = "Silent AIM Murderer (botão)",
+    Title = "Silent AIM Button",
     Default = false,
     Callback = function(Ativo)
         AutoShoot = Ativo
@@ -1838,7 +1825,7 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "🔇 Silent Aim (Xerife)",
+    Title = "Shoot Murderer",
     Default = false,
     Callback = function(state)
         getgenv().SheriffAim = state
@@ -1846,7 +1833,7 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "Grab Gun (botão)",
+    Title = "Grab Gun Button",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -1868,7 +1855,7 @@ Sec_Xerife:Toggle({
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 Sec_Murderer:Toggle({
-    Title = "Kill All (botão)",
+    Title = "Kill All Button",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
