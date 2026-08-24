@@ -1864,13 +1864,14 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "Grab Gun (botão)",
+    Title = "Grab Gun",
     Default = false,
     Callback = function(Ativo)
+        AutoGrabGun = Ativo
         if Ativo then
-            CreateGrabGunButton()
+            CriarBotaoGrabGun()
         else
-            RemoveGrabGunButton()
+            RemoverBotaoGrabGun()
         end
     end
 })
