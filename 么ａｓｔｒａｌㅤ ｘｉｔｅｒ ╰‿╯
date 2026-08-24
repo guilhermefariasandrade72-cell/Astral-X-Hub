@@ -1684,17 +1684,20 @@ local function TeleportarParaSafe()
     if not SafePlatform or not SafePlatform.Parent then
         SafePlatform = Instance.new("Part")
         SafePlatform.Name = "AstralX_SafePlatform"
-        SafePlatform.Size = Vector3.new(0, 0, 0)
+        SafePlatform.Size = Vector3.new(20, 2, 20)
         SafePlatform.Position = SafePosition
         SafePlatform.Anchored = true
-        SafePlatform.Transparency = 0.5
+        SafePlatform.Color = Color3.fromRGB(0, 0, 0) -- Cor preta
+        SafePlatform.Transparency = 0.5            -- Semi-transparente
+        SafePlatform.Material = Enum.Material.SmoothPlastic
         SafePlatform.CanCollide = true
         SafePlatform.Parent = workspace
     end
 
-    -- Teleporta o jogador para cima da plataforma (3 studs acima da base)
+    -- Teleporta o jogador para cima da plataforma
     hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
 end
+
 
 -- ==============================================
 
