@@ -102,6 +102,8 @@ local DistanceESP = {}
 local TracersESP = {}
 local DadosCargos = {}
 
+local FPSBoosterAtivo = false
+
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
@@ -1312,6 +1314,68 @@ task.spawn(function()
 end)
 
 -- ==================================
+-- ⚡ SISTEMA DE FPS BOOSTER (OTIMIZAÇÃO EXTREMA)
+-- ==================================
+local function AplicarFPSBooster()
+    -- 1. Otimização do Mapa e Ambiente
+    for _, item in ipairs(Workspace:GetDescendants()) do
+        if not item:IsDescendantOf(player.Character) then
+            -- Remove Partículas e Efeitos Visuais
+            if item:IsA("ParticleEmitter") or item:IsA("Trail") or item:IsA("Smoke") or item:IsA("Fire") or item:IsA("Sparkles") then
+                item.Enabled = false
+            -- Transforma blocos/mapa em SmoothPlastic cinza e sem brilho
+            elseif item:IsA("BasePart") and not item:IsA("Terrain") then
+                item.Material = Enum.Material.SmoothPlastic
+                item.Reflectance = 0
+            elseif item:IsA("Decal") or item:IsA("Texture") then
+                item:Destroy()
+            end
+        end
+    end
+
+    -- Desativa efeitos globais de iluminação e iluminação ambiente
+    local Lighting = game:GetService("Lighting")
+    Lighting.GlobalShadows = false
+    Lighting.FogEnd = 9e9
+    Lighting.Brightness = 1
+
+    -- 2. Limpeza dos Personagens (Skins, Roupas, Cabelos)
+    for _, p in ipairs(Players:GetPlayers()) do
+        local Char = p.Character
+        if Char then
+            for _, elemento in ipairs(Char:GetChildren()) do
+                -- Remove Cabelos, Acessórios, Chapéus e Camisas/Calças
+                if elemento:IsA("Accessory") or elemento:IsA("Shirt") or elemento:IsA("Pants") or elemento:IsA("ShirtGraphic") or elemento:IsA("CharacterMesh") then
+                    elemento:Destroy()
+                -- Deixa todas as partes do corpo lisas e cinzas
+                elseif elemento:IsA("BasePart") then
+                    elemento.Material = Enum.Material.SmoothPlastic
+                    elemento.Color = Color3.fromRGB(130, 130, 130) -- Cor cinza fosco
+                    elemento.Reflectance = 0
+                    
+                    -- Remove texturas da cabeça/rosto
+                    for _, subItem in ipairs(elemento:GetChildren()) do
+                        if subItem:IsA("Decal") or subItem:IsA("Texture") then
+                            subItem:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+end
+
+-- Loop de execução contínua (Roda a cada 2 segundos)
+task.spawn(function()
+    while true do
+        task.wait(2)
+        if FPSBoosterAtivo then
+            pcall(AplicarFPSBooster)
+        end
+    end
+end)
+
+-- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
 
@@ -2078,6 +2142,19 @@ Sec_ESP:Toggle({
         ESPTracerAtivo = Ativo
         if not Ativo then
             for _, t in pairs(TracersESP) do t.Visible = false end
+        end
+    end
+})
+
+local Sec_FPSBooster = AbaESP:Section({ Title = "FPS Booster", Side = "Left" })
+
+Sec_FPSBooster:Toggle({
+    Title = "Modo Batata (FPS Extremo)",
+    Default = false,
+    Callback = function(estado)
+        FPSBoosterAtivo = estado
+        if estado then
+            pcall(AplicarFPSBooster)
         end
     end
 })
