@@ -427,25 +427,49 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 🔪 MONITOR DE BOLSA CHEIA -> KILL ALL
+-- 🔪 KILL ALL AUTOMÁTICO (ASSASSINO + BOLSA CHEIA)
 -- ==================================
+
+-- Função para verificar se o jogador atual é o Assassino / Murderer
+local function EhAssassino()
+    local Char = player.Character
+    if not Char then return false end
+    
+    -- Verifica se tem a faca na mão ou na mochila
+    local TemFaca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    return TemFaca ~= nil
+end
+
+-- Tabela/Controle de disparo único para não travar o jogo
+local JaDisparouNestaRodada = false
+
+-- Monitor leve sem perda de FPS
 task.spawn(function()
     while true do
-        if KillAllAoEncher then
-            -- Verifica se a bolsa encheu e se o jogador está em partida
-            if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
-                -- Executa o Kill All Instantâneo que você já tem no script
-                if KillAllInstantaneo then
+        task.wait(0.5) -- Intervalo longo para poupar processador/FPS
+        
+        -- Reset da trava se a partida acabar ou a bolsa esvaziar
+        if not EmPartida() or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
+            JaDisparouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não disparou ainda + É Assassino + Bolsa Cheia + Em Partida
+        if KillAllAoEncher and not JaDisparouNestaRodada and EhAssassino() and EmPartida() then
+            if BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()) then
+                
+                JaDisparouNestaRodada = true -- Bloqueia execuções repetidas para não travar o FPS
+                print("⏳ Bolsa cheia e role de Assassino detectados! Aguardando 1 segundo...")
+
+                -- ⏳ Espera 1 segundo solicitado antes do ataque
+                task.wait(1)
+
+                -- Reconfirma se ainda está vivo e na partida
+                if player:GetAttribute("Alive") == true and EmPartida() then
+                    print("🔪 Executando Kill All...")
                     KillAllInstantaneo()
                 end
-                
-                -- Aguarda a partida terminar para não ficar tentando atacar repetidamente
-                repeat
-                    RunService.Heartbeat:Wait()
-                until not KillAllAoEncher or not EmPartida() or player:GetAttribute("Alive") ~= true
             end
         end
-        RunService.Heartbeat:Wait()
     end
 end)
 
