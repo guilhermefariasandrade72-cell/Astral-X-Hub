@@ -189,24 +189,37 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- 1. DETECTOR DE BOLSA CHEIA (CORRIGIDO PARA NÃO DAR FALSO POSITIVO)
+-- 1. DETECTOR DE BOLSA CHEIA (OTIMIZADO E SEM FALSO POSITIVO)
 -- ==================================
 local function VerificarTextoBolsaCheia()
     local playerGui = player:FindFirstChild("PlayerGui")
     if not playerGui then return false end
 
-    -- Procura especificamente na interface do jogo (MainGUI ou avisos nativos)
     local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
     if not mainGui then return false end
 
     for _, gui in ipairs(mainGui:GetDescendants()) do
-        if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
+        -- Verifica se o elemento está REALMENTE visível na tela
+        if gui:IsA("TextLabel") and gui.Visible and gui.TextTransparency < 1 and gui.Text ~= "" then
             local texto = string.lower(gui.Text)
-            -- Busca exata por avisos de bolsa/saco cheio
-            if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
-               (string.find(texto, "bag") and string.find(texto, "full")) or
-               string.find(texto, "full coin") or string.find(texto, "max coins") then 
-                return true
+            
+            -- Checa se o elemento pai também está visível (evita ler frames escondidos)
+            local paiVisivel = true
+            local p = gui.Parent
+            while p and p:IsA("GuiObject") do
+                if not p.Visible then
+                    paiVisivel = false
+                    break
+                end
+                p = p.Parent
+            end
+
+            if paiVisivel then
+                if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
+                   (string.find(texto, "bag") and string.find(texto, "full")) or
+                   string.find(texto, "full coin") or string.find(texto, "max coins") then 
+                    return true
+                end
             end
         end
     end
@@ -230,13 +243,14 @@ task.spawn(function()
     end
 end)
 
--- Reseta o estado quando renascer ou iniciar nova partida
-player:GetAttributeChangedSignal("Alive"):Connect(function()
-    if player:GetAttribute("Alive") == true then
-        BolsaCheia = false
-        table.clear(collectedCoins)
-    end
-end)
+-- Resetador forçado de rodada (Renascer + Troca de Personagem)
+local function ResetarEstadoFarm()
+    BolsaCheia = false
+    table.clear(collectedCoins)
+end
+
+player:GetAttributeChangedSignal("Alive"):Connect(ResetarEstadoFarm)
+player.CharacterAdded:Connect(ResetarEstadoFarm)
 
 -- ==================================
 -- 2. VERIFICAÇÃO DE PARTIDA
@@ -282,32 +296,34 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 4. LOOP PRINCIPAL — ANDANDO EM PÉ
+-- 4. LOOP PRINCIPAL — AUTO FARM
 -- ==================================
 task.spawn(function()
     while true do
+        task.wait(0.02) -- Troca de Heartbeat para task.wait para poupar recursos em móbiles
+
         if AutoFarmAtivo then
             local c = player.Character
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
+            -- Se não estiver em partida, reseta as variáveis e aguarda a próxima rodada
             if not EmPartida() or not hrp or not humanoid then
-                BolsaCheia = false
-                table.clear(collectedCoins)
-                RunService.Heartbeat:Wait()
+                ResetarEstadoFarm()
                 continue
             end
 
-            -- Aguarda se a bolsa encher
+            -- Se a bolsa estiver cheia de fato
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
                 table.clear(collectedCoins)
-                repeat
-                    RunService.Heartbeat:Wait()
-                until not AutoFarmAtivo or not EmPartida()
                 
-                BolsaCheia = false
-                RunService.Heartbeat:Wait()
+                -- Aguarda até a partida terminar ou até desativar a função
+                while AutoFarmAtivo and EmPartida() and (BolsaCheia or VerificarTextoBolsaCheia()) do
+                    task.wait(0.5)
+                end
+                
+                ResetarEstadoFarm()
                 continue
             end
 
@@ -340,7 +356,7 @@ task.spawn(function()
                     end
 
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
-                    local dt = RunService.Heartbeat:Wait()
+                    local dt = task.wait(0.02)
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
@@ -348,12 +364,12 @@ task.spawn(function()
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
+                -- Caso não encontre moedas no momento, limpa o cachê antigo de moedas já pegas
                 table.clear(collectedCoins)
-                RunService.Heartbeat:Wait()
+                task.wait(0.3)
             end
         else
-            BolsaCheia = false
-            RunService.Heartbeat:Wait()
+            ResetarEstadoFarm()
         end
     end
 end)
@@ -405,10 +421,10 @@ task.spawn(function()
         if TPSafeAoEncher then
             -- Verifica se a bolsa encheu
             if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
-                print("⏳ Bolsa cheia detectada! Aguardando 2 segundos para TP...")
+                print("⏳ Bolsa cheia detectada! Aguardando 1 segundos para TP...")
                 
                 -- ⏳ Espera 2 segundos antes de teleportar
-                task.wait(2)
+                task.wait(1)
                 
                 -- Confirma se ainda está vivo e no jogo antes de teleportar
                 if TPSafeAoEncher and EmPartida() then
@@ -430,48 +446,7 @@ end)
 -- 🔪 KILL ALL AUTOMÁTICO (ASSASSINO + BOLSA CHEIA)
 -- ==================================
 
--- Função para verificar se o jogador atual é o Assassino / Murderer
-local function EhAssassino()
-    local Char = player.Character
-    if not Char then return false end
-    
-    -- Verifica se tem a faca na mão ou na mochila
-    local TemFaca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
-    return TemFaca ~= nil
-end
 
--- Tabela/Controle de disparo único para não travar o jogo
-local JaDisparouNestaRodada = false
-
--- Monitor leve sem perda de FPS
-task.spawn(function()
-    while true do
-        task.wait(0.5) -- Intervalo longo para poupar processador/FPS
-        
-        -- Reset da trava se a partida acabar ou a bolsa esvaziar
-        if not EmPartida() or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
-            JaDisparouNestaRodada = false
-        end
-
-        -- Validações: Toggle ativo + Não disparou ainda + É Assassino + Bolsa Cheia + Em Partida
-        if KillAllAoEncher and not JaDisparouNestaRodada and EhAssassino() and EmPartida() then
-            if BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()) then
-                
-                JaDisparouNestaRodada = true -- Bloqueia execuções repetidas para não travar o FPS
-                print("⏳ Bolsa cheia e role de Assassino detectados! Aguardando 1 segundo...")
-
-                -- ⏳ Espera 1 segundo solicitado antes do ataque
-                task.wait(1)
-
-                -- Reconfirma se ainda está vivo e na partida
-                if player:GetAttribute("Alive") == true and EmPartida() then
-                    print("🔪 Executando Kill All...")
-                    KillAllInstantaneo()
-                end
-            end
-        end
-    end
-end)
 
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
