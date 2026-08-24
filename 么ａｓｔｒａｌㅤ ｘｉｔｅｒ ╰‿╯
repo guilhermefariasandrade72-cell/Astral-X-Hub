@@ -165,10 +165,10 @@ local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#
 local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
+
 -- ==================================
--- SISTEMAS DA ABA MAIN (CORRIGIDO: BONECO EM PÉ & DETECTOR DE SACO CHEIO)
+-- 🪙 AUTO FARM MM2 (INTEGRADO AO HUB)
 -- ==================================
--- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -176,12 +176,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 
--- Configuracoes Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 16,                     -- Respeita o slider (16 a 20)
+    velocidade = 20,
     alcance_maximo = 500,
-    offsetY = 0,                         -- Alinhado à altura da moeda
-    hitboxSize = Vector3.new(10, 18, 10)  -- Hitbox expandida da moeda
+    offsetY = 0,
+    hitboxSize = Vector3.new(10, 18, 10)
 }
 
 local AutoFarmAtivo = false
@@ -189,29 +188,8 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- 1. DETECTOR DE BOLSA CHEIA (TEXTO NA TELA + REMOTES)
+-- DETECTOR DE BOLSA CHEIA
 -- ==================================
--- Verificação de UI (Mensagens "SACO CHEIO", "FULL", "BAG FULL")
-local function VerificarTextoBolsaCheia()
-    local playerGui = player:FindFirstChild("PlayerGui")
-    if not playerGui then return false end
-
-    for _, gui in ipairs(playerGui:GetDescendants()) do
-        if gui:IsA("TextLabel") and gui.Visible then
-            local texto = string.lower(gui.Text)
-            if string.find(texto, "saco") and string.find(texto, "cheio") then
-                return true
-            elseif string.find(texto, "bag") and string.find(texto, "full") then
-                return true
-            elseif string.find(texto, "full!") or string.find(texto, "cheio!") then
-                return true
-            end
-        end
-    end
-    return false
-end
-
--- Detecção via Remotes do Servidor (MM2)
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
     if Remotes then
@@ -220,11 +198,7 @@ task.spawn(function()
             coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
                 if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
                     if tonumber(atual) and tonumber(maximo) then
-                        if tonumber(atual) >= tonumber(maximo) then
-                            BolsaCheia = true  -- ✅ Bolsa cheia (Ex: 40/40 ou 50/50)
-                        else
-                            BolsaCheia = false
-                        end
+                        BolsaCheia = (tonumber(atual) >= tonumber(maximo))
                     end
                 end
             end)
@@ -232,29 +206,33 @@ task.spawn(function()
     end
 end)
 
+local function VerificarTextoBolsaCheia()
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if not playerGui then return false end
+    for _, gui in ipairs(playerGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible then
+            local texto = string.lower(gui.Text)
+            if string.find(texto, "saco") and string.find(texto, "cheio") then return true
+            elseif string.find(texto, "bag") and string.find(texto, "full") then return true
+            elseif string.find(texto, "full!") or string.find(texto, "cheio!") then return true end
+        end
+    end
+    return false
+end
+
 -- ==================================
--- 2. VERIFICAÇÃO DE PARTIDA
+-- VERIFICA PARTIDA
 -- ==================================
 local function EmPartida()
-    if player:GetAttribute("Alive") ~= true then
-        return false
-    end
-
+    if player:GetAttribute("Alive") ~= true then return false end
     local c = player.Character
-    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then 
-        return false 
-    end
-    
-    local hrp = c:FindFirstChild("HumanoidRootPart")
-    if not hrp then 
-        return false 
-    end
-
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    if not c:FindFirstChild("HumanoidRootPart") then return false end
     return true
 end
 
 -- ==================================
--- 3. BUSCA MOEDA E EXPANDE HITBOX
+-- BUSCA MOEDA
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -286,7 +264,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 4. LOOP PRINCIPAL DO AUTO FARM
+-- 🔄 LOOP PRINCIPAL DO FARM
 -- ==================================
 task.spawn(function()
     while true do
@@ -295,26 +273,23 @@ task.spawn(function()
             local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se estiver no lobby/morto -> Mantém em pé e reseta
             if not EmPartida() or not hrp or not humanoid then
-                if humanoid then humanoid.PlatformStand = false end
                 BolsaCheia = false
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
                 continue
             end
 
-            -- Checagem contínua de bolsa cheia (UI + Eventos)
+            -- ✅ BOLSA CHEIA → PARA E AGUARDA
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
-                if humanoid then humanoid.PlatformStand = false end
-                
+                table.clear(collectedCoins)
                 repeat
                     RunService.Heartbeat:Wait()
-                until not AutoFarmAtivo or not EmPartida()
-                
+                until not AutoFarmAtivo or EmPartida() == false
                 BolsaCheia = false
                 table.clear(collectedCoins)
+                RunService.Heartbeat:Wait()
                 continue
             end
 
@@ -322,13 +297,11 @@ task.spawn(function()
 
             if alvo then
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
-                and not BolsaCheia 
-                and not VerificarTextoBolsaCheia()
+                and not BolsaCheia and not VerificarTextoBolsaCheia()
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
-                    
                     local novaMoedaProxima = getNearestCoin(minhaPosAtual)
                     if novaMoedaProxima and novaMoedaProxima ~= alvo then
                         alvo = novaMoedaProxima
@@ -347,27 +320,20 @@ task.spawn(function()
                         break
                     end
 
-                    -- Personagem em pé mantendo colisão e animação normal
-                    humanoid.PlatformStand = false
-
+                    -- ✅ SEMPRE EM PÉ
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
-                    -- Move em pé mantendo a rotação padrão
                     hrp.CFrame = CFrame.new(novaPos, novaPos + hrp.CFrame.LookVector)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
-                if humanoid then humanoid.PlatformStand = false end
                 table.clear(collectedCoins)
                 RunService.Heartbeat:Wait()
             end
         else
-            local c = player.Character
-            local humanoid = c and c:FindFirstChildOfClass("Humanoid")
-            if humanoid then humanoid.PlatformStand = false end
             BolsaCheia = false
             RunService.Heartbeat:Wait()
         end
