@@ -102,9 +102,6 @@ local DistanceESP = {}
 local TracersESP = {}
 local DadosCargos = {}
 
-local FPSBoosterAtivo = false
-local SemAnimacoesAtivo = false
-
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
@@ -1233,7 +1230,7 @@ end
 -- 📌 LOOP DE ATUALIZAÇÃO OTIMIZADO (SEM RENDERSTEPPED)
 task.spawn(function()
     while true do
-        task.wait(0.05) -- Roda a 20 FPS (Suficiente para visual e sem lag no celular)
+        task.wait(1.5) -- Roda a 20 FPS (Suficiente para visual e sem lag no celular)
 
         if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
             PegarCargos()
@@ -1310,131 +1307,6 @@ task.spawn(function()
             if next(Highlights) then LimparTabela(Highlights) end
             if next(NamesESP) then LimparTabela(NamesESP) end
             if next(TracersESP) then LimparTabela(TracersESP) end
-        end
-    end
-end)
-
--- ==================================
--- ⚡ SISTEMA DE FPS BOOSTER (OTIMIZAÇÃO EXTREMA)
--- ==================================
-local function AplicarFPSBooster()
-    -- 1. Otimização do Mapa e Ambiente
-    for _, item in ipairs(Workspace:GetDescendants()) do
-        if not item:IsDescendantOf(player.Character) then
-            -- Remove Partículas e Efeitos Visuais
-            if item:IsA("ParticleEmitter") or item:IsA("Trail") or item:IsA("Smoke") or item:IsA("Fire") or item:IsA("Sparkles") then
-                item.Enabled = false
-            -- Transforma blocos/mapa em SmoothPlastic cinza e sem brilho
-            elseif item:IsA("BasePart") and not item:IsA("Terrain") then
-                item.Material = Enum.Material.SmoothPlastic
-                item.Reflectance = 0
-            elseif item:IsA("Decal") or item:IsA("Texture") then
-                item:Destroy()
-            end
-        end
-    end
-
-    -- Desativa efeitos globais de iluminação e iluminação ambiente
-    local Lighting = game:GetService("Lighting")
-    Lighting.GlobalShadows = false
-    Lighting.FogEnd = 9e9
-    Lighting.Brightness = 1
-
-    -- 2. Limpeza dos Personagens (Skins, Roupas, Cabelos)
-    for _, p in ipairs(Players:GetPlayers()) do
-        local Char = p.Character
-        if Char then
-            for _, elemento in ipairs(Char:GetChildren()) do
-                -- Remove Cabelos, Acessórios, Chapéus e Camisas/Calças
-                if elemento:IsA("Accessory") or elemento:IsA("Shirt") or elemento:IsA("Pants") or elemento:IsA("ShirtGraphic") or elemento:IsA("CharacterMesh") then
-                    elemento:Destroy()
-                -- Deixa todas as partes do corpo lisas e cinzas
-                elseif elemento:IsA("BasePart") then
-                    elemento.Material = Enum.Material.SmoothPlastic
-                    elemento.Color = Color3.fromRGB(130, 130, 130) -- Cor cinza fosco
-                    elemento.Reflectance = 0
-                    
-                    -- Remove texturas da cabeça/rosto
-                    for _, subItem in ipairs(elemento:GetChildren()) do
-                        if subItem:IsA("Decal") or subItem:IsA("Texture") then
-                            subItem:Destroy()
-                        end
-                    end
-                end
-            end
-        end
-    end
-end
-
--- Loop de execução contínua (Roda a cada 2 segundos)
-task.spawn(function()
-    while true do
-        task.wait(1,0)
-        if FPSBoosterAtivo then
-            pcall(AplicarFPSBooster)
-        end
-    end
-end)
-
--- ==================================
--- 🚫 REMOVER ANIMAÇÕES E ARMAS CINZAS
--- ==================================
-local function AplicarSemAnimacoes()
-    -- 1. Para Animações e Emotes de Todos os Personagens
-    for _, p in ipairs(Players:GetPlayers()) do
-        local char = p.Character
-        if char then
-            local humanoid = char:FindFirstChildOfClass("Humanoid")
-            if humanoid then
-                local animator = humanoid:FindFirstChildOfClass("Animator")
-                if animator then
-                    for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
-                        track:Stop()
-                    end
-                end
-            end
-
-            -- Pinta Armas e Facas Seguradas/Equipadas de Cinza
-            for _, item in ipairs(char:GetChildren()) do
-                if item:IsA("Tool") then
-                    for _, parte in ipairs(item:GetDescendants()) do
-                        if parte:IsA("BasePart") then
-                            parte.Material = Enum.Material.SmoothPlastic
-                            parte.Color = Color3.fromRGB(130, 130, 130)
-                            parte.Reflectance = 0
-                        elseif parte:IsA("Decal") or parte:IsA("Texture") then
-                            parte:Destroy()
-                        end
-                    end
-                end
-            end
-        end
-    end
-
-    -- 2. Para Animações Globais e Elementos do Mapa/Moedas
-    for _, item in ipairs(Workspace:GetDescendants()) do
-        -- Desativa AnimationControllers espalhados no mapa
-        if item:IsA("AnimationController") then
-            for _, track in ipairs(item:GetPlayingAnimationTracks()) do
-                track:Stop()
-            end
-        -- Remove rotações de moedas e itens visuais
-        elseif item.Name == "CoinVisual" or item.Name == "Coin" then
-            for _, sub in ipairs(item:GetChildren()) do
-                if sub:IsA("BodyAngularVelocity") or sub:IsA("BodyGyro") or sub:IsA("Script") or sub:IsA("LocalScript") then
-                    sub:Destroy()
-                end
-            end
-        end
-    end
-end
-
--- Loop para manter as animações paradas a cada 1 segundo
-task.spawn(function()
-    while true do
-        task.wait(0,8)
-        if SemAnimacoesAtivo then
-            pcall(AplicarSemAnimacoes)
         end
     end
 end)
@@ -1583,7 +1455,7 @@ end
 
 player.CharacterAdded:Connect(function()
     if WalkFlingAtivo then
-        task.wait(0.5)
+        task.wait(1.5)
         ToggleWalkFling(true)
     end
 end)
@@ -1674,7 +1546,7 @@ end
 
 -- Atualiza referências sempre que um novo personagem for adicionado pelo servidor
 player.CharacterAdded:Connect(function(novoChar)
-    task.wait(0.2)
+    task.wait(1.2)
     ConfigurarPersonagem()
 end)
 
@@ -1717,7 +1589,7 @@ end)
 -- Restaura a transparência normal caso desative o toggle
 task.spawn(function()
     while true do
-        task.wait(0.2)
+        task.wait(1.2)
         if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
             for _, parte in ipairs(PartesCorpo) do
                 if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
@@ -2206,30 +2078,6 @@ Sec_ESP:Toggle({
         ESPTracerAtivo = Ativo
         if not Ativo then
             for _, t in pairs(TracersESP) do t.Visible = false end
-        end
-    end
-})
-
-local Sec_FPSBooster = Aba_ESP:Section({ Title = "FPS Booster", Side = "Left" })
-
-Sec_FPSBooster:Toggle({
-    Title = "Modo Batata (FPS Extremo)",
-    Default = false,
-    Callback = function(estado)
-        FPSBoosterAtivo = estado
-        if estado then
-            pcall(AplicarFPSBooster)
-        end
-    end
-})
-
-Sec_FPSBooster:Toggle({
-    Title = "Remover Animações & Itens Cinzas",
-    Default = false,
-    Callback = function(estado)
-        SemAnimacoesAtivo = estado
-        if estado then
-            pcall(AplicarSemAnimacoes)
         end
     end
 })
