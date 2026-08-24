@@ -1670,60 +1670,30 @@ local function GetLobbySpawn()
 end
 
 -- ==================================
--- 🛡️ SISTEMA DE TELEPORTE SAFE (COM BACKUP DE POSIÇÃO)
+-- 🛡️ SISTEMA DE TELEPORTE SAFE (BOTÃO DE CLIQUE)
 -- ==================================
 local SafePlatform = nil
-local SafePosition = Vector3.new(0, 500, 0) -- Plataforma a 500 studs de altura
-local UltimaPosicaoAntesDoSafe = nil        -- Salva o CFrame original
+local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
 
-local function SetSafePlatform(enable)
+local function TeleportarParaSafe()
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
 
-    if enable then
-        if hrp then
-            -- 📍 Salva a posição exata onde você estava
-            UltimaPosicaoAntesDoSafe = hrp.CFrame
-        end
-
-        -- Cria a plataforma no ar se não existir
-        if not SafePlatform or not SafePlatform.Parent then
-            SafePlatform = Instance.new("Part")
-            SafePlatform.Name = "AstralX_SafePlatform"
-            SafePlatform.Size = Vector3.new(20, 2, 20)
-            SafePlatform.Position = SafePosition
-            SafePlatform.Anchored = true
-            SafePlatform.Transparency = 0.5
-            SafePlatform.Color = Color3.fromRGB(138, 43, 226)
-            SafePlatform.Material = Enum.Material.Neon
-            SafePlatform.Parent = workspace
-        end
-
-        -- Teleporta para cima da plataforma
-        if hrp then
-            hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 4, 0))
-        end
-    else
-        -- Destrói a plataforma
-        if SafePlatform then
-            SafePlatform:Destroy()
-            SafePlatform = nil
-        end
-
-        -- Retorna para a posição original salva
-        if hrp then
-            if UltimaPosicaoAntesDoSafe then
-                hrp.CFrame = UltimaPosicaoAntesDoSafe
-                UltimaPosicaoAntesDoSafe = nil
-            else
-                -- Fallback caso não tenha gravado a posição por algum motivo
-                local lobbyPos = GetLobbySpawn and GetLobbySpawn()
-                if lobbyPos then
-                    hrp.CFrame = lobbyPos
-                end
-            end
-        end
+    -- Cria a plataforma no local se ela ainda não existir
+    if not SafePlatform or not SafePlatform.Parent then
+        SafePlatform = Instance.new("Part")
+        SafePlatform.Name = "AstralX_SafePlatform"
+        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Position = SafePosition
+        SafePlatform.Anchored = true
+        SafePlatform.Transparency = 1 -- 1 = Totalmente invisível (ou 0.5 para enxergar o chão)
+        SafePlatform.CanCollide = true
+        SafePlatform.Parent = workspace
     end
+
+    -- Teleporta o jogador para cima da plataforma (3 studs acima da base)
+    hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
 end
 
 -- ==============================================
@@ -2220,11 +2190,10 @@ Sec_TPMapaLobby:Button({
     end
 })
 
-Sec_TPMapaLobby:Toggle({
-    Title = "Teleport Safe Platform",
-    Default = false,
-    Callback = function(estado)
-        SetSafePlatform(estado)
+Sec_TPMapaLobby:Button({
+    Title = "TP Safe",
+    Callback = function()
+        TeleportarParaSafe()
     end
 })
 
