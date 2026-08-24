@@ -80,9 +80,15 @@ local ShootPredictMultiplier = 1
 local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
 local Pressionado = false
 
+-- ⚙️ VARIÁVEIS
+local Players = game:GetService("Players")
+local Workspace = game:GetService("Workspace")
+local CoreGui = game:GetService("CoreGui")
+local player = Players.LocalPlayer
+
 local GrabGunButtonGui = nil
 local isDraggingGrab = false
-local ExecutandoGrab = false
+local AutoGrabGun = false
 
 local KillAura = false
 local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
@@ -716,32 +722,46 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- ===========================================
--- 🔫 SISTEMA DE BOTÃO FLUTUANTE GRAB GUN (ARRUMADO)
+-- 🔫 GRAB GUN — ARRUMADO E FUNCIONANDO
 -- ===========================================
-local function CreateGrabGunButton()
+local function PegarArma()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+    -- 🔍 PROCURA A GUNDROP NO MAPA TODO
+    local GunDrop = Workspace:FindFirstChild("GunDrop", true)
+    if not GunDrop then return end
+
+    -- ✅ PUCHA A ARMA DIRETO ATÉ VOCÊ!
+    GunDrop.CFrame = Char.HumanoidRootPart.CFrame
+    print("✅ Arma pega!")
+end
+
+-- =================
+-- 🔘 CRIAR BOTÃO FLUTUANTE
+-- =================
+local function CriarBotaoGrabGun()
     if GrabGunButtonGui then return end
 
-    local ParentGui = CoreGui
-    pcall(function()
-        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
-    end)
-
     local GuiBtn = Instance.new("ScreenGui")
-    GuiBtn.Name = "AstralX_GrabGunButton"
+    GuiBtn.Name = "AstralX_GrabGun"
     GuiBtn.ResetOnSpawn = false
     GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    GuiBtn.Parent = ParentGui
+    GuiBtn.Parent = CoreGui
 
-    local Btn = Instance.new("ImageButton")
+    local Btn = Instance.new("TextButton")
     Btn.Size = UDim2.new(0, 110, 0, 42)
-    Btn.Position = UDim2.new(0.5, -55, 0.5, -21)
+    Btn.Position = UDim2.new(0.02, 0, 0.55, -21)
     Btn.BackgroundColor3 = Color3.fromRGB(20, 100, 150)
     Btn.BackgroundTransparency = 0.3
+    Btn.Text = "Grab Gun"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 15
+    Btn.Font = Enum.Font.GothamBold
+    Btn.AutoLocalize = false
     Btn.Parent = GuiBtn
 
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
-    Corner.Parent = Btn
+    Instance.new("UICorner", Btn).CornerRadius = UDim.new(0, 10)
 
     local Borda = Instance.new("UIStroke")
     Borda.Color = Color3.fromRGB(50, 180, 255)
@@ -749,42 +769,35 @@ local function CreateGrabGunButton()
     Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Borda.Parent = Btn
 
-    local Texto = Instance.new("TextLabel")
-    Texto.Size = UDim2.new(1, 0, 1, 0)
-    Texto.BackgroundTransparency = 1
-    Texto.Text = "Grab Gun"
-    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Texto.TextSize = 15
-    Texto.Font = Enum.Font.GothamBold
-    Texto.Parent = Btn
-
-    local dragThreshold = 10
-    local dragStartMousePos, buttonStartPosScreen
+    -- ✋ ARRASTAR O BOTÃO
+    local dragStartPos, btnStartPos
+    local dragThreshold = 8
 
     Btn.InputBegan:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             isDraggingGrab = false
-            dragStartMousePos = Input.Position
-            buttonStartPosScreen = Btn.Position
+            dragStartPos = Input.Position
+            btnStartPos = Btn.Position
         end
     end)
 
     Btn.InputChanged:Connect(function(Input)
-        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartMousePos then
-            local delta = Input.Position - dragStartMousePos
+        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartPos then
+            local delta = Input.Position - dragStartPos
             if delta.Magnitude > dragThreshold then
                 isDraggingGrab = true
-                Btn.Position = buttonStartPosScreen + UDim2.fromOffset(delta.X, delta.Y)
+                Btn.Position = btnStartPos + UDim2.fromOffset(delta.X, delta.Y)
             end
         end
     end)
 
+    -- 🔘 CLIQUE = PEGAR ARMA!
     Btn.InputEnded:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             if not isDraggingGrab then
-                GrabGunAction()
+                PegarArma() -- ✅ AQUI PUCHA A ARMA!
             end
-            dragStartMousePos = nil
+            dragStartPos = nil
             isDraggingGrab = false
         end
     end)
@@ -792,12 +805,18 @@ local function CreateGrabGunButton()
     GrabGunButtonGui = GuiBtn
 end
 
-local function RemoveGrabGunButton()
-    if GrabGunButtonGui then 
-        GrabGunButtonGui:Destroy() 
-        GrabGunButtonGui = nil 
+-- =================
+-- ❌ REMOVER BOTÃO
+-- =================
+local function RemoverBotaoGrabGun()
+    if GrabGunButtonGui then
+        GrabGunButtonGui:Destroy()
+        GrabGunButtonGui = nil
     end
 end
+
+-- ✅ EXECUTA
+CriarBotaoGrabGun()
 
 -- ===========================================
 -- 🗡️ SISTEMA MURDERER (KILL ALL)
