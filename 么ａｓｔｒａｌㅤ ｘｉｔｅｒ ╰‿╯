@@ -1369,7 +1369,7 @@ end
 -- Loop de execução contínua (Roda a cada 2 segundos)
 task.spawn(function()
     while true do
-        task.wait(0,5)
+        task.wait(1,0)
         if FPSBoosterAtivo then
             pcall(AplicarFPSBooster)
         end
@@ -1432,7 +1432,7 @@ end
 -- Loop para manter as animações paradas a cada 1 segundo
 task.spawn(function()
     while true do
-        task.wait(0,5)
+        task.wait(0,8)
         if SemAnimacoesAtivo then
             pcall(AplicarSemAnimacoes)
         end
