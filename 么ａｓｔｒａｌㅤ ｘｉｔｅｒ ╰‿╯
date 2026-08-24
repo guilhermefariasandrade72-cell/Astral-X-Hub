@@ -103,6 +103,7 @@ local TracersESP = {}
 local DadosCargos = {}
 
 local FPSBoosterAtivo = false
+local SemAnimacoesAtivo = false
 
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
@@ -1368,9 +1369,72 @@ end
 -- Loop de execução contínua (Roda a cada 2 segundos)
 task.spawn(function()
     while true do
-        task.wait(2)
+        task.wait(2,5)
         if FPSBoosterAtivo then
             pcall(AplicarFPSBooster)
+        end
+    end
+end)
+
+-- ==================================
+-- 🚫 REMOVER ANIMAÇÕES E ARMAS CINZAS
+-- ==================================
+local function AplicarSemAnimacoes()
+    -- 1. Para Animações e Emotes de Todos os Personagens
+    for _, p in ipairs(Players:GetPlayers()) do
+        local char = p.Character
+        if char then
+            local humanoid = char:FindFirstChildOfClass("Humanoid")
+            if humanoid then
+                local animator = humanoid:FindFirstChildOfClass("Animator")
+                if animator then
+                    for _, track in ipairs(animator:GetPlayingAnimationTracks()) do
+                        track:Stop()
+                    end
+                end
+            end
+
+            -- Pinta Armas e Facas Seguradas/Equipadas de Cinza
+            for _, item in ipairs(char:GetChildren()) do
+                if item:IsA("Tool") then
+                    for _, parte in ipairs(item:GetDescendants()) do
+                        if parte:IsA("BasePart") then
+                            parte.Material = Enum.Material.SmoothPlastic
+                            parte.Color = Color3.fromRGB(130, 130, 130)
+                            parte.Reflectance = 0
+                        elseif parte:IsA("Decal") or parte:IsA("Texture") then
+                            parte:Destroy()
+                        end
+                    end
+                end
+            end
+        end
+    end
+
+    -- 2. Para Animações Globais e Elementos do Mapa/Moedas
+    for _, item in ipairs(Workspace:GetDescendants()) do
+        -- Desativa AnimationControllers espalhados no mapa
+        if item:IsA("AnimationController") then
+            for _, track in ipairs(item:GetPlayingAnimationTracks()) do
+                track:Stop()
+            end
+        -- Remove rotações de moedas e itens visuais
+        elseif item.Name == "CoinVisual" or item.Name == "Coin" then
+            for _, sub in ipairs(item:GetChildren()) do
+                if sub:IsA("BodyAngularVelocity") or sub:IsA("BodyGyro") or sub:IsA("Script") or sub:IsA("LocalScript") then
+                    sub:Destroy()
+                end
+            end
+        end
+    end
+end
+
+-- Loop para manter as animações paradas a cada 1 segundo
+task.spawn(function()
+    while true do
+        task.wait(2,5)
+        if SemAnimacoesAtivo then
+            pcall(AplicarSemAnimacoes)
         end
     end
 end)
