@@ -398,19 +398,28 @@ local function TeleportarParaSafe()
 end
 
 -- ==================================
--- 🔄 MONITOR DE BOLSA CHEIA -> TP SAFE
+-- 🛡️ MONITOR DE BOLSA CHEIA -> TP SAFE (COM DELAY DE 2s)
 -- ==================================
 task.spawn(function()
     while true do
         if TPSafeAoEncher then
-            -- Verifica se a bolsa encheu (usando as variáveis do seu Auto Farm)
+            -- Verifica se a bolsa encheu
             if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
-                TeleportarParaSafe()
+                print("⏳ Bolsa cheia detectada! Aguardando 2 segundos para TP...")
                 
-                -- Aguarda até a partida terminar para evitar teleportes repetidos na mesma rodada
+                -- ⏳ Espera 2 segundos antes de teleportar
+                task.wait(2)
+                
+                -- Confirma se ainda está vivo e no jogo antes de teleportar
+                if TPSafeAoEncher and EmPartida() then
+                    TeleportarParaSafe()
+                    print("📍 Teleportado para a plataforma Safe!")
+                end
+                
+                -- Aguarda a partida acabar ou o reset da bolsa para rearmar
                 repeat
                     RunService.Heartbeat:Wait()
-                until not TPSafeAoEncher or not EmPartida() or player:GetAttribute("Alive") ~= true
+                until not TPSafeAoEncher or not EmPartida() or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) or player:GetAttribute("Alive") ~= true
             end
         end
         RunService.Heartbeat:Wait()
