@@ -165,9 +165,8 @@ local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#
 local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
 local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
 
-
 -- ==================================
--- 🚶 AUTO FARM — ANDANDO EM PÉ (SEM DEITAR + DETECÇÃO DE SACO CHEIO)
+-- 🚶 AUTO FARM — ANDANDO EM PÉ (CORRIGIDO)
 -- ==================================
 -- Services
 local Players = game:GetService("Players")
@@ -189,27 +188,31 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- 1. DETECTOR DE BOLSA CHEIA (TEXTO NA TELA + REMOTES)
+-- 1. DETECTOR DE BOLSA CHEIA (CORRIGIDO PARA NÃO DAR FALSO POSITIVO)
 -- ==================================
 local function VerificarTextoBolsaCheia()
     local playerGui = player:FindFirstChild("PlayerGui")
     if not playerGui then return false end
 
-    for _, gui in ipairs(playerGui:GetDescendants()) do
-        if gui:IsA("TextLabel") and gui.Visible then
+    -- Procura especificamente na interface do jogo (MainGUI ou avisos nativos)
+    local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
+    if not mainGui then return false end
+
+    for _, gui in ipairs(mainGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
             local texto = string.lower(gui.Text)
-            if string.find(texto, "saco") and string.find(texto, "cheio") then 
+            -- Busca exata por avisos de bolsa/saco cheio
+            if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
+               (string.find(texto, "bag") and string.find(texto, "full")) or
+               string.find(texto, "full coin") or string.find(texto, "max coins") then 
                 return true
-            elseif string.find(texto, "bag") and string.find(texto, "full") then 
-                return true
-            elseif string.find(texto, "full!") or string.find(texto, "cheio!") then 
-                return true 
             end
         end
     end
     return false
 end
 
+-- Detecção via Remote Event nativo
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
     if Remotes then
@@ -226,7 +229,7 @@ task.spawn(function()
     end
 end)
 
--- Reset da bolsa quando iniciar uma nova partida
+-- Reseta o estado quando renascer ou iniciar nova partida
 player:GetAttributeChangedSignal("Alive"):Connect(function()
     if player:GetAttribute("Alive") == true then
         BolsaCheia = false
@@ -278,7 +281,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 4. LOOP PRINCIPAL — ANDANDO EM PÉ!
+-- 4. LOOP PRINCIPAL — ANDANDO EM PÉ
 -- ==================================
 task.spawn(function()
     while true do
@@ -294,7 +297,7 @@ task.spawn(function()
                 continue
             end
 
-            -- Pausa ao detectar bolsa cheia e aguarda fim da rodada
+            -- Aguarda se a bolsa encher
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
                 table.clear(collectedCoins)
@@ -302,6 +305,7 @@ task.spawn(function()
                     RunService.Heartbeat:Wait()
                 until not AutoFarmAtivo or not EmPartida()
                 
+                BolsaCheia = false
                 RunService.Heartbeat:Wait()
                 continue
             end
