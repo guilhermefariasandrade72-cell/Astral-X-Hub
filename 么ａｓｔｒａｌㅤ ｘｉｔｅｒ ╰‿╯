@@ -555,15 +555,16 @@ task.spawn(function()
     end
 end)
 
-
 -- ==================================
--- 🎯 AUTO SHOOT MURDERER (MANTEÉM NO AR SEM CAIR)
+-- 🎯 AUTO SHOOT MURDERER (PREVISÃO DE TIRO DA BALA)
 -- ==================================
 local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
 
 AutoShootAtivo = false
 local ExecutandoShoot = false
+local PRECISAO_FIXA = 35
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -639,7 +640,7 @@ local function IniciarSequenciaShoot()
     -- 4. Loop de perseguição no ar (75 studs), deitado e disparando
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- ✅ MANTÉM TELEPORTANDO A CADA FRAME (NUNCA CAI, MESMO SEM ARMA)
+        -- ✅ MANTÉM TELEPORTANDO A CADA FRAME (NUNCA CAI)
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -652,18 +653,26 @@ local function IniciarSequenciaShoot()
                 arma.Parent = char
             end
 
-            -- ✅ DISPARO CORRIGIDO (Envia a posição do Murderer para o jogo aceitar o tiro)
+            -- 🎯 SISTEMA DE DISPARO DO SEU SCRIPT (COM PREVISÃO E CFRAME)
             if arma then
-                local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
+                local shootEvent = arma:FindFirstChild("Shoot") 
+                    or arma:FindFirstChild("ShootEvent") 
+                    or ReplicatedStorage:FindFirstChild("Shoot", true)
+                
                 if shootEvent and shootEvent:IsA("RemoteEvent") then
-                    shootEvent:FireServer(hrpMurderer.Position)
+                    -- Calculando a posição da bala com base na velocidade do assassino
+                    local veloc = hrpMurderer.AssemblyLinearVelocity
+                    local posComPrevisao = hrpMurderer.Position + (veloc * (PRECISAO_FIXA / 100))
+                    
+                    pcall(function()
+                        shootEvent:FireServer(hrp.CFrame, CFrame.new(posComPrevisao))
+                    end)
                 end
-                arma:Activate()
             end
 
             tempoComArma = tempoComArma + 0.15
 
-            -- Passou de 10 segundos: Guarda a arma e muda o estado
+            -- Passou de 10 segundos: Guarda a arma por 1s no ar
             if tempoComArma >= 10.0 then
                 if arma and arma.Parent == char then
                     arma.Parent = backpack
@@ -673,7 +682,7 @@ local function IniciarSequenciaShoot()
                 tempoSemArma = 0
             end
         else
-            -- 🛑 ESTADO SEM ARMA (Fica 1 segundo guardada sem parar de teleportar no ar)
+            -- 🛑 ESTADO SEM ARMA (1 segundo guardada sem parar de teleportar no ar)
             tempoSemArma = tempoSemArma + 0.15
 
             if tempoSemArma >= 1.0 then
