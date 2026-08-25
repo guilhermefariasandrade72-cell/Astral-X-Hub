@@ -555,91 +555,16 @@ task.spawn(function()
     end
 end)
 
-
 -- ==================================
--- 🎯 AUTO SHOOT + INVISIBILIDADE EM ETAPAS (75 STUDS -> 7 STUDS)
+-- 🎯 AUTO SHOOT + INVISIBILIDADE INTEGRADA (CÂMERA CORRIGIDA)
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 AutoShootAtivo = false
-InvisivelAtivo = false
 local ExecutandoShoot = false
 local PRECISAO_FIXA = 35
-
-local Personagem, Humanoid, Raiz, PartesCorpo = nil, nil, nil, {}
-
--- 👻 GERENCIADOR DE INVISIBILIDADE
-local function ConfigurarPersonagem()
-    Personagem = player.Character or player.CharacterAdded:Wait()
-    Humanoid = Personagem:WaitForChild("Humanoid")
-    Raiz = Personagem:WaitForChild("HumanoidRootPart")
-    
-    PartesCorpo = {}
-    for _, obj in ipairs(Personagem:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            table.insert(PartesCorpo, obj)
-        end
-    end
-end
-
-player.CharacterAdded:Connect(function()
-    task.wait(0.5)
-    ConfigurarPersonagem()
-end)
-
-if player.Character then
-    ConfigurarPersonagem()
-end
-
--- 👻 LOOP DA INVISIBILIDADE (CFRAME DESLOCAMENTO SERVER-SIDE)
-RunService.Heartbeat:Connect(function()
-    if not InvisivelAtivo then return end
-    
-    if not Personagem or not Personagem.Parent or not Raiz or not Humanoid or Humanoid.Health <= 0 then
-        ConfigurarPersonagem()
-        return
-    end
-
-    for _, parte in ipairs(PartesCorpo) do
-        if parte and parte.Parent then
-            if parte.Name == "HumanoidRootPart" then
-                parte.Transparency = 1
-            else
-                parte.Transparency = 0.5
-            end
-        end
-    end
-
-    local PosOriginal = Raiz.CFrame
-    local CamOffset = Humanoid.CameraOffset
-    
-    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
-    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
-    
-    RunService.RenderStepped:Wait()
-    
-    if Raiz and Raiz.Parent then
-        Raiz.CFrame = PosOriginal
-        Humanoid.CameraOffset = CamOffset
-    end
-end)
-
--- RESTAURAÇÃO DA TRANSPARÊNCIA DOS MEMBROS
-task.spawn(function()
-    while true do
-        task.wait(0.2)
-        if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
-            for _, parte in ipairs(PartesCorpo) do
-                if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
-                    parte.Transparency = 0
-                end
-            end
-        end
-    end
-end)
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -708,10 +633,14 @@ local function IniciarSequenciaShoot()
     local posOriginal = hrp.CFrame
     hum.PlatformStand = true
 
-    -- 🔹 PASSO A: Teleporta para 75 studs de altura e LIGA a invisibilidade
+    -- 🔹 PASSO A: Teleporta para 75 studs de altura e LIGA a invisibilidade do seu sistema principal
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
     task.wait(0.1)
-    InvisivelAtivo = true
+    
+    -- Usa a variável global de invisibilidade que você já usa no menu principal
+    getgenv().InvisivelAtivo = true 
+    if _G.InvisivelAtivo ~= nil then _G.InvisivelAtivo = true end
+    
     task.wait(0.1)
 
     local tempoComArma = 0
@@ -775,7 +704,9 @@ local function IniciarSequenciaShoot()
     end
 
     -- 🔹 PASSO C: Murderer morreu — DESLIGA a invisibilidade e volta à posição inicial
-    InvisivelAtivo = false
+    getgenv().InvisivelAtivo = false
+    if _G.InvisivelAtivo ~= nil then _G.InvisivelAtivo = false end
+    
     hum.PlatformStand = false
 
     if hrp and posOriginal then
