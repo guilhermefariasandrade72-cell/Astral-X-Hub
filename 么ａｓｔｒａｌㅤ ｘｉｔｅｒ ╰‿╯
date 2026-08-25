@@ -1194,7 +1194,7 @@ local function CriarHighlight(Alvo, Cor)
     H.Enabled = true
 end
 
--- 🟢 NOME E DISTÂNCIA EM UMA ÚNICA BILLBOARD (Economiza 50% de recursos)
+-- 🟢 NOME E DISTÂNCIA EM UMA ÚNICA BILLBOARD
 local function CriarTextESP(Jogador, Cor, TextoExibido)
     local Char = Jogador.Character
     if not Char or not Char:FindFirstChild("Head") then return end
@@ -1231,42 +1231,17 @@ local function CriarTextESP(Jogador, Cor, TextoExibido)
     Data.Gui.Enabled = true
 end
 
--- 🟡 TRACER LEVE
-local function CriarTracerESP(Jogador, Cor)
-    local Char = Jogador.Character
-    if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
-    local Cam = Workspace.CurrentCamera
-    local Vector, OnScreen = Cam:WorldToViewportPoint(Char.HumanoidRootPart.Position)
-
-    local Line = TracersESP[Jogador]
-    if not Line then
-        Line = Drawing.new("Line")
-        Line.Thickness = 1.5
-        Line.Transparency = 0.8
-        TracersESP[Jogador] = Line
-    end
-
-    if OnScreen then
-        Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
-        Line.To = Vector2.new(Vector.X, Vector.Y)
-        Line.Color = Cor
-        Line.Visible = true
-    else
-        Line.Visible = false
-    end
-end
-
--- 🧹 LIMPEZA DE JOGADOR
+-- 🧹 LIMPEZA COMPLETA DE UM JOGADOR
 local function LimparJogadorESP(p)
-    if p.Character and Highlights[p.Character] then
+    if p and p.Character and Highlights[p.Character] then
         Highlights[p.Character]:Destroy()
         Highlights[p.Character] = nil
     end
-    if NamesESP[p] then
+    if p and NamesESP[p] then
         if NamesESP[p].Gui then NamesESP[p].Gui:Destroy() end
         NamesESP[p] = nil
     end
-    if TracersESP[p] then
+    if p and TracersESP[p] then
         TracersESP[p].Visible = false
         TracersESP[p]:Remove()
         TracersESP[p] = nil
@@ -1281,22 +1256,85 @@ local function LimparTabela(Tabela)
         elseif type(item) == "table" and item.Gui then
             item.Gui:Destroy()
         elseif type(item) == "userdata" and item.Remove then
+            item.Visible = false
             item:Remove()
         end
     end
     table.clear(Tabela)
 end
 
--- 📌 LOOP DE ATUALIZAÇÃO OTIMIZADO (SEM RENDERSTEPPED)
+-- 📌 EVENTOS DE REMOÇÃO INSTANTÂNEA (Sem esperar o loop)
+Players.PlayerRemoving:Connect(function(p)
+    LimparJogadorESP(p)
+end)
+
+-- 🟡 LOOP EXCLUSIVO PARA LINHAS/TRACERS (Roda todo quadro sem lag visual)
+RunService.RenderStepped:Connect(function()
+    if not ESPTracerAtivo then
+        for p, line in pairs(TracersESP) do
+            if line then line.Visible = false end
+        end
+        return
+    end
+
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local Char = p.Character
+            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
+            local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+            if Char and HRP and Humanoid and Humanoid.Health > 0 then
+                local Vector, OnScreen = Cam:WorldToViewportPoint(HRP.Position)
+
+                local Line = TracersESP[p]
+                if not Line then
+                    Line = Drawing.new("Line")
+                    Line.Thickness = 1.5
+                    Line.Transparency = 0.8
+                    TracersESP[p] = Line
+                end
+
+                if OnScreen then
+                    -- Obtém a cor definida na tabela de cargos (se existir)
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(255, 255, 255)
+                    if Info and not Info.Killed and not Info.Dead then
+                        if Info.Role == "Murderer" then Cor = Color3.fromRGB(220, 50, 50)
+                        elseif Info.Role == "Sheriff" then Cor = Color3.fromRGB(0, 85, 255)
+                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0)
+                        elseif Info.Role == "Innocent" then Cor = Color3.fromRGB(60, 200, 80) end
+                    end
+
+                    Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+                    Line.To = Vector2.new(Vector.X, Vector.Y)
+                    Line.Color = Cor
+                    Line.Visible = true
+                else
+                    Line.Visible = false
+                end
+            else
+                if TracersESP[p] then
+                    TracersESP[p].Visible = false
+                end
+            end
+        end
+    end
+end)
+
+-- 📌 LOOP DE ATUALIZAÇÃO LEVE (Cargos, Highlights e Nomes)
 task.spawn(function()
     while true do
-        task.wait(0.5) -- Roda a 20 FPS (Suficiente para visual e sem lag no celular)
+        task.wait(0.3)
 
         if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
             PegarCargos()
             local MeuChar = player.Character
             local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
 
+            -- Limpa quem saiu do servidor
             for p, _ in pairs(NamesESP) do
                 if not Players:FindFirstChild(p.Name) then
                     LimparJogadorESP(p)
@@ -1340,7 +1378,7 @@ task.spawn(function()
                         Highlights[Char].Enabled = false
                     end
 
-                    -- 2 e 3. Nome e Distância combinados
+                    -- 2 e 3. Nome e Distância
                     if ESPNomeAtivo or ESPDistanciaAtiva then
                         local TextoFinal = ""
                         if ESPNomeAtivo and ESPDistanciaAtiva then
@@ -1353,13 +1391,6 @@ task.spawn(function()
                         CriarTextESP(p, Cor, TextoFinal)
                     elseif NamesESP[p] and NamesESP[p].Gui then
                         NamesESP[p].Gui.Enabled = false
-                    end
-
-                    -- 4. Tracer
-                    if ESPTracerAtivo then
-                        CriarTracerESP(p, Cor)
-                    elseif TracersESP[p] then
-                        TracersESP[p].Visible = false
                     end
                 end
             end
