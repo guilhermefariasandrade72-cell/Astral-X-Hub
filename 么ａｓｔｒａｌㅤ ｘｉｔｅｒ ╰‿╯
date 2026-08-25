@@ -180,8 +180,7 @@ local player = Players.LocalPlayer
 -- Configurações Base do Auto Farm
 local CONFIG_FARM = {
     velocidade = 18,
-    alcance_maximo = 500,
-    hitboxSize = Vector3.new(5, 5, 5)
+    alcance_maximo = 500
 }
 
 local AutoFarmAtivo = false
@@ -274,7 +273,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA (SEM TP)
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA (ORIGINAL / SEM REALTERAR HITBOX)
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -291,14 +290,6 @@ local function getNearestCoin(minhaPos)
         and moeda:FindFirstChild("TouchInterest") 
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
-            
-            -- Otimização visual e de performance (Apenas 1 alteração de física)
-            if not moeda:GetAttribute("HitboxAjustada") then
-                moeda.Size = CONFIG_FARM.hitboxSize
-                moeda.Transparency = 1
-                moeda.CanCollide = false
-                moeda:SetAttribute("HitboxAjustada", true)
-            end
 
             local distancia = (minhaPos - moeda.Position).Magnitude
             if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
@@ -341,27 +332,24 @@ task.spawn(function()
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
-                    
-                    -- Se surgira uma moeda MAIS PERTO do seu caminho, ele troca de alvo
-                    local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
-                    if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
-                        alvo = moedaMaisPertoAgora
-                    end
-
-                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
-                        break
-                    end
-
                     local posAlvo = alvo.Position
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    if distancia <= 2.5 then
+                    -- Se chegou muito perto da moeda
+                    if distancia <= 3 then
+                        -- Força o evento Touch se o executor suportar
+                        if firetouchinterest then
+                            firetouchinterest(hrp, alvo, 0)
+                            firetouchinterest(hrp, alvo, 1)
+                        end
+                        
                         collectedCoins[alvo] = true
+                        task.wait(0.08) -- Breve pausa para o servidor registrar a coleta
                         break
                     end
 
-                    -- Movimentação suave via CFrame contínuo (Sem teleporte)
+                    -- Movimentação suave via CFrame contínuo em direção à posição exata da moeda
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
