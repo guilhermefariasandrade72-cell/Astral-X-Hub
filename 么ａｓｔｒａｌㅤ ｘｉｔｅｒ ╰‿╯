@@ -444,7 +444,7 @@ local function EquiparFaca()
     local Char = player.Character
     if not Char then return nil end
     
-    local Faca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    local Faca = Char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
     if Faca then
         if Faca.Parent ~= Char then
             Faca.Parent = Char -- Puxa a faca para a mão
@@ -459,11 +459,11 @@ local JaDisparouNestaRodada = false
 
 task.spawn(function()
     while true do
-        task.wait(0.3) -- Reduzido levemente para pegar o aviso mais rápido
+        task.wait(0.3)
         
         local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
         
-        -- Reset da trava se a partida acabar ou a bolsa não estiver mais cheia
+        -- Reset da trava se a partida acabar ou a bolsa esvaziar
         if not EmPartida() or not estaComBolsaCheia then
             JaDisparouNestaRodada = false
         end
@@ -477,18 +477,31 @@ task.spawn(function()
                 JaDisparouNestaRodada = true -- Bloqueia execuções repetidas
                 print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
 
-                -- ⏳ Espera 1 segundo solicitado antes do ataque
+                -- ⏳ Espera 1 segundo antes do ataque
                 task.wait(1)
 
-                -- Confirma se continua vivo antes de matar todos
-                if EmPartida() and player:GetAttribute("Alive") == true then
-                    print("🔪 Executando Kill All...")
+                -- Confirma se continua vivo antes de atacar
+                if EmPartida() then
+                    print("🔪 Executando Kill All via Remotes...")
                     
-                    -- Garante que a faca ainda está equipada na hora de atacar
-                    EquiparFaca()
-                    
-                    if KillAllInstantaneo then
-                        KillAllInstantaneo()
+                    local Faca = EquiparFaca()
+                    if Faca then
+                        local Eventos = Faca:FindFirstChild("Events")
+                        
+                        if Eventos then
+                            -- Ataca a cabeça de todos os alvos vivos na partida
+                            for _, Alvo in ipairs(Players:GetPlayers()) do
+                                if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+                                    local hum = Alvo.Character:FindFirstChildOfClass("Humanoid")
+                                    if hum and hum.Health > 0 then
+                                        pcall(function()
+                                            Eventos.KnifeStabbed:FireServer()
+                                            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+                                        end)
+                                    end
+                                end
+                            end
+                        end
                     end
                 end
             end
