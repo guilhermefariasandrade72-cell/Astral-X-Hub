@@ -1290,7 +1290,7 @@ end
 -- 📌 LOOP DE ATUALIZAÇÃO OTIMIZADO (SEM RENDERSTEPPED)
 task.spawn(function()
     while true do
-        task.wait(1.5) -- Roda a 20 FPS (Suficiente para visual e sem lag no celular)
+        task.wait(0.5) -- Roda a 20 FPS (Suficiente para visual e sem lag no celular)
 
         if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
             PegarCargos()
