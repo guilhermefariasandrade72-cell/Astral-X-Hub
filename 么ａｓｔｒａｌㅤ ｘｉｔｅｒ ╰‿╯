@@ -555,6 +555,115 @@ task.spawn(function()
     end
 end)
 
+-- ==========================================
+-- 🎯 SISTEMA AUTO SHOOT MURDERER (XERIFE)
+-- ==========================================
+
+-- Variável do Toggle
+AutoShootAtivo = false
+
+local function ModificarInvisibilidade(char, invisivel)
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") and part.Name ~= "HumanoidRootPart" then
+            part.Transparency = invisivel and 1 or 0
+        elseif part:IsA("Decal") then
+            part.Transparency = invisivel and 1 or 0
+        end
+    end
+end
+
+local function ExecutarAutoShoot()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+    if not char or not hrp or not humanoid or humanoid.Health <= 0 then return end
+
+    -- 1. Verificar se possui a arma
+    local gun = char:FindFirstChild("Gun") or player.Backpack:FindFirstChild("Gun")
+    if not gun then 
+        print("⚠️ Você não possui a arma do Xerife!")
+        return 
+    end
+
+    -- 2. Localizar o Murderer
+    local murdererChar = nil
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local hum = p.Character:FindFirstChildOfClass("Humanoid")
+            -- Checa pela faca ou pelo sistema de cargos
+            if (p.Character:FindFirstChild("Knife") or player.Backpack:FindFirstChild("Knife")) 
+            or (DadosCargos and DadosCargos[p.Name] and DadosCargos[p.Name].Role == "Murderer") then
+                if hum and hum.Health > 0 then
+                    murdererChar = p.Character
+                    break
+                end
+            end
+        end
+    end
+
+    if not murdererChar then
+        print("⚠️ Assassino não localizado ou já está morto.")
+        return
+    end
+
+    -- 3. Salvar posição original para retorno
+    local posOriginal = hrp.CFrame
+    print("🎯 Alvo localizado! Teleportando e iniciando disparos...")
+
+    -- Equipar arma se estiver na mochila
+    if gun.Parent == player.Backpack then
+        humanoid:EquipTool(gun)
+    end
+
+    -- 4. Aplicar Invisibilidade
+    ModificarInvisibilidade(char, true)
+
+    -- 5. Loop de Ataque (Acima do Murderer e Deitado)
+    local targetHrp = murdererChar:FindFirstChild("HumanoidRootPart")
+    local targetHum = murdererChar:FindFirstChildOfClass("Humanoid")
+
+    while AutoShootAtivo and targetHrp and targetHum and targetHum.Health > 0 and humanoid.Health > 0 do
+        -- Posiciona 7 studs acima do assassino e rotaciona para simular "deitado" encarando para baixo
+        local posAcima = targetHrp.CFrame * CFrame.new(0, 7, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+        hrp.CFrame = posAcima
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+        -- Disparar a arma
+        local shootRemote = gun:FindFirstChild("Shoot") or gun:FindFirstChild("KMAGun") or ReplicatedStorage:FindFirstChild("Shoot", true)
+        if shootRemote then
+            if shootRemote:IsA("RemoteEvent") then
+                shootRemote:FireServer(targetHrp.Position)
+            elseif shootRemote:IsA("RemoteFunction") then
+                shootRemote:InvokeServer(targetHrp.Position)
+            end
+        else
+            -- Ativação padrão via Tool se não achar Remote direto
+            gun:Activate()
+        end
+
+        task.wait(0.1)
+    end
+
+    -- 6. Limpeza e Retorno
+    ModificarInvisibilidade(char, false)
+    if hrp and humanoid.Health > 0 then
+        hrp.CFrame = posOriginal
+        print("✅ Assassino eliminado ou modo desativado. Voltando à posição original.")
+    end
+end
+
+-- Task em loop para monitorar a ativação do botão
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if AutoShootAtivo then
+            ExecutarAutoShoot()
+        end
+    end
+end)
+
+
+
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
 -- ===========================================
@@ -2033,6 +2142,25 @@ Sec_AutoFarm:Toggle({
     Default = true,
     Callback = function(estado)
         AutoResetAoEncher = estado
+    end
+})
+
+-- ==========================================
+-- 🔘 BOTÃO PARA SUA UI (HUB)
+-- ==========================================
+-- Adicione este código na aba de combate do seu Hub:
+
+Sec_AutoFqrm:Toggle({
+    Title = "Auto Shoot Murderer",
+    Default = false,
+    Callback = function(Estado)
+        AutoShootAtivo = Estado
+        if not Estado then
+            -- Garante que a visibilidade volte ao normal se o jogador desligar manualmente no menu
+            if player.Character then
+                ModificarInvisibilidade(player.Character, false)
+            end
+        end
     end
 })
 
