@@ -555,16 +555,91 @@ task.spawn(function()
     end
 end)
 
+
 -- ==================================
--- 🎯 AUTO SHOOT MURDERER (PREVISÃO DE TIRO DA BALA)
+-- 🎯 AUTO SHOOT + INVISIBILIDADE EM ETAPAS (75 STUDS -> 7 STUDS)
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 AutoShootAtivo = false
+InvisivelAtivo = false
 local ExecutandoShoot = false
 local PRECISAO_FIXA = 35
+
+local Personagem, Humanoid, Raiz, PartesCorpo = nil, nil, nil, {}
+
+-- 👻 GERENCIADOR DE INVISIBILIDADE
+local function ConfigurarPersonagem()
+    Personagem = player.Character or player.CharacterAdded:Wait()
+    Humanoid = Personagem:WaitForChild("Humanoid")
+    Raiz = Personagem:WaitForChild("HumanoidRootPart")
+    
+    PartesCorpo = {}
+    for _, obj in ipairs(Personagem:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            table.insert(PartesCorpo, obj)
+        end
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    ConfigurarPersonagem()
+end)
+
+if player.Character then
+    ConfigurarPersonagem()
+end
+
+-- 👻 LOOP DA INVISIBILIDADE (CFRAME DESLOCAMENTO SERVER-SIDE)
+RunService.Heartbeat:Connect(function()
+    if not InvisivelAtivo then return end
+    
+    if not Personagem or not Personagem.Parent or not Raiz or not Humanoid or Humanoid.Health <= 0 then
+        ConfigurarPersonagem()
+        return
+    end
+
+    for _, parte in ipairs(PartesCorpo) do
+        if parte and parte.Parent then
+            if parte.Name == "HumanoidRootPart" then
+                parte.Transparency = 1
+            else
+                parte.Transparency = 0.5
+            end
+        end
+    end
+
+    local PosOriginal = Raiz.CFrame
+    local CamOffset = Humanoid.CameraOffset
+    
+    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
+    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
+    
+    RunService.RenderStepped:Wait()
+    
+    if Raiz and Raiz.Parent then
+        Raiz.CFrame = PosOriginal
+        Humanoid.CameraOffset = CamOffset
+    end
+end)
+
+-- RESTAURAÇÃO DA TRANSPARÊNCIA DOS MEMBROS
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
+            for _, parte in ipairs(PartesCorpo) do
+                if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
+                    parte.Transparency = 0
+                end
+            end
+        end
+    end
+end)
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -610,7 +685,7 @@ local function IniciarSequenciaShoot()
         return
     end
 
-    -- 2. Espera estar com a arma no inventário ou na mão
+    -- 2. Espera estar com a arma
     local arma = ObterArma()
     if not arma then return end
 
@@ -629,38 +704,42 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original no Farm e trava deitado
+    -- 3. Salva a posição original e trava deitado
     local posOriginal = hrp.CFrame
     hum.PlatformStand = true
+
+    -- 🔹 PASSO A: Teleporta para 75 studs de altura e LIGA a invisibilidade
+    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+    task.wait(0.1)
+    InvisivelAtivo = true
+    task.wait(0.1)
 
     local tempoComArma = 0
     local tempoSemArma = 0
     local estaComArma = true
 
-    -- 4. Loop de perseguição no ar (75 studs), deitado e disparando
+    -- 🔹 PASSO B: Desce para 7 studs e ataca invisível até o Murderer morrer
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- ✅ MANTÉM TELEPORTANDO A CADA FRAME (NUNCA CAI)
-        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+        -- Mantém a perseguição a 7 studs do Murderer
+        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 7, 0) * CFrame.Angles(math.rad(-90), 0, 0)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
         arma = ObterArma()
 
         if estaComArma then
-            -- Garante a arma na mão
             if arma and arma.Parent ~= char then
                 arma.Parent = char
             end
 
-            -- 🎯 SISTEMA DE DISPARO DO SEU SCRIPT (COM PREVISÃO E CFRAME)
+            -- 🎯 DISPARO COM PREVISÃO E CFRAME
             if arma then
                 local shootEvent = arma:FindFirstChild("Shoot") 
                     or arma:FindFirstChild("ShootEvent") 
                     or ReplicatedStorage:FindFirstChild("Shoot", true)
                 
                 if shootEvent and shootEvent:IsA("RemoteEvent") then
-                    -- Calculando a posição da bala com base na velocidade do assassino
                     local veloc = hrpMurderer.AssemblyLinearVelocity
                     local posComPrevisao = hrpMurderer.Position + (veloc * (PRECISAO_FIXA / 100))
                     
@@ -672,7 +751,6 @@ local function IniciarSequenciaShoot()
 
             tempoComArma = tempoComArma + 0.15
 
-            -- Passou de 10 segundos: Guarda a arma por 1s no ar
             if tempoComArma >= 10.0 then
                 if arma and arma.Parent == char then
                     arma.Parent = backpack
@@ -682,7 +760,6 @@ local function IniciarSequenciaShoot()
                 tempoSemArma = 0
             end
         else
-            -- 🛑 ESTADO SEM ARMA (1 segundo guardada sem parar de teleportar no ar)
             tempoSemArma = tempoSemArma + 0.15
 
             if tempoSemArma >= 1.0 then
@@ -697,7 +774,8 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 5. Murderer morreu: Desativa a física deitado e volta para a posição original do Farm
+    -- 🔹 PASSO C: Murderer morreu — DESLIGA a invisibilidade e volta à posição inicial
+    InvisivelAtivo = false
     hum.PlatformStand = false
 
     if hrp and posOriginal then
