@@ -556,7 +556,7 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 🎯 SHOOT MURDERER (DEITADO FIXO + ANTI-TRAVA 1S)
+-- 🎯 AUTO SHOOT MURDERER (SISTEMA COMPLETO)
 -- ==================================
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -564,7 +564,7 @@ local player = Players.LocalPlayer
 AutoShootAtivo = false
 local ExecutandoShoot = false
 
--- 🔍 Buscar Murderer na partida
+-- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -584,7 +584,7 @@ local function ObterMurderer()
     return nil
 end
 
--- 🔍 Buscar a Arma no personagem ou Backpack
+-- 🔍 BUSCAR A ARMA (MÃO OU BACKPACK)
 local function ObterArma()
     local char = player.Character
     if not char then return nil end
@@ -599,16 +599,16 @@ local function ObterArma()
     return arma
 end
 
--- 🚀 LÓGICA PRINCIPAL COM PERMANÊNCIA DEITADO
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
     
-    -- 1. Só ativa SE a bolsa estiver cheia
+    -- 1. Só executa SE a bolsa estiver cheia
     if not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
         return
     end
 
-    -- 2. Espera você estar com a arma no inventário/mão
+    -- 2. Espera estar com a arma no inventário ou na mão
     local arma = ObterArma()
     if not arma then return end
 
@@ -627,43 +627,39 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original onde estava no Farm
+    -- 3. Salva a posição original no Farm e desativa a física de se levantar
     local posOriginal = hrp.CFrame
     local timerSemBala = 0
+    hum.PlatformStand = true
 
-    -- 🛑 IMPEDE O HUMANOID DE TENTAR LEVANTAR
-    hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
-    hum:ChangeState(Enum.HumanoidStateType.Physics)
-
-    -- 4. Loop de perseguição no ar, deitado e disparos
+    -- 4. Loop de perseguição no ar (75 studs), deitado e disparando
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- Garante que a arma está na mão
+        -- Equipa a arma caso esteja na mochila
         if arma.Parent ~= char then
             arma.Parent = char
         end
 
-        -- 📐 CFrame ajustado para manter a boneca 100% deitada virada para baixo (75 studs acima)
+        -- Teleporta 75 studs acima mantendo o corpo deitado virado para baixo
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
-        -- Tenta disparar a arma normalmente
+        -- Executa o disparo normal da arma
         local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
-        
         if shootEvent and shootEvent:IsA("RemoteEvent") then
             shootEvent:FireServer()
         else
             arma:Activate()
         end
 
-        -- Controle de trava da arma
+        -- Contador da trava da arma
         timerSemBala = timerSemBala + 0.15
 
-        -- ⚠️ Se passar de 1 segundo sem disparar/travar:
+        -- ⚠️ Se passar 1 segundo com a arma travada/sem disparar:
         if timerSemBala >= 1.0 then
             arma.Parent = backpack
-            task.wait(1.0) -- Espera 1 segundo na mochila
+            task.wait(1.0) -- Aguarda 1s guardada
             arma.Parent = char
             timerSemBala = 0
         end
@@ -671,11 +667,9 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 🔄 RESTAURA OS ESTADOS DO HUMANOID (VOLTA AO NORMAL)
-    hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
-    hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+    -- 5. Restaura o estado normal do boneco e retorna para o Farm
+    hum.PlatformStand = false
 
-    -- 5. Volta exatamente para onde você estava no Farm
     if hrp and posOriginal then
         hrp.CFrame = posOriginal
     end
@@ -683,7 +677,7 @@ local function IniciarSequenciaShoot()
     ExecutandoShoot = false
 end
 
--- 🔄 LOOP DE CHECAGEM
+-- 🔄 LOOP DE CHECAGEM CONTÍNUA
 task.spawn(function()
     while true do
         if AutoShootAtivo and not ExecutandoShoot then
