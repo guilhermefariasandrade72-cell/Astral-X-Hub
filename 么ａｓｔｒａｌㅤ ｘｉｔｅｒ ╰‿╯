@@ -556,108 +556,118 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 📌 AUTO SHOOT MURDERER (ANTI-CRASH DELTA)
+-- 🎯 SHOOT MURDERER (APÓS BOLSA CHEIA + TELEPORT 75 STUDS)
 -- ==================================
 local Players = game:GetService("Players")
-local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
-local LocalPlayer = Players.LocalPlayer
+local player = Players.LocalPlayer
 
 AutoShootAtivo = false
-local PRECISAO_FIXA = 35
-local Murder = nil
+local ExecutandoShoot = false
 
--- 🔄 BUSCA O ASSASSINO
-task.spawn(function()
-    while true do
-        pcall(function()
-            Murder = nil
-            local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-            if GetPlayerData then
-                local Dados = GetPlayerData:InvokeServer()
-                if Dados then
-                    for Nome, Info in pairs(Dados) do
-                        if Info and Info.Role == "Murderer" then
-                            Murder = Nome
-                            break
-                        end
-                    end
+-- 🔍 Função para achar o Murderer (por item Knife ou atributo)
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+                
+                if eMurder then
+                    return char
                 end
             end
-        end)
-        task.wait(0.5)
+        end
     end
-end)
-
--- 🔫 RECARREGAR ARMA AUTOMÁTICO
-local function RecarregarArma()
-    local Char = LocalPlayer.Character
-    if not Char then return end
-    
-    local Gun = Char:FindFirstChild("Gun")
-    if not Gun then return end
-    
-    local Backpack = LocalPlayer:FindFirstChild("Backpack")
-    if Backpack then
-        Gun.Parent = Backpack
-        task.wait(0.05)
-        Gun.Parent = Char
-        task.wait(0.1)
-    end
+    return nil
 end
 
--- 🎯 DAR TIRO COM PREVISÃO DE MOVIMENTO (SUBSTITUI O HOOK)
-local function DarTiro()
-    local Char = LocalPlayer.Character
-    if not Char then return false end
+-- 🔍 Função para obter a Arma (na mão ou Backpack)
+local function ObterArma()
+    local char = player.Character
+    if not char then return nil end
     
-    local Gun = Char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
-    if not Gun then return false end
-    
-    -- Garante que a arma está na mão
-    if Gun.Parent ~= Char then
-        Gun.Parent = Char
+    local arma = char:FindFirstChild("Gun")
+    if not arma then
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            arma = backpack:FindFirstChild("Gun")
+        end
     end
-    
-    if not Murder then return false end
-    local Alvo = Players:FindFirstChild(tostring(Murder))
-    if not Alvo or not Alvo.Character then return false end
-    
-    local Root = Alvo.Character:FindFirstChild("HumanoidRootPart")
-    local HrpLocal = Char:FindFirstChild("HumanoidRootPart")
-    if not Root or not HrpLocal then return false end
-    
-    -- ✅ CÁLCULO DA BALA/PREVISÃO FEITO DIRETAMENTE AQUI
-    local Veloc = Root.AssemblyLinearVelocity
-    local PosComPrevisao = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
-    
-    local ShootEvent = Gun:FindFirstChild("Shoot") or Gun:FindFirstChild("ShootEvent") 
-        or ReplicatedStorage:FindFirstChild("Shoot", true)
-        
-    if ShootEvent and ShootEvent:IsA("RemoteEvent") then
-        -- Envia a posição já calculada diretamente para o evento do jogo
-        ShootEvent:FireServer(HrpLocal.CFrame, CFrame.new(PosComPrevisao))
-        return true
-    end
-    
-    return false
+    return arma
 end
 
--- 🔄 LOOP DE TIRO AUTOMÁTICO
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT
+local function IniciarSequenciaShoot()
+    if ExecutandoShoot then return end
+    
+    -- 1. Só ativa SE a bolsa estiver cheia (usando sua variável de check do farm)
+    if not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
+        return
+    end
+
+    -- 2. Espera você pegar a arma
+    local arma = ObterArma()
+    if not arma then return end -- Espera ter a arma antes de teleportar
+
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    local charMurderer = ObterMurderer()
+    if not charMurderer then return end
+    
+    local hrpMurderer = charMurderer:FindFirstChild("HumanoidRootPart")
+    local humMurderer = charMurderer:FindFirstChild("Humanoid")
+    if not hrpMurderer or not humMurderer then return end
+
+    ExecutandoShoot = true
+
+    -- 3. Salva a posição exata de onde você estava no Farm
+    local posOriginal = hrp.CFrame
+
+    -- Loop de Perseguição a 75 Studs + Disparos
+    while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
+        -- Garante que a arma está equipada
+        if arma.Parent ~= char then
+            arma.Parent = char
+        end
+
+        -- Teleporta e Persegue a 75 studs de altura acima do Murderer (olhando para baixo)
+        local posNoAr = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+        hrp.CFrame = posNoAr
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+        -- Executa o disparo
+        local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
+        if shootEvent and shootEvent:IsA("RemoteEvent") then
+            shootEvent:FireServer(hrpMurderer.Position)
+        else
+            arma:Activate()
+        end
+
+        task.wait(0.15)
+    end
+
+    -- 4. O Murderer morreu: Volta para a posição original onde estava antes no Farm
+    if hrp and posOriginal then
+        hrp.CFrame = posOriginal
+    end
+
+    ExecutandoShoot = false
+end
+
+-- 🔄 LOOP DE CHECAGEM CONTÍNUA
 task.spawn(function()
     while true do
-        if AutoShootAtivo and Murder then
-            local DeuCerto = DarTiro()
-            
-            if not DeuCerto then
-                RecarregarArma()
-                DarTiro()
-            end
-            
-            task.wait(0.35)
-        else
-            task.wait(0.5)
+        if AutoShootAtivo and not ExecutandoShoot then
+            IniciarSequenciaShoot()
         end
+        task.wait(0.4)
     end
 end)
 
