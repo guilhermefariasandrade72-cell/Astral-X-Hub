@@ -273,7 +273,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA (ORIGINAL / SEM REALTERAR HITBOX)
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -302,7 +302,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO (VAI DIRETO AO CENTRO DA MOEDA)
 -- ==================================
 task.spawn(function()
     while true do
@@ -332,24 +332,18 @@ task.spawn(function()
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
-                    local posAlvo = alvo.Position
-                    local direcao = (posAlvo - minhaPosAtual)
+                    local centroMoeda = alvo.Position -- Posição central exata da moeda
+                    local direcao = (centroMoeda - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Se chegou muito perto da moeda
-                    if distancia <= 3 then
-                        -- Força o evento Touch se o executor suportar
-                        if firetouchinterest then
-                            firetouchinterest(hrp, alvo, 0)
-                            firetouchinterest(hrp, alvo, 1)
-                        end
-                        
+                    -- Chegou exatamente no centro da moeda
+                    if distancia <= 0.8 then
                         collectedCoins[alvo] = true
-                        task.wait(0.08) -- Breve pausa para o servidor registrar a coleta
+                        task.wait(0.05) -- Pausa rápida para o servidor registrar o contato
                         break
                     end
 
-                    -- Movimentação suave via CFrame contínuo em direção à posição exata da moeda
+                    -- Movimento direto em direção ao centro físico
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
