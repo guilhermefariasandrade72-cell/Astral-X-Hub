@@ -1992,7 +1992,15 @@ Sec_AutoFarm:Button({
 })
 
 Sec_AutoFarm:Toggle({
-    Title = "Kill All ao Encher Bolsa",
+    Title = "Auto Reset",
+    Default = true,
+    Callback = function(estado)
+        AutoResetAoEncher = estado
+    end
+})
+
+Sec_AutoFarm:Toggle({
+    Title = "Kill All",
     Default = false,
     Callback = function(estado)
         KillAllAoEncher = estado
@@ -2000,7 +2008,7 @@ Sec_AutoFarm:Toggle({
 })
 
 Sec_AutoFarm:Toggle({
-    Title = "TP Safe ao Encher Bolsa",
+    Title = "Safe TP",
     Default = false,
     Callback = function(estado)
         TPSafeAoEncher = estado
