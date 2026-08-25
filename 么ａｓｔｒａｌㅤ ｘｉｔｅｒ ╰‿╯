@@ -273,7 +273,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA (CORRIGIDO)
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA (SEM ALTERAR HITBOX)
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -288,22 +288,13 @@ local function getNearestCoin(minhaPos)
         if moeda:IsA("BasePart") 
         and moeda.Name == "Coin_Server"
         and moeda:FindFirstChild("TouchInterest") 
+        and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
 
-            -- Limpa da tabela de coletadas se a moeda já sumiu ou foi recriada longe
-            if collectedCoins[moeda] then
-                if (minhaPos - moeda.Position).Magnitude > 30 then
-                    collectedCoins[moeda] = nil -- Liberta a moeda se ela estiver longe
-                end
-            end
-
-            -- Só avalia se não estiver marcada como coletada recentemente
-            if not collectedCoins[moeda] then
-                local distancia = (minhaPos - moeda.Position).Magnitude
-                if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
-                    menorDistancia = distancia
-                    melhorMoeda = moeda
-                end
+            local distancia = (minhaPos - moeda.Position).Magnitude
+            if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
+                menorDistancia = distancia
+                melhorMoeda = moeda
             end
         end
     end
@@ -311,7 +302,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO (VAI DIRETO AO CENTRO DA MOEDA)
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
 -- ==================================
 task.spawn(function()
     while true do
@@ -341,18 +332,28 @@ task.spawn(function()
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
-                    local centroMoeda = alvo.Position -- Posição central exata da moeda
-                    local direcao = (centroMoeda - minhaPosAtual)
-                    local distancia = direcao.Magnitude
+                    
+                    -- Se surgir uma moeda MAIS PERTO do seu caminho, ele troca de alvo
+                    local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
+                    if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
+                        alvo = moedaMaisPertoAgora
+                    end
 
-                    -- Chegou exatamente no centro da moeda
-                    if distancia <= 0.8 then
-                        collectedCoins[alvo] = true
-                        task.wait(0.05) -- Pausa rápida para o servidor registrar o contato
+                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
                         break
                     end
 
-                    -- Movimento direto em direção ao centro físico
+                    local posAlvo = alvo.Position
+                    local direcao = (posAlvo - minhaPosAtual)
+                    local distancia = direcao.Magnitude
+
+                    -- Chega exatamente no centro da moeda (0.8 studs)
+                    if distancia <= 0.8 then
+                        collectedCoins[alvo] = true
+                        break
+                    end
+
+                    -- Movimentação suave via CFrame contínuo (Sem teleporte)
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
