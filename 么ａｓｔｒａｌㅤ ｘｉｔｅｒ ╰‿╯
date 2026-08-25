@@ -526,7 +526,7 @@ end)
 -- ==================================
 -- 🔄 AUTO RESET AO ENCHER A BOLSA
 -- ==================================
-local AutoResetAoEncher = true -- Alterne para false se quiser desativar via UI
+local AutoResetAoEncher = false -- Alterne para false se quiser desativar via UI
 local JaResetouNestaRodada = false
 
 task.spawn(function()
