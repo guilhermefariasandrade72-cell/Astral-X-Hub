@@ -177,24 +177,40 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 
--- Configuracoes Base do Auto Farm
+-- Configurações Base do Auto Farm
 local CONFIG_FARM = {
-    velocidade = 16,
+    velocidade = 18,
     alcance_maximo = 500,
-    hitboxSize = Vector3.new(9, 15, 9)
+    hitboxSize = Vector3.new(9, 15, 9),
+    distanciaSeguraMurder = 25 -- Distância mínima do Murder antes de dar TP de fuga
 }
 
 local AutoFarmAtivo = false
 local BolsaCheia = false
 local collectedCoins = {}
 
--- Cache para otimização do processador
 local cachedCoinContainer = nil
 local ultimoCheckBolsa = 0
 local resultadoUltimoCheckBolsa = false
 
 -- ==================================
--- 1. RESETS AUTOMÁTICOS DE RODADA
+-- 1. IDENTIFICAÇÃO DO MURDER
+-- ==================================
+local function ObterPosicaoMurder()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            -- Verifica se o jogador tem a faca equipada ou na mochila
+            local temFaca = p.Character:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+            if temFaca and p.Character:FindFirstChild("HumanoidRootPart") then
+                return p.Character.HumanoidRootPart.Position
+            end
+        end
+    end
+    return nil
+end
+
+-- ==================================
+-- 2. RESETS E VERIFICAÇÕES
 -- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
@@ -210,28 +226,23 @@ player:GetAttributeChangedSignal("Alive"):Connect(function()
     end
 end)
 
--- ==================================
--- 2. DETECTOR DE BOLSA CHEIA (OTIMIZADO)
--- ==================================
+local function EmPartida()
+    local c = player.Character
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    if not c:FindFirstChild("HumanoidRootPart") then return false end
+    if player:GetAttribute("Alive") ~= nil and player:GetAttribute("Alive") == false then return false end
+    return true
+end
+
 local function VerificarTextoBolsaCheia()
-    -- Roda a busca pesada no PlayerGui no máximo 2 vezes por segundo (a cada 0.5s)
     local agora = os.clock()
-    if agora - ultimoCheckBolsa < 0.5 then
-        return resultadoUltimoCheckBolsa
-    end
+    if agora - ultimoCheckBolsa < 0.5 then return resultadoUltimoCheckBolsa end
     ultimoCheckBolsa = agora
 
     local playerGui = player:FindFirstChild("PlayerGui")
-    if not playerGui then 
-        resultadoUltimoCheckBolsa = false
-        return false 
-    end
-
+    if not playerGui then return false end
     local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
-    if not mainGui then 
-        resultadoUltimoCheckBolsa = false
-        return false 
-    end
+    if not mainGui then return false end
 
     for _, gui in ipairs(mainGui:GetDescendants()) do
         if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
@@ -244,63 +255,28 @@ local function VerificarTextoBolsaCheia()
             end
         end
     end
-
     resultadoUltimoCheckBolsa = false
     return false
 end
 
--- Detecção via Remote Event nativo
-task.spawn(function()
-    local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
-    if Remotes then
-        local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
-        if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
-            coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
-                if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
-                    if tonumber(atual) and tonumber(maximo) then
-                        BolsaCheia = (tonumber(atual) >= tonumber(maximo))
-                    end
-                end
-            end)
-        end
-    end
-end)
+-- ==================================
+-- 3. BUSCA DE MOEDA MAIS PRÓXIMA / MOEDA MAIS LONGE DO MURDER
+-- ==================================
 
--- ==================================
--- 3. VERIFICAÇÃO DE PARTIDA
--- ==================================
-local function EmPartida()
-    local c = player.Character
-    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
-    if not c:FindFirstChild("HumanoidRootPart") then return false end
-    
-    if player:GetAttribute("Alive") ~= nil and player:GetAttribute("Alive") == false then
-        return false
-    end
-    
-    return true
-end
-
--- ==================================
--- 4. BUSCA MOEDA MAIS PRÓXIMA (OTIMIZADA)
--- ==================================
+-- Busca a moeda mais próxima do SEU jogador
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
-
     if not cachedCoinContainer or not cachedCoinContainer.Parent then
         cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
     end
-    
     if not cachedCoinContainer then return nil end
 
     for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
-        if moeda:IsA("BasePart") 
-        and moeda.Name == "Coin_Server"
+        if moeda:IsA("BasePart") and moeda.Name == "Coin_Server" 
         and moeda:FindFirstChild("TouchInterest") 
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
-            -- Otimização da Física: Modifica o tamanho apenas UMA vez
             if not moeda:GetAttribute("HitboxAjustada") then
                 moeda.Size = CONFIG_FARM.hitboxSize
                 moeda.Transparency = 1
@@ -318,8 +294,32 @@ local function getNearestCoin(minhaPos)
     return melhorMoeda
 end
 
+-- Busca a moeda que está MAIS LONGE da posição do Murder (para fuga de TP)
+local function getFarthestCoinFromMurder(posMurder)
+    local melhorMoeda, maiorDistancia = nil, 0
+    if not cachedCoinContainer or not cachedCoinContainer.Parent then
+        cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    end
+    if not cachedCoinContainer then return nil end
+
+    for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
+        if moeda:IsA("BasePart") and moeda.Name == "Coin_Server" 
+        and moeda:FindFirstChild("TouchInterest") 
+        and not collectedCoins[moeda] 
+        and not moeda:GetAttribute("Collected") then
+            
+            local distanciaDoMurder = (posMurder - moeda.Position).Magnitude
+            if distanciaDoMurder > maiorDistancia then
+                maiorDistancia = distanciaDoMurder
+                melhorMoeda = moeda
+            end
+        end
+    end
+    return melhorMoeda
+end
+
 -- ==================================
--- 5. LOOP PRINCIPAL
+-- 4. LOOP PRINCIPAL COM FUGA DE TP
 -- ==================================
 task.spawn(function()
     while true do
@@ -339,6 +339,24 @@ task.spawn(function()
                 continue
             end
 
+            -- Checagem de Perigo: Posição do Murder
+            local posMurder = ObterPosicaoMurder()
+            if posMurder then
+                local distanciaDoMurder = (hrp.Position - posMurder).Magnitude
+                
+                -- Se o Murder chegar muito perto, dá TP instantâneo para a moeda mais distante dele
+                if distanciaDoMurder <= CONFIG_FARM.distanciaSeguraMurder then
+                    local moedaSegura = getFarthestCoinFromMurder(posMurder)
+                    if moedaSegura then
+                        hrp.CFrame = CFrame.new(moedaSegura.Position + Vector3.new(0, 2, 0))
+                        collectedCoins[moedaSegura] = true
+                        task.wait(0.1)
+                        continue
+                    end
+                end
+            end
+
+            -- Busca normal da moeda MAIS PRÓXIMA de você
             local alvo = getNearestCoin(hrp.Position)
 
             if alvo then
@@ -349,15 +367,27 @@ task.spawn(function()
                     
                     local minhaPosAtual = hrp.Position
                     
+                    -- Recalcula se apareceu uma moeda AINDA MAIS PERTO enquanto andava
+                    local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
+                    if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
+                        alvo = moedaMaisPertoAgora
+                    end
+
                     if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
                         break
+                    end
+
+                    -- Verifica se o Murder se aproximou durante o caminho
+                    local posMurderAtual = ObterPosicaoMurder()
+                    if posMurderAtual and (minhaPosAtual - posMurderAtual).Magnitude <= CONFIG_FARM.distanciaSeguraMurder then
+                        break -- Sai do trajeto atual para acionar o TP de fuga no próximo ciclo
                     end
 
                     local posAlvo = alvo.Position
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    if distancia <= 2 then
+                    if distancia <= 2.5 then
                         collectedCoins[alvo] = true
                         break
                     end
@@ -371,7 +401,6 @@ task.spawn(function()
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
-                -- Quando não houver moedas por perto, aguarda 0.1s antes de buscar de novo
                 table.clear(collectedCoins)
                 task.wait(0.1)
             end
@@ -381,6 +410,7 @@ task.spawn(function()
         end
     end
 end)
+
 
 -- ==================================
 -- 📌 CONFIGURAÇÕES E VARIÁVEIS
