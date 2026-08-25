@@ -1552,7 +1552,7 @@ end
 
 -- Atualiza referências sempre que um novo personagem for adicionado pelo servidor
 player.CharacterAdded:Connect(function(novoChar)
-    task.wait(1.2)
+    task.wait(0.5)
     ConfigurarPersonagem()
 end)
 
@@ -1595,7 +1595,7 @@ end)
 -- Restaura a transparência normal caso desative o toggle
 task.spawn(function()
     while true do
-        task.wait(1.2)
+        task.wait(0.5)
         if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
             for _, parte in ipairs(PartesCorpo) do
                 if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
