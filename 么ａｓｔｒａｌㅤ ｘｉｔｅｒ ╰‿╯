@@ -188,20 +188,22 @@ local AutoFarmAtivo = false
 local BolsaCheia = false
 local collectedCoins = {}
 
+-- Cache para otimização do processador
+local cachedCoinContainer = nil
+local ultimoCheckBolsa = 0
+local resultadoUltimoCheckBolsa = false
+
 -- ==================================
 -- 1. RESETS AUTOMÁTICOS DE RODADA
 -- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
     table.clear(collectedCoins)
+    cachedCoinContainer = nil
 end
 
--- Limpa estado ao nascer/renascer
-player.CharacterAdded:Connect(function()
-    ResetarEstadoFarm()
-end)
+player.CharacterAdded:Connect(ResetarEstadoFarm)
 
--- Limpa estado quando o atributo de vida muda
 player:GetAttributeChangedSignal("Alive"):Connect(function()
     if player:GetAttribute("Alive") == true then
         ResetarEstadoFarm()
@@ -209,14 +211,27 @@ player:GetAttributeChangedSignal("Alive"):Connect(function()
 end)
 
 -- ==================================
--- 2. DETECTOR DE BOLSA CHEIA
+-- 2. DETECTOR DE BOLSA CHEIA (OTIMIZADO)
 -- ==================================
 local function VerificarTextoBolsaCheia()
+    -- Roda a busca pesada no PlayerGui no máximo 2 vezes por segundo (a cada 0.5s)
+    local agora = os.clock()
+    if agora - ultimoCheckBolsa < 0.5 then
+        return resultadoUltimoCheckBolsa
+    end
+    ultimoCheckBolsa = agora
+
     local playerGui = player:FindFirstChild("PlayerGui")
-    if not playerGui then return false end
+    if not playerGui then 
+        resultadoUltimoCheckBolsa = false
+        return false 
+    end
 
     local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
-    if not mainGui then return false end
+    if not mainGui then 
+        resultadoUltimoCheckBolsa = false
+        return false 
+    end
 
     for _, gui in ipairs(mainGui:GetDescendants()) do
         if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
@@ -224,10 +239,13 @@ local function VerificarTextoBolsaCheia()
             if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
                (string.find(texto, "bag") and string.find(texto, "full")) or
                string.find(texto, "full coin") or string.find(texto, "max coins") then 
+                resultadoUltimoCheckBolsa = true
                 return true
             end
         end
     end
+
+    resultadoUltimoCheckBolsa = false
     return false
 end
 
@@ -256,7 +274,6 @@ local function EmPartida()
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
     if not c:FindFirstChild("HumanoidRootPart") then return false end
     
-    -- Checa Atributo se existir, mas não bloqueia se o personagem for válido
     if player:GetAttribute("Alive") ~= nil and player:GetAttribute("Alive") == false then
         return false
     end
@@ -265,25 +282,30 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA MOEDA MAIS PRÓXIMA
+-- 4. BUSCA MOEDA MAIS PRÓXIMA (OTIMIZADA)
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
-    local CoinContainer = Workspace:FindFirstChild("CoinContainer", true)
-    if not CoinContainer then return nil end
 
-    for _, moeda in ipairs(CoinContainer:GetChildren()) do
+    if not cachedCoinContainer or not cachedCoinContainer.Parent then
+        cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    end
+    
+    if not cachedCoinContainer then return nil end
+
+    for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
         if moeda:IsA("BasePart") 
         and moeda.Name == "Coin_Server"
         and moeda:FindFirstChild("TouchInterest") 
-        and moeda:FindFirstChild("CoinVisual")
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
             
-            if moeda.Size ~= CONFIG_FARM.hitboxSize then
+            -- Otimização da Física: Modifica o tamanho apenas UMA vez
+            if not moeda:GetAttribute("HitboxAjustada") then
                 moeda.Size = CONFIG_FARM.hitboxSize
                 moeda.Transparency = 1
                 moeda.CanCollide = false
+                moeda:SetAttribute("HitboxAjustada", true)
             end
 
             local distancia = (minhaPos - moeda.Position).Magnitude
@@ -297,7 +319,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 5. LOOP PRINCIPAL FLUIDO
+-- 5. LOOP PRINCIPAL
 -- ==================================
 task.spawn(function()
     while true do
@@ -305,17 +327,15 @@ task.spawn(function()
             local c = player.Character
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se morreu ou a partida acabou
             if not EmPartida() or not hrp then
                 ResetarEstadoFarm()
-                RunService.Heartbeat:Wait()
+                task.wait(0.2)
                 continue
             end
 
-            -- Se a bolsa encher, apenas aguarda sem travar a thread num repeat-until
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
-                RunService.Heartbeat:Wait()
+                task.wait(0.3)
                 continue
             end
 
@@ -329,11 +349,6 @@ task.spawn(function()
                     
                     local minhaPosAtual = hrp.Position
                     
-                    local novaMoedaProxima = getNearestCoin(minhaPosAtual)
-                    if novaMoedaProxima and novaMoedaProxima ~= alvo then
-                        alvo = novaMoedaProxima
-                    end
-
                     if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
                         break
                     end
@@ -342,7 +357,7 @@ task.spawn(function()
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    if distancia <= 1.5 then
+                    if distancia <= 2 then
                         collectedCoins[alvo] = true
                         break
                     end
@@ -356,13 +371,13 @@ task.spawn(function()
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
-                -- Sem moedas no mapa ou esperando o spawn da nova rodada
+                -- Quando não houver moedas por perto, aguarda 0.1s antes de buscar de novo
                 table.clear(collectedCoins)
-                RunService.Heartbeat:Wait()
+                task.wait(0.1)
             end
         else
             ResetarEstadoFarm()
-            RunService.Heartbeat:Wait()
+            task.wait(0.5)
         end
     end
 end)
