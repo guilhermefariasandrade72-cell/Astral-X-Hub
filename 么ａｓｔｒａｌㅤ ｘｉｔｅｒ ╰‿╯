@@ -555,8 +555,9 @@ task.spawn(function()
     end
 end)
 
+
 -- ==================================
--- 🎯 AUTO SHOOT MURDERER (CICLO 10S/1S NO AR)
+-- 🎯 AUTO SHOOT MURDERER (MANTEÉM NO AR SEM CAIR)
 -- ==================================
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -627,51 +628,61 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original no Farm e trava o personagem deitado no ar
+    -- 3. Salva a posição original no Farm e trava deitado
     local posOriginal = hrp.CFrame
     hum.PlatformStand = true
 
     local tempoComArma = 0
+    local tempoSemArma = 0
+    local estaComArma = true
 
     -- 4. Loop de perseguição no ar (75 studs), deitado e disparando
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- Atualiza a referência da arma caso ela recarregue
-        arma = ObterArma()
-
-        -- Mantém teleportando 75 studs acima do Murderer (deitado olhando pra baixo)
+        -- ✅ MANTÉM TELEPORTANDO A CADA FRAME (NUNCA CAI, MESMO SEM ARMA)
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
-        -- 🕒 CONTROLADOR DE TEMPO: 10 SEGUNDOS COM ARMA / 1 SEGUNDO SEM ARMA
-        if tempoComArma < 10.0 then
-            -- Garante que a arma tá na mão
+        arma = ObterArma()
+
+        if estaComArma then
+            -- Garante a arma na mão
             if arma and arma.Parent ~= char then
                 arma.Parent = char
             end
 
-            -- Dispara
+            -- ✅ DISPARO CORRIGIDO (Envia a posição do Murderer para o jogo aceitar o tiro)
             if arma then
                 local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
                 if shootEvent and shootEvent:IsA("RemoteEvent") then
-                    shootEvent:FireServer()
-                else
-                    arma:Activate()
+                    shootEvent:FireServer(hrpMurderer.Position)
                 end
+                arma:Activate()
             end
 
             tempoComArma = tempoComArma + 0.15
-        else
-            -- ⚠️ Deu 10 segundos: Guarda a arma por 1 segundo SEM cair do ar
-            if arma and arma.Parent == char then
-                arma.Parent = backpack
-            end
 
-            task.wait(1.0)
-            
-            -- Pega de volta e reseta o contador de 10s
-            tempoComArma = 0
+            -- Passou de 10 segundos: Guarda a arma e muda o estado
+            if tempoComArma >= 10.0 then
+                if arma and arma.Parent == char then
+                    arma.Parent = backpack
+                end
+                estaComArma = false
+                tempoComArma = 0
+                tempoSemArma = 0
+            end
+        else
+            -- 🛑 ESTADO SEM ARMA (Fica 1 segundo guardada sem parar de teleportar no ar)
+            tempoSemArma = tempoSemArma + 0.15
+
+            if tempoSemArma >= 1.0 then
+                if arma then
+                    arma.Parent = char
+                end
+                estaComArma = true
+                tempoSemArma = 0
+            end
         end
 
         task.wait(0.15)
@@ -696,7 +707,6 @@ task.spawn(function()
         task.wait(0.4)
     end
 end)
-
 
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
