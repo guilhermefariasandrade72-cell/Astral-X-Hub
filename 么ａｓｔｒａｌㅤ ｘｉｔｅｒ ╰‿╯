@@ -478,7 +478,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
 
                 -- ⏳ Espera 1 segundo antes do ataque
-                task.wait(1)
+                task.wait(2.5)
 
                 -- Confirma se continua vivo antes de atacar
                 if EmPartida() then
@@ -502,6 +502,46 @@ task.spawn(function()
                                 end
                             end
                         end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 🔄 AUTO RESET AO ENCHER A BOLSA
+-- ==================================
+local AutoResetAoEncher = true -- Alterne para false se quiser desativar via UI
+local JaResetouNestaRodada = false
+
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        
+        local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
+        
+        -- Reseta a trava se a partida acabar ou a bolsa esvaziar
+        if not EmPartida() or not estaComBolsaCheia then
+            JaResetouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não resetou ainda + Em Partida + Bolsa Cheia
+        if AutoResetAoEncher and not JaResetouNestaRodada and EmPartida() and estaComBolsaCheia then
+            JaResetouNestaRodada = true -- Evita múltiplos agendamentos de reset
+            print("💰 Bolsa cheia! Aguardando 2.5 segundos para dar Reset...")
+
+            -- ⏳ Espera os 2.5 segundos solicitados
+            task.wait(2.5)
+
+            -- Confirma se ainda está vivo e na partida antes de resetar
+            if EmPartida() then
+                print("🔄 Executando Reset...")
+                local char = player.Character
+                if char then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0 -- Reseta o personagem
                     end
                 end
             end
@@ -1595,7 +1635,7 @@ end)
 -- Restaura a transparência normal caso desative o toggle
 task.spawn(function()
     while true do
-        task.wait(0.5)
+        task.wait(0.2)
         if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
             for _, parte in ipairs(PartesCorpo) do
                 if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
