@@ -181,7 +181,7 @@ local player = Players.LocalPlayer
 local CONFIG_FARM = {
     velocidade = 16,
     alcance_maximo = 500,
-    hitboxSize = Vector3.new(5, 5, 5)
+    hitboxSize = Vector3.new(9, 15, 9)
 }
 
 local AutoFarmAtivo = false
@@ -189,7 +189,27 @@ local BolsaCheia = false
 local collectedCoins = {}
 
 -- ==================================
--- 1. DETECTOR DE BOLSA CHEIA (OTIMIZADO E SEM FALSO POSITIVO)
+-- 1. RESETS AUTOMÁTICOS DE RODADA
+-- ==================================
+local function ResetarEstadoFarm()
+    BolsaCheia = false
+    table.clear(collectedCoins)
+end
+
+-- Limpa estado ao nascer/renascer
+player.CharacterAdded:Connect(function()
+    ResetarEstadoFarm()
+end)
+
+-- Limpa estado quando o atributo de vida muda
+player:GetAttributeChangedSignal("Alive"):Connect(function()
+    if player:GetAttribute("Alive") == true then
+        ResetarEstadoFarm()
+    end
+end)
+
+-- ==================================
+-- 2. DETECTOR DE BOLSA CHEIA
 -- ==================================
 local function VerificarTextoBolsaCheia()
     local playerGui = player:FindFirstChild("PlayerGui")
@@ -199,27 +219,12 @@ local function VerificarTextoBolsaCheia()
     if not mainGui then return false end
 
     for _, gui in ipairs(mainGui:GetDescendants()) do
-        -- Verifica se o elemento está REALMENTE visível na tela
-        if gui:IsA("TextLabel") and gui.Visible and gui.TextTransparency < 1 and gui.Text ~= "" then
+        if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
             local texto = string.lower(gui.Text)
-            
-            -- Checa se o elemento pai também está visível (evita ler frames escondidos)
-            local paiVisivel = true
-            local p = gui.Parent
-            while p and p:IsA("GuiObject") do
-                if not p.Visible then
-                    paiVisivel = false
-                    break
-                end
-                p = p.Parent
-            end
-
-            if paiVisivel then
-                if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
-                   (string.find(texto, "bag") and string.find(texto, "full")) or
-                   string.find(texto, "full coin") or string.find(texto, "max coins") then 
-                    return true
-                end
+            if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
+               (string.find(texto, "bag") and string.find(texto, "full")) or
+               string.find(texto, "full coin") or string.find(texto, "max coins") then 
+                return true
             end
         end
     end
@@ -243,28 +248,24 @@ task.spawn(function()
     end
 end)
 
--- Resetador forçado de rodada (Renascer + Troca de Personagem)
-local function ResetarEstadoFarm()
-    BolsaCheia = false
-    table.clear(collectedCoins)
-end
-
-player:GetAttributeChangedSignal("Alive"):Connect(ResetarEstadoFarm)
-player.CharacterAdded:Connect(ResetarEstadoFarm)
-
 -- ==================================
--- 2. VERIFICAÇÃO DE PARTIDA
+-- 3. VERIFICAÇÃO DE PARTIDA
 -- ==================================
 local function EmPartida()
-    if player:GetAttribute("Alive") ~= true then return false end
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
     if not c:FindFirstChild("HumanoidRootPart") then return false end
+    
+    -- Checa Atributo se existir, mas não bloqueia se o personagem for válido
+    if player:GetAttribute("Alive") ~= nil and player:GetAttribute("Alive") == false then
+        return false
+    end
+    
     return true
 end
 
 -- ==================================
--- 3. BUSCA MOEDA MAIS PRÓXIMA
+-- 4. BUSCA MOEDA MAIS PRÓXIMA
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -296,34 +297,25 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 4. LOOP PRINCIPAL — AUTO FARM
+-- 5. LOOP PRINCIPAL FLUIDO
 -- ==================================
 task.spawn(function()
     while true do
-        task.wait(0.02) -- Troca de Heartbeat para task.wait para poupar recursos em móbiles
-
         if AutoFarmAtivo then
             local c = player.Character
-            local humanoid = c and c:FindFirstChildOfClass("Humanoid")
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
-            -- Se não estiver em partida, reseta as variáveis e aguarda a próxima rodada
-            if not EmPartida() or not hrp or not humanoid then
+            -- Se morreu ou a partida acabou
+            if not EmPartida() or not hrp then
                 ResetarEstadoFarm()
+                RunService.Heartbeat:Wait()
                 continue
             end
 
-            -- Se a bolsa estiver cheia de fato
+            -- Se a bolsa encher, apenas aguarda sem travar a thread num repeat-until
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
-                table.clear(collectedCoins)
-                
-                -- Aguarda até a partida terminar ou até desativar a função
-                while AutoFarmAtivo and EmPartida() and (BolsaCheia or VerificarTextoBolsaCheia()) do
-                    task.wait(0.5)
-                end
-                
-                ResetarEstadoFarm()
+                RunService.Heartbeat:Wait()
                 continue
             end
 
@@ -356,7 +348,7 @@ task.spawn(function()
                     end
 
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
-                    local dt = task.wait(0.02)
+                    local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
                     local novaPos = minhaPosAtual + (direcao.Unit * passo)
 
@@ -364,12 +356,13 @@ task.spawn(function()
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
                 end
             else
-                -- Caso não encontre moedas no momento, limpa o cachê antigo de moedas já pegas
+                -- Sem moedas no mapa ou esperando o spawn da nova rodada
                 table.clear(collectedCoins)
-                task.wait(0.3)
+                RunService.Heartbeat:Wait()
             end
         else
             ResetarEstadoFarm()
+            RunService.Heartbeat:Wait()
         end
     end
 end)
