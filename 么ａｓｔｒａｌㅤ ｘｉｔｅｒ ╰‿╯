@@ -273,7 +273,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA (CORRIGIDO)
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -288,13 +288,22 @@ local function getNearestCoin(minhaPos)
         if moeda:IsA("BasePart") 
         and moeda.Name == "Coin_Server"
         and moeda:FindFirstChild("TouchInterest") 
-        and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
 
-            local distancia = (minhaPos - moeda.Position).Magnitude
-            if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
-                menorDistancia = distancia
-                melhorMoeda = moeda
+            -- Limpa da tabela de coletadas se a moeda já sumiu ou foi recriada longe
+            if collectedCoins[moeda] then
+                if (minhaPos - moeda.Position).Magnitude > 30 then
+                    collectedCoins[moeda] = nil -- Liberta a moeda se ela estiver longe
+                end
+            end
+
+            -- Só avalia se não estiver marcada como coletada recentemente
+            if not collectedCoins[moeda] then
+                local distancia = (minhaPos - moeda.Position).Magnitude
+                if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
+                    menorDistancia = distancia
+                    melhorMoeda = moeda
+                end
             end
         end
     end
