@@ -556,11 +556,12 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 📌 VARIÁVEIS — AUTO SHOOT MURDERER
+-- 📌 AUTO SHOOT MURDERER (ANTI-CRASH DELTA)
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
+local LocalPlayer = Players.LocalPlayer
 
 AutoShootAtivo = false
 local PRECISAO_FIXA = 35
@@ -568,100 +569,86 @@ local Murder = nil
 
 -- 🔄 BUSCA O ASSASSINO
 task.spawn(function()
-    while task.wait(0.2) do
+    while true do
         pcall(function()
             Murder = nil
             local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-            if not GetPlayerData then return end
-            local Dados = GetPlayerData:InvokeServer()
-            if not Dados then return end
-            for Nome, Info in pairs(Dados) do
-                if Info and Info.Role == "Murderer" then
-                    Murder = Nome
-                    break
+            if GetPlayerData then
+                local Dados = GetPlayerData:InvokeServer()
+                if Dados then
+                    for Nome, Info in pairs(Dados) do
+                        if Info and Info.Role == "Murderer" then
+                            Murder = Nome
+                            break
+                        end
+                    end
                 end
             end
         end)
+        task.wait(0.5)
     end
-end)
-
--- 🎯 HOOK — BALA NASCE DENTRO DO CORPO
-SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-
-    if not checkcaller() then
-        if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
-            if AutoShootAtivo and Murder then
-                local TargetPlayer = Players[tostring(Murder)]
-                if not TargetPlayer or not TargetPlayer.Character then return end
-                
-                local Root = TargetPlayer.Character.PrimaryPart
-                if not Root then return end
-
-                -- ✅ PREVISÃO DE MOVIMENTO
-                local Veloc = Root.AssemblyLinearVelocity
-                local Pos = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
-
-                -- ✅ MATA INSTANTÂNEO
-                if args[1] and typeof(args[1]) == "CFrame" then
-                    args[1] = CFrame.new(Pos)
-                end
-            end
-        end
-    end
-
-    return SilentAimHook(self, unpack(args))
 end)
 
 -- 🔫 RECARREGAR ARMA AUTOMÁTICO
 local function RecarregarArma()
-    local Char = Players.LocalPlayer.Character
+    local Char = LocalPlayer.Character
     if not Char then return end
     
     local Gun = Char:FindFirstChild("Gun")
     if not Gun then return end
     
-    Gun.Parent = nil
-    task.wait(0.05)
-    Gun.Parent = Char
-    task.wait(0.1)
+    local Backpack = LocalPlayer:FindFirstChild("Backpack")
+    if Backpack then
+        Gun.Parent = Backpack
+        task.wait(0.05)
+        Gun.Parent = Char
+        task.wait(0.1)
+    end
 end
 
--- 🎯 DAR UM TIRO
+-- 🎯 DAR TIRO COM PREVISÃO DE MOVIMENTO (SUBSTITUI O HOOK)
 local function DarTiro()
-    local Char = Players.LocalPlayer.Character
+    local Char = LocalPlayer.Character
     if not Char then return false end
     
-    local Gun = Char:FindFirstChild("Gun")
+    local Gun = Char:FindFirstChild("Gun") or LocalPlayer.Backpack:FindFirstChild("Gun")
     if not Gun then return false end
     
-    local ShootEvent = Gun:FindFirstChild("Shoot") or Gun:FindFirstChild("ShootEvent") 
-        or ReplicatedStorage:FindFirstChild("Shoot", true)
+    -- Garante que a arma está na mão
+    if Gun.Parent ~= Char then
+        Gun.Parent = Char
+    end
     
-    if not ShootEvent or not Murder then return false end
-    
-    local Alvo = Players[tostring(Murder)]
+    if not Murder then return false end
+    local Alvo = Players:FindFirstChild(tostring(Murder))
     if not Alvo or not Alvo.Character then return false end
     
     local Root = Alvo.Character:FindFirstChild("HumanoidRootPart")
-    if not Root then return false end
+    local HrpLocal = Char:FindFirstChild("HumanoidRootPart")
+    if not Root or not HrpLocal then return false end
     
-    if ShootEvent:IsA("RemoteEvent") then
-        ShootEvent:FireServer(Char.HumanoidRootPart.CFrame, CFrame.new(Root.Position))
+    -- ✅ CÁLCULO DA BALA/PREVISÃO FEITO DIRETAMENTE AQUI
+    local Veloc = Root.AssemblyLinearVelocity
+    local PosComPrevisao = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
+    
+    local ShootEvent = Gun:FindFirstChild("Shoot") or Gun:FindFirstChild("ShootEvent") 
+        or ReplicatedStorage:FindFirstChild("Shoot", true)
+        
+    if ShootEvent and ShootEvent:IsA("RemoteEvent") then
+        -- Envia a posição já calculada diretamente para o evento do jogo
+        ShootEvent:FireServer(HrpLocal.CFrame, CFrame.new(PosComPrevisao))
+        return true
     end
     
-    return true
+    return false
 end
 
--- 🔄 LOOP INFINITO — ATIRA SOZINHO!
+-- 🔄 LOOP DE TIRO AUTOMÁTICO
 task.spawn(function()
     while true do
         if AutoShootAtivo and Murder then
-            -- ✅ TENTA DAR TIRO
             local DeuCerto = DarTiro()
             
-            -- ❌ SE FALHOU → RECARREGA E TENTA DE NOVO
             if not DeuCerto then
                 RecarregarArma()
                 DarTiro()
@@ -669,7 +656,7 @@ task.spawn(function()
             
             task.wait(0.35)
         else
-            RunService.Heartbeat:Wait()
+            task.wait(0.5)
         end
     end
 end)
