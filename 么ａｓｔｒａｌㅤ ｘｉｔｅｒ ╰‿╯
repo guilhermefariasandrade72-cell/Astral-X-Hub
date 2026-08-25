@@ -181,7 +181,7 @@ local player = Players.LocalPlayer
 local CONFIG_FARM = {
     velocidade = 18,
     alcance_maximo = 500,
-    hitboxSize = Vector3.new(9, 15, 9)
+    hitboxSize = Vector3.new(1, 1, 1)
 }
 
 local AutoFarmAtivo = false
