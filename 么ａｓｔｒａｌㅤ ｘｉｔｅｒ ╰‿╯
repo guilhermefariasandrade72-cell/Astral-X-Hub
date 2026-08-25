@@ -431,7 +431,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia detectada! Aguardando 1 segundos para TP...")
                 
                 -- ⏳ Espera 2 segundos antes de teleportar
-                task.wait(1)
+                task.wait(0.8)
                 
                 -- Confirma se ainda está vivo e no jogo antes de teleportar
                 if TPSafeAoEncher and EmPartida() then
@@ -492,7 +492,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
 
                 -- ⏳ Espera 1 segundo antes do ataque
-                task.wait(2.5)
+                task.wait(1)
 
                 -- Confirma se continua vivo antes de atacar
                 if EmPartida() then
@@ -546,7 +546,7 @@ task.spawn(function()
             print("💰 Bolsa cheia! Aguardando 2.5 segundos para dar Reset...")
 
             -- ⏳ Espera os 2.5 segundos solicitados
-            task.wait(2.5)
+            task.wait(0.5)
 
             -- Confirma se ainda está vivo e na partida antes de resetar
             if EmPartida() then
