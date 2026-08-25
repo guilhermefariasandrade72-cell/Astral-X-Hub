@@ -555,6 +555,124 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 📌 VARIÁVEIS — AUTO SHOOT MURDERER
+-- ==================================
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+
+AutoShootAtivo = false
+local PRECISAO_FIXA = 35
+local Murder = nil
+
+-- 🔄 BUSCA O ASSASSINO
+task.spawn(function()
+    while task.wait(0.2) do
+        pcall(function()
+            Murder = nil
+            local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+            if not GetPlayerData then return end
+            local Dados = GetPlayerData:InvokeServer()
+            if not Dados then return end
+            for Nome, Info in pairs(Dados) do
+                if Info and Info.Role == "Murderer" then
+                    Murder = Nome
+                    break
+                end
+            end
+        end)
+    end
+end)
+
+-- 🎯 HOOK — BALA NASCE DENTRO DO CORPO
+SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
+    local method = getnamecallmethod()
+    local args = {...}
+
+    if not checkcaller() then
+        if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
+            if AutoShootAtivo and Murder then
+                local TargetPlayer = Players[tostring(Murder)]
+                if not TargetPlayer or not TargetPlayer.Character then return end
+                
+                local Root = TargetPlayer.Character.PrimaryPart
+                if not Root then return end
+
+                -- ✅ PREVISÃO DE MOVIMENTO
+                local Veloc = Root.AssemblyLinearVelocity
+                local Pos = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
+
+                -- ✅ MATA INSTANTÂNEO
+                if args[1] and typeof(args[1]) == "CFrame" then
+                    args[1] = CFrame.new(Pos)
+                end
+            end
+        end
+    end
+
+    return SilentAimHook(self, unpack(args))
+end)
+
+-- 🔫 RECARREGAR ARMA AUTOMÁTICO
+local function RecarregarArma()
+    local Char = Players.LocalPlayer.Character
+    if not Char then return end
+    
+    local Gun = Char:FindFirstChild("Gun")
+    if not Gun then return end
+    
+    Gun.Parent = nil
+    task.wait(0.05)
+    Gun.Parent = Char
+    task.wait(0.1)
+end
+
+-- 🎯 DAR UM TIRO
+local function DarTiro()
+    local Char = Players.LocalPlayer.Character
+    if not Char then return false end
+    
+    local Gun = Char:FindFirstChild("Gun")
+    if not Gun then return false end
+    
+    local ShootEvent = Gun:FindFirstChild("Shoot") or Gun:FindFirstChild("ShootEvent") 
+        or ReplicatedStorage:FindFirstChild("Shoot", true)
+    
+    if not ShootEvent or not Murder then return false end
+    
+    local Alvo = Players[tostring(Murder)]
+    if not Alvo or not Alvo.Character then return false end
+    
+    local Root = Alvo.Character:FindFirstChild("HumanoidRootPart")
+    if not Root then return false end
+    
+    if ShootEvent:IsA("RemoteEvent") then
+        ShootEvent:FireServer(Char.HumanoidRootPart.CFrame, CFrame.new(Root.Position))
+    end
+    
+    return true
+end
+
+-- 🔄 LOOP INFINITO — ATIRA SOZINHO!
+task.spawn(function()
+    while true do
+        if AutoShootAtivo and Murder then
+            -- ✅ TENTA DAR TIRO
+            local DeuCerto = DarTiro()
+            
+            -- ❌ SE FALHOU → RECARREGA E TENTA DE NOVO
+            if not DeuCerto then
+                RecarregarArma()
+                DarTiro()
+            end
+            
+            task.wait(0.35)
+        else
+            RunService.Heartbeat:Wait()
+        end
+    end
+end)
 
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
@@ -2037,6 +2155,13 @@ Sec_AutoFarm:Toggle({
     end
 })
 
+Sec_AutoFarm:Toggle({
+    Title = "🎯 Auto Shoot Murderer",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShootAtivo = Ativo
+    end
+})
 
 Sec_AutoFarm:Toggle({
     Title = "Kill All",
