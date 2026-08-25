@@ -2150,7 +2150,7 @@ Sec_AutoFarm:Toggle({
 -- ==========================================
 -- Adicione este código na aba de combate do seu Hub:
 
-Sec_AutoFqrm:Toggle({
+Sec_AutoFarm:Toggle({
     Title = "Auto Shoot Murderer",
     Default = false,
     Callback = function(Estado)
