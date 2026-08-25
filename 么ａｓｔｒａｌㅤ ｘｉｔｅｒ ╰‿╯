@@ -556,7 +556,7 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 🎯 AUTO SHOOT MURDERER (SISTEMA COMPLETO)
+-- 🎯 AUTO SHOOT MURDERER (CICLO 10S/1S NO AR)
 -- ==================================
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
@@ -627,47 +627,57 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original no Farm e desativa a física de se levantar
+    -- 3. Salva a posição original no Farm e trava o personagem deitado no ar
     local posOriginal = hrp.CFrame
-    local timerSemBala = 0
     hum.PlatformStand = true
+
+    local tempoComArma = 0
 
     -- 4. Loop de perseguição no ar (75 studs), deitado e disparando
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- Equipa a arma caso esteja na mochila
-        if arma.Parent ~= char then
-            arma.Parent = char
-        end
+        -- Atualiza a referência da arma caso ela recarregue
+        arma = ObterArma()
 
-        -- Teleporta 75 studs acima mantendo o corpo deitado virado para baixo
+        -- Mantém teleportando 75 studs acima do Murderer (deitado olhando pra baixo)
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
-        -- Executa o disparo normal da arma
-        local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
-        if shootEvent and shootEvent:IsA("RemoteEvent") then
-            shootEvent:FireServer()
+        -- 🕒 CONTROLADOR DE TEMPO: 10 SEGUNDOS COM ARMA / 1 SEGUNDO SEM ARMA
+        if tempoComArma < 10.0 then
+            -- Garante que a arma tá na mão
+            if arma and arma.Parent ~= char then
+                arma.Parent = char
+            end
+
+            -- Dispara
+            if arma then
+                local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
+                if shootEvent and shootEvent:IsA("RemoteEvent") then
+                    shootEvent:FireServer()
+                else
+                    arma:Activate()
+                end
+            end
+
+            tempoComArma = tempoComArma + 0.15
         else
-            arma:Activate()
-        end
+            -- ⚠️ Deu 10 segundos: Guarda a arma por 1 segundo SEM cair do ar
+            if arma and arma.Parent == char then
+                arma.Parent = backpack
+            end
 
-        -- Contador da trava da arma
-        timerSemBala = timerSemBala + 0.15
-
-        -- ⚠️ Se passar 1 segundo com a arma travada/sem disparar:
-        if timerSemBala >= 1.0 then
-            arma.Parent = backpack
-            task.wait(1.0) -- Aguarda 1s guardada
-            arma.Parent = char
-            timerSemBala = 0
+            task.wait(1.0)
+            
+            -- Pega de volta e reseta o contador de 10s
+            tempoComArma = 0
         end
 
         task.wait(0.15)
     end
 
-    -- 5. Restaura o estado normal do boneco e retorna para o Farm
+    -- 5. Murderer morreu: Desativa a física deitado e volta para a posição original do Farm
     hum.PlatformStand = false
 
     if hrp and posOriginal then
@@ -686,6 +696,7 @@ task.spawn(function()
         task.wait(0.4)
     end
 end)
+
 
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
