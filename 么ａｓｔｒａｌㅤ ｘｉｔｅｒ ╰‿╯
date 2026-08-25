@@ -556,17 +556,15 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 🎯 SHOOT MURDERER (APÓS BOLSA CHEIA + TELEPORT 75 STUDS)
+-- 🎯 SHOOT MURDERER (DEITADO FIXO + ANTI-TRAVA 1S)
 -- ==================================
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 AutoShootAtivo = false
 local ExecutandoShoot = false
 
--- 🔍 Função para achar o Murderer (por item Knife ou atributo)
+-- 🔍 Buscar Murderer na partida
 local function ObterMurderer()
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
@@ -586,7 +584,7 @@ local function ObterMurderer()
     return nil
 end
 
--- 🔍 Função para obter a Arma (na mão ou Backpack)
+-- 🔍 Buscar a Arma no personagem ou Backpack
 local function ObterArma()
     local char = player.Character
     if not char then return nil end
@@ -601,22 +599,24 @@ local function ObterArma()
     return arma
 end
 
--- 🚀 LÓGICA PRINCIPAL DO SHOOT
+-- 🚀 LÓGICA PRINCIPAL COM PERMANÊNCIA DEITADO
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
     
-    -- 1. Só ativa SE a bolsa estiver cheia (usando sua variável de check do farm)
+    -- 1. Só ativa SE a bolsa estiver cheia
     if not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
         return
     end
 
-    -- 2. Espera você pegar a arma
+    -- 2. Espera você estar com a arma no inventário/mão
     local arma = ObterArma()
-    if not arma then return end -- Espera ter a arma antes de teleportar
+    if not arma then return end
 
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
-    if not hrp then return end
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local backpack = player:FindFirstChild("Backpack")
+    if not hrp or not hum or not backpack then return end
 
     local charMurderer = ObterMurderer()
     if not charMurderer then return end
@@ -627,33 +627,55 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição exata de onde você estava no Farm
+    -- 3. Salva a posição original onde estava no Farm
     local posOriginal = hrp.CFrame
+    local timerSemBala = 0
 
-    -- Loop de Perseguição a 75 Studs + Disparos
+    -- 🛑 IMPEDE O HUMANOID DE TENTAR LEVANTAR
+    hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+    hum:ChangeState(Enum.HumanoidStateType.Physics)
+
+    -- 4. Loop de perseguição no ar, deitado e disparos
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
-        -- Garante que a arma está equipada
+        
+        -- Garante que a arma está na mão
         if arma.Parent ~= char then
             arma.Parent = char
         end
 
-        -- Teleporta e Persegue a 75 studs de altura acima do Murderer (olhando para baixo)
-        local posNoAr = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-        hrp.CFrame = posNoAr
+        -- 📐 CFrame ajustado para manter a boneca 100% deitada virada para baixo (75 studs acima)
+        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
-        -- Executa o disparo
+        -- Tenta disparar a arma normalmente
         local shootEvent = arma:FindFirstChild("Shoot") or arma:FindFirstChild("ShootEvent")
+        
         if shootEvent and shootEvent:IsA("RemoteEvent") then
-            shootEvent:FireServer(hrpMurderer.Position)
+            shootEvent:FireServer()
         else
             arma:Activate()
+        end
+
+        -- Controle de trava da arma
+        timerSemBala = timerSemBala + 0.15
+
+        -- ⚠️ Se passar de 1 segundo sem disparar/travar:
+        if timerSemBala >= 1.0 then
+            arma.Parent = backpack
+            task.wait(1.0) -- Espera 1 segundo na mochila
+            arma.Parent = char
+            timerSemBala = 0
         end
 
         task.wait(0.15)
     end
 
-    -- 4. O Murderer morreu: Volta para a posição original onde estava antes no Farm
+    -- 🔄 RESTAURA OS ESTADOS DO HUMANOID (VOLTA AO NORMAL)
+    hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
+    hum:ChangeState(Enum.HumanoidStateType.GettingUp)
+
+    -- 5. Volta exatamente para onde você estava no Farm
     if hrp and posOriginal then
         hrp.CFrame = posOriginal
     end
@@ -661,7 +683,7 @@ local function IniciarSequenciaShoot()
     ExecutandoShoot = false
 end
 
--- 🔄 LOOP DE CHECAGEM CONTÍNUA
+-- 🔄 LOOP DE CHECAGEM
 task.spawn(function()
     while true do
         if AutoShootAtivo and not ExecutandoShoot then
