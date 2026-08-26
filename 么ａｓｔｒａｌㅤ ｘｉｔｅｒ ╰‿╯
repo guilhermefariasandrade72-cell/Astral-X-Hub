@@ -556,95 +556,15 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 🎯 AUTO SHOOT + INVISIBILIDADE ISOLADA (SEM BUG DE CÂMERA)
+-- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 AutoShootAtivo = false
 local ExecutandoShoot = false
 local PRECISAO_FIXA = 35
-
--- 👻 VARIÁVEIS EXCLUSIVAS DO SISTEMA DE INVISIBILIDADE DO SHOOT
-local ShootInvis_Ativo = false
-local ShootInvis_Personagem = nil
-local ShootInvis_Humanoid = nil
-local ShootInvis_Raiz = nil
-local ShootInvis_PartesCorpo = {}
-
--- 👻 CONFIGURAÇÃO DE REFERÊNCIAS ISOLADA
-local function ShootInvis_ConfigurarPersonagem()
-    ShootInvis_Personagem = player.Character or player.CharacterAdded:Wait()
-    ShootInvis_Humanoid = ShootInvis_Personagem:WaitForChild("Humanoid")
-    ShootInvis_Raiz = ShootInvis_Personagem:WaitForChild("HumanoidRootPart")
-    
-    ShootInvis_PartesCorpo = {}
-    for _, obj in ipairs(ShootInvis_Personagem:GetDescendants()) do
-        if obj:IsA("BasePart") then
-            table.insert(ShootInvis_PartesCorpo, obj)
-        end
-    end
-end
-
-player.CharacterAdded:Connect(function()
-    task.wait(0.5)
-    ShootInvis_ConfigurarPersonagem()
-end)
-
-if player.Character then
-    ShootInvis_ConfigurarPersonagem()
-end
-
--- 👻 LOOP DE DESLOCAMENTO SERVER-SIDE (CFRAME EXCLUSIVO DO SHOOT)
-RunService.Heartbeat:Connect(function()
-    if not ShootInvis_Ativo then return end
-    
-    if not ShootInvis_Personagem or not ShootInvis_Personagem.Parent or not ShootInvis_Raiz or not ShootInvis_Humanoid or ShootInvis_Humanoid.Health <= 0 then
-        ShootInvis_ConfigurarPersonagem()
-        return
-    end
-
-    -- Aplica transparência local
-    for _, parte in ipairs(ShootInvis_PartesCorpo) do
-        if parte and parte.Parent then
-            if parte.Name == "HumanoidRootPart" then
-                parte.Transparency = 1
-            else
-                parte.Transparency = 0.5
-            end
-        end
-    end
-
-    -- Ajuste de CFrame e Offset da câmera isolados
-    local PosOriginal = ShootInvis_Raiz.CFrame
-    local CamOffset = ShootInvis_Humanoid.CameraOffset
-    
-    ShootInvis_Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
-    ShootInvis_Humanoid.CameraOffset = ShootInvis_Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
-    
-    RunService.RenderStepped:Wait()
-    
-    if ShootInvis_Raiz and ShootInvis_Raiz.Parent then
-        ShootInvis_Raiz.CFrame = PosOriginal
-        ShootInvis_Humanoid.CameraOffset = CamOffset
-    end
-end)
-
--- RESTAURA TRANSPARÊNCIA NORMAL AO DESATIVAR
-task.spawn(function()
-    while true do
-        task.wait(0.2)
-        if not ShootInvis_Ativo and ShootInvis_Personagem and ShootInvis_Humanoid and ShootInvis_Humanoid.Health > 0 then
-            for _, parte in ipairs(ShootInvis_PartesCorpo) do
-                if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
-                    parte.Transparency = 0
-                end
-            end
-        end
-    end
-end)
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -685,12 +605,12 @@ end
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
     
-    -- 1. Checa se a bolsa está cheia
+    -- 1. Checa bolsa cheia
     if not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
         return
     end
 
-    -- 2. Checa se possui a arma
+    -- 2. Checa se tem a arma
     local arma = ObterArma()
     if not arma then return end
 
@@ -709,16 +629,16 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original no Farm e trava física
+    -- 3. Salva a posição original no Farm e trava física deitado
     local posOriginal = hrp.CFrame
     hum.PlatformStand = true
 
-    -- 🔹 PASSO 1: Sobe para 75 studs de altura
+    -- 🔹 PASSO 1: Sobe a 75 studs de altura
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
     task.wait(0.1)
 
-    -- 🔹 PASSO 2: Ativa a invisibilidade isolada
-    ShootInvis_Ativo = true
+    -- 🔹 PASSO 2: ATIVA DIRETO A VARIÁVEL DE INVISIBILIDADE
+    InvisivelAtivo = true
     task.wait(0.1)
 
     local tempoComArma = 0
@@ -781,8 +701,8 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 🔹 PASSO 4: Murderer morreu — Desliga invisibilidade e retorna para a posição original
-    ShootInvis_Ativo = false
+    -- 🔹 PASSO 4: Murderer morreu — DESLIGA A VARIÁVEL DE INVISIBILIDADE e retorna ao Farm
+    InvisivelAtivo = false
     hum.PlatformStand = false
 
     if hrp and posOriginal then
