@@ -648,7 +648,7 @@ end)
 
 -- ==================================
 -- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
--- ================================== 
+-- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local RunService = game:GetService("RunService")
@@ -681,7 +681,7 @@ end
 -- 🔍 BUSCAR A ARMA (MÃO OU BACKPACK)
 local function ObterArma()
     local char = player.Character
-    if not char me then return nil end
+    if not char then return nil end
     
     local arma = char:FindFirstChild("Gun")
     if not arma then
@@ -697,7 +697,7 @@ end
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
 
-    -- 1. Checa se a bolsa encheu e se está em partida (Usando o seu padrão exato)
+    -- 1. Checa se a bolsa encheu e se está em partida
     local bolsaEncheu = (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()))
     local emJogo = (EmPartida and EmPartida()) or true
 
@@ -724,10 +724,10 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- ⏳ PASSO 1: Aguarda 0.6s após a detecção do aviso para salvar a posição
-    task.wait(0.6)
+    -- ⏳ PASSO 1: Aguarda 3 SEGUNDOS após a bolsa encher (Tempo para o TP Safe te levar à plataforma)
+    task.wait(3.0)
 
-    -- 📍 PASSO 2: MARCA A POSIÇÃO EXACTA (Depois de esperar 0.6s)
+    -- 📍 PASSO 2: MARCA A POSIÇÃO AGORA (Já com o boneco salvo na plataforma)
     local posOriginal = hrp.CFrame
 
     -- 🔹 PASSO 3: Ativa a invisibilidade e equipa a arma
@@ -744,7 +744,7 @@ local function IniciarSequenciaShoot()
     local tempoSemArma = 0
     local estaComArma = true
 
-    -- 🔹 PASSO 4: Loop de ataque colado no Murderer
+    -- 🔹 PASSO 4: Loop de ataque colado nas costas do Murderer
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
@@ -799,14 +799,14 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 🔹 PASSO 5: Murderer morreu — Desliga invisibilidade e retorna para a posição marcada
+    -- 🔹 PASSO 5: Murderer morreu — Desliga invisibilidade e volta para a plataforma
     InvisivelAtivo = false
 
     if hrp and posOriginal then
         hrp.CFrame = posOriginal
     end
 
-    -- 🔄 PASSO 6: Trava o AutoShoot até a bolsa esvaziar ou reiniciar a partida (Igual ao TP Safe)
+    -- 🔄 PASSO 6: Aguarda a bolsa esvaziar/reiniciar partida para rearmar
     repeat
         RunService.Heartbeat:Wait()
     until not AutoShootAtivo 
