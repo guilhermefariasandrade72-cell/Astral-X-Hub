@@ -2472,33 +2472,6 @@ Sec_Xerife:Toggle({
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 Sec_Murderer:Toggle({
-    Title = "Ativar Kill Aura",
-    Default = false,
-    Callback = function(Ativo)
-        KillAuraAtivo = Ativo
-        AtualizarCirculoAura()
-    end
-})
-
-Sec_Murderer:Slider({
-    Title = "Alcance da Aura (Studs)",
-    Value = {Min = 5, Max = 50, Default = 15, Step = 1},
-    Callback = function(Valor)
-        RaioKillAura = Valor
-        AtualizarCirculoAura()
-    end
-})
-
-Sec_Murderer:Toggle({
-    Title = "Ver Círculo de Aura",
-    Default = false,
-    Callback = function(Ativo)
-        MostrarCirculoAura = Ativo
-        AtualizarCirculoAura()
-    end
-})
-
-Sec_Murderer:Toggle({
     Title = "Kill All Button",
     Default = false,
     Callback = function(Ativo)
@@ -2515,6 +2488,33 @@ Sec_Murderer:Toggle({
     Default = false,
     Callback = function(Ativo)
         KillAura = Ativo
+    end
+})
+
+Sec_Murderer:Toggle({
+    Title = "Kill Aura",
+    Default = false,
+    Callback = function(Ativo)
+        KillAuraAtivo = Ativo
+        AtualizarCirculoAura()
+    end
+})
+
+Sec_Murderer:Toggle({
+    Title = "ESP Clicle Aura",
+    Default = false,
+    Callback = function(Ativo)
+        MostrarCirculoAura = Ativo
+        AtualizarCirculoAura()
+    end
+})
+
+Sec_Murderer:Slider({
+    Title = "Distance Kill Aura",
+    Value = {Min = 5, Max = 50, Default = 15, Step = 1},
+    Callback = function(Valor)
+        RaioKillAura = Valor
+        AtualizarCirculoAura()
     end
 })
 
