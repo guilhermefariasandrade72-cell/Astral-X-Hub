@@ -181,7 +181,7 @@ local player = Players.LocalPlayer
 local CONFIG_FARM = {
     velocidade = 18,
     alcance_maximo = 500,
-    raio_perigo_murder = 25 -- Raio de distância do Murderer
+    raio_perigo_murder = 30 -- Raio de distância do Murderer
 }
 
 local AutoFarmAtivo = false
@@ -514,7 +514,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia detectada! Aguardando 1 segundos para TP...")
                 
                 -- ⏳ Espera 2 segundos antes de teleportar
-                task.wait(0.8)
+                task.wait(0.4)
                 
                 -- Confirma se ainda está vivo e no jogo antes de teleportar
                 if TPSafeAoEncher and EmPartida() then
@@ -575,7 +575,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
 
                 -- ⏳ Espera 1 segundo antes do ataque
-                task.wait(1)
+                task.wait(0.5)
 
                 -- Confirma se continua vivo antes de atacar
                 if EmPartida() then
@@ -629,7 +629,7 @@ task.spawn(function()
             print("💰 Bolsa cheia! Aguardando 2.5 segundos para dar Reset...")
 
             -- ⏳ Espera os 2.5 segundos solicitados
-            task.wait(0.5)
+            task.wait(3.5)
 
             -- Confirma se ainda está vivo e na partida antes de resetar
             if EmPartida() then
@@ -655,7 +655,7 @@ local player = Players.LocalPlayer
 
 AutoShootAtivo = false
 local ExecutandoShoot = false
-local PRECISAO_FIXA = 35
+local PRECISAO_FIXA = 50
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -726,11 +726,11 @@ local function IniciarSequenciaShoot()
 
     -- 🔹 PASSO 1: Sobe a 75 studs de altura
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-    task.wait(0.1)
+    task.wait(1.5)
 
     -- 🔹 PASSO 2: ATIVA DIRETO A VARIÁVEL DE INVISIBILIDADE
     InvisivelAtivo = true
-    task.wait(0.1)
+    task.wait(1.7)
 
     local tempoComArma = 0
     local tempoSemArma = 0
@@ -2403,7 +2403,7 @@ Sec_AutoFarm:Toggle({
 })
 
 Sec_AutoFarm:Toggle({
-    Title = "🎯 Auto Shoot Murderer",
+    Title = "Auto Shoot Murderer",
     Default = false,
     Callback = function(Ativo)
         AutoShootAtivo = Ativo
@@ -2500,20 +2500,20 @@ Sec_Murderer:Toggle({
     end
 })
 
-Sec_Murderer:Toggle({
-    Title = "ESP Clicle Aura",
-    Default = false,
-    Callback = function(Ativo)
-        MostrarCirculoAura = Ativo
-        AtualizarCirculoAura()
-    end
-})
-
 Sec_Murderer:Slider({
     Title = "Distance Kill Aura",
     Value = {Min = 5, Max = 50, Default = 15, Step = 1},
     Callback = function(Valor)
         RaioKillAura = Valor
+        AtualizarCirculoAura()
+    end
+})
+
+Sec_Murderer:Toggle({
+    Title = "Clicle Aura",
+    Default = false,
+    Callback = function(Ativo)
+        MostrarCirculoAura = Ativo
         AtualizarCirculoAura()
     end
 })
