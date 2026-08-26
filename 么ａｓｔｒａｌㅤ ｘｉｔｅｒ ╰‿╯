@@ -35,9 +35,9 @@ end
 -- INTERFACE (JANELA E BOTÃO)
 -- ==================================
 local Window = WindUI:CreateWindow({
-    Title = gradient("Astral X Hub V1", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
+    Title = gradient("Astral X Hub V128", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
     Icon = "star",
-    Author = gradient("MM2 · PREMIUM", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
+    Author = gradient("Script MM2 Keylles", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
     Size = UDim2.fromOffset(480, 340),
     MinSize = Vector2.new(420, 300),
     Transparent = true,
