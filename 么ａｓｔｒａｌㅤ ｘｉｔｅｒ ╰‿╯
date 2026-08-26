@@ -726,11 +726,11 @@ local function IniciarSequenciaShoot()
 
     -- 🔹 PASSO 1: Sobe a 75 studs de altura
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-    task.wait(1.5)
+    task.wait(2.5)
 
     -- 🔹 PASSO 2: ATIVA DIRETO A VARIÁVEL DE INVISIBILIDADE
     InvisivelAtivo = true
-    task.wait(1.7)
+    task.wait(2.5)
 
     local tempoComArma = 0
     local tempoSemArma = 0
@@ -742,7 +742,7 @@ hum.PlatformStand = false -- 🟢 FICA EM PÉ
 while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
     
     -- ✅ POSICIONA COLADO ATRÁS DAS COSTAS (SEM ROTAÇÃO DEITADO)
-    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 2)
+    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
     hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
