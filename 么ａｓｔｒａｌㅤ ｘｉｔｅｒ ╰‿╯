@@ -722,7 +722,13 @@ local function IniciarSequenciaShoot()
 
     -- 3. Salva a posição original no Farm e trava física deitado
     local posOriginal = hrp.CFrame
-    hum.PlatformStand = true
+hum.PlatformStand = true
+
+-- Espera 1.5 segundos
+task.wait(1.5)
+
+-- Salva a nova posição onde o boneco está agora (após 1.5s)
+local posSalvaDePois = hrp.CFrame
 
     -- 🔹 PASSO 1: Sobe a 75 studs de altura
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
