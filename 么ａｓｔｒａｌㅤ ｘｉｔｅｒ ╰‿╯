@@ -1415,11 +1415,10 @@ end
 -- 🔴 SISTEMA DE KILL AURA + CÍRCULO DINÂMICO
 -- ==================================
 local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 local KillAuraAtivo = false
-local RaioKillAura = 15 -- Valor padrão dentro de 5 a 50
+local RaioKillAura = 15
 local MostrarCirculoAura = false
 
 local CirculoAdornment = nil
@@ -1444,7 +1443,7 @@ local function AtualizarCirculoAura()
         CirculoAdornment.Transparency = 0.6
         CirculoAdornment.AlwaysOnTop = true
         CirculoAdornment.ZIndex = 5
-        CirculoAdornment.CFrame = CFrame.Angles(math.rad(90), 0, 0) -- Deita o cilindro no chão
+        CirculoAdornment.CFrame = CFrame.Angles(math.rad(90), 0, 0)
     end
 
     CirculoAdornment.Adornee = hrp
@@ -1477,7 +1476,7 @@ local function ExecutarAtaque(Alvo)
     end
 end
 
--- 🔄 LOOP PRINCIPAL DA KILL AURA (DISTÂNCIA E CÍRCULO)
+-- 🔄 LOOP PRINCIPAL DA KILL AURA
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -1488,10 +1487,8 @@ task.spawn(function()
             local hum = char and char:FindFirstChildOfClass("Humanoid")
 
             if hrp and hum and hum.Health > 0 then
-                -- Atualiza visual do círculo caso tenha resetado o char
                 AtualizarCirculoAura()
 
-                -- Verifica inimigos no alcance (RaioKillAura)
                 for _, Alvo in ipairs(Players:GetPlayers()) do
                     if not KillAuraAtivo then break end
                     
@@ -1502,7 +1499,6 @@ task.spawn(function()
                         if alvoHrp and alvoHum and alvoHum.Health > 0 then
                             local distancia = (hrp.Position - alvoHrp.Position).Magnitude
                             
-                            -- Se estiver dentro dos X studs do Slider:
                             if distancia <= RaioKillAura then
                                 ExecutarAtaque(Alvo)
                             end
@@ -1516,7 +1512,6 @@ task.spawn(function()
     end
 end)
 
--- Restaura o círculo em caso de Respawn
 player.CharacterAdded:Connect(function()
     task.wait(1)
     AtualizarCirculoAura()
@@ -2487,9 +2482,7 @@ Sec_Murderer:Toggle({
 
 Sec_Murderer:Slider({
     Title = "Alcance da Aura (Studs)",
-    Min = 5,
-    Max = 50,
-    Default = 15,
+    Value = {Min = 5, Max = 50, Default = 15, Step = 1},
     Callback = function(Valor)
         RaioKillAura = Valor
         AtualizarCirculoAura()
