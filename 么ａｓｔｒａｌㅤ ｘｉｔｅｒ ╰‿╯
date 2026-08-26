@@ -725,18 +725,18 @@ local function IniciarSequenciaShoot()
 hum.PlatformStand = true
 
 -- Espera 1.5 segundos
-task.wait(1.5)
+task.wait(1.0)
 
 -- Salva a nova posição onde o boneco está agora (após 1.5s)
 local posSalvaDePois = hrp.CFrame
 
     -- 🔹 PASSO 1: Sobe a 75 studs de altura
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-    task.wait(2.5)
+    task.wait(1.1)
 
     -- 🔹 PASSO 2: ATIVA DIRETO A VARIÁVEL DE INVISIBILIDADE
     InvisivelAtivo = true
-    task.wait(2.5)
+    task.wait(1.1)
 
     local tempoComArma = 0
     local tempoSemArma = 0
