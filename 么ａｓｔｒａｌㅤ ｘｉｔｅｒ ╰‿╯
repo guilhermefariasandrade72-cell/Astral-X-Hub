@@ -651,28 +651,12 @@ end)
 -- ================================== 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
 AutoShootAtivo = false
 local ExecutandoShoot = false
 local PRECISAO_FIXA = 50
-
--- 📌 Variável global para sempre lembrar onde você estava farmando antes do TP Seguro
-_G.PosicaoFarmReal = _G.PosicaoFarmReal or nil
-
--- 🔄 Atualiza continuamente a posição real no Farm (se não estiver invisível nem no Shoot)
-task.spawn(function()
-    while true do
-        task.wait(0.2)
-        if not ExecutandoShoot and not InvisivelAtivo then
-            local char = player.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            if hrp then
-                _G.PosicaoFarmReal = hrp.CFrame
-            end
-        end
-    end
-end)
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -697,7 +681,7 @@ end
 -- 🔍 BUSCAR A ARMA (MÃO OU BACKPACK)
 local function ObterArma()
     local char = player.Character
-    if not char then return nil end
+    if not char me then return nil end
     
     local arma = char:FindFirstChild("Gun")
     if not arma then
@@ -712,13 +696,16 @@ end
 -- 🚀 LÓGICA PRINCIPAL DO SHOOT
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
-    
-    -- 1. Checa bolsa cheia
-    if not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
+
+    -- 1. Checa se a bolsa encheu e se está em partida (Usando o seu padrão exato)
+    local bolsaEncheu = (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()))
+    local emJogo = (EmPartida and EmPartida()) or true
+
+    if not (bolsaEncheu and emJogo) then
         return
     end
 
-    -- 2. Checa se tem a arma
+    -- 2. Checa se possui a arma
     local arma = ObterArma()
     if not arma then return end
 
@@ -737,13 +724,13 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 🔹 PASSO 1: Salva a posição guardada ANTES de ir pro lugar seguro
-    local posParaVoltar = _G.PosicaoFarmReal or hrp.CFrame
-
-    -- Transição de 0.6s
+    -- ⏳ PASSO 1: Aguarda 0.6s após a detecção do aviso para salvar a posição
     task.wait(0.6)
 
-    -- 🔹 PASSO 2: Ativa invisibilidade e equipa a arma
+    -- 📍 PASSO 2: MARCA A POSIÇÃO EXACTA (Depois de esperar 0.6s)
+    local posOriginal = hrp.CFrame
+
+    -- 🔹 PASSO 3: Ativa a invisibilidade e equipa a arma
     InvisivelAtivo = true
     hum.PlatformStand = false
 
@@ -751,13 +738,13 @@ local function IniciarSequenciaShoot()
         arma.Parent = char
     end
 
-    task.wait(0.6)
+    task.wait(0.1)
 
     local tempoComArma = 0
     local tempoSemArma = 0
     local estaComArma = true
 
-    -- 🔹 PASSO 3: Persegue colado nas costas atirando
+    -- 🔹 PASSO 4: Loop de ataque colado no Murderer
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
@@ -812,23 +799,31 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 🔹 PASSO 4: Fim do Shoot — Desliga invisibilidade e volta para o lugar correto do Farm
+    -- 🔹 PASSO 5: Murderer morreu — Desliga invisibilidade e retorna para a posição marcada
     InvisivelAtivo = false
 
-    if hrp and posParaVoltar then
-        hrp.CFrame = posParaVoltar
+    if hrp and posOriginal then
+        hrp.CFrame = posOriginal
     end
+
+    -- 🔄 PASSO 6: Trava o AutoShoot até a bolsa esvaziar ou reiniciar a partida (Igual ao TP Safe)
+    repeat
+        RunService.Heartbeat:Wait()
+    until not AutoShootAtivo 
+       or (EmPartida and not EmPartida()) 
+       or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) 
+       or player:GetAttribute("Alive") ~= true
 
     ExecutandoShoot = false
 end
 
--- 🔄 LOOP DE CHECAGEM CONTÍNUA
+-- 🔄 LOOP DE EXECUÇÃO CONTÍNUA
 task.spawn(function()
     while true do
         if AutoShootAtivo and not ExecutandoShoot then
             IniciarSequenciaShoot()
         end
-        task.wait(0.4)
+        RunService.Heartbeat:Wait()
     end
 end)
 
