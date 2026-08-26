@@ -692,7 +692,7 @@ local function ObterArma()
     return arma
 end
 
--- 🚀 LÓGICA PRINCIPAL DO SHOOT
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT (INSTANTÂNEA)
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
     
@@ -720,37 +720,28 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original no Farm e trava física deitado
+    -- 🔹 PASSO 1: Salva a posição original instantaneamente
     local posOriginal = hrp.CFrame
-hum.PlatformStand = true
 
--- Espera 1.5 segundos
-task.wait(1.0)
-
--- Salva a nova posição onde o boneco está agora (após 1.5s)
-local posSalvaDePois = hrp.CFrame
-
-    -- 🔹 PASSO 1: Sobe a 75 studs de altura
-    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
-    task.wait(1.1)
-
-    -- 🔹 PASSO 2: ATIVA DIRETO A VARIÁVEL DE INVISIBILIDADE
+    -- 🔹 PASSO 2: Ativa invisibilidade e equipa a arma INSTANTANEAMENTE (Sem waits)
     InvisivelAtivo = true
-    task.wait(1.1)
+    hum.PlatformStand = false
+
+    if arma.Parent ~= char then
+        arma.Parent = char
+    end
 
     local tempoComArma = 0
     local tempoSemArma = 0
     local estaComArma = true
 
--- 🔹 PASSO 3: Persegue colado nas costas (2 studs) EM PÉ atirando repetidamente
-hum.PlatformStand = false -- 🟢 FICA EM PÉ
-
-while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
-    
-    -- ✅ POSICIONA COLADO ATRÁS DAS COSTAS (SEM ROTAÇÃO DEITADO)
-    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
-    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+    -- 🔹 PASSO 3: Persegue colado nas costas atirando repetidamente
+    while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
+        
+        -- ✅ Posiciona colado atrás das costas instantaneamente
+        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
         arma = ObterArma()
 
@@ -759,7 +750,7 @@ while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer
                 arma.Parent = char
             end
 
-            -- 🎯 DISPARO COM PREVISÃO E CFRAME
+            -- 🎯 DISPARO COM PREVISÃO
             if arma then
                 local shootEvent = arma:FindFirstChild("Shoot") 
                     or arma:FindFirstChild("ShootEvent") 
@@ -775,7 +766,7 @@ while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer
                 end
             end
 
-            tempoComArma = tempoComArma + 0.15
+            tempoComArma = tempoComArma + 0.1
 
             if tempoComArma >= 10.0 then
                 if arma and arma.Parent == char then
@@ -786,7 +777,7 @@ while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer
                 tempoSemArma = 0
             end
         else
-            tempoSemArma = tempoSemArma + 0.15
+            tempoSemArma = tempoSemArma + 0.1
 
             if tempoSemArma >= 1.0 then
                 if arma then
@@ -797,12 +788,11 @@ while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer
             end
         end
 
-        task.wait(0.15)
+        task.wait(0.1) -- Loop ultra rápido
     end
 
-    -- 🔹 PASSO 4: Murderer morreu — DESLIGA A VARIÁVEL DE INVISIBILIDADE e retorna ao Farm
+    -- 🔹 PASSO 4: Murderer morreu — Reseta invisibilidade e volta instantaneamente à posição original
     InvisivelAtivo = false
-    hum.PlatformStand = false
 
     if hrp and posOriginal then
         hrp.CFrame = posOriginal
@@ -811,13 +801,13 @@ while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer
     ExecutandoShoot = false
 end
 
--- 🔄 LOOP DE CHECAGEM CONTÍNUA
+-- 🔄 LOOP DE CHECAGEM CONTÍNUA (Reação instantânea)
 task.spawn(function()
     while true do
         if AutoShootAtivo and not ExecutandoShoot then
             IniciarSequenciaShoot()
         end
-        task.wait(0.4)
+        task.wait(0.1)
     end
 end)
 
