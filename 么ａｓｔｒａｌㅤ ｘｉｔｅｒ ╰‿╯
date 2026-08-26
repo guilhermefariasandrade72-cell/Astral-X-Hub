@@ -514,7 +514,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia detectada! Aguardando 1 segundos para TP...")
                 
                 -- ⏳ Espera 2 segundos antes de teleportar
-                task.wait(0.4)
+                task.wait(0.2)
                 
                 -- Confirma se ainda está vivo e no jogo antes de teleportar
                 if TPSafeAoEncher and EmPartida() then
@@ -575,7 +575,7 @@ task.spawn(function()
                 print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
 
                 -- ⏳ Espera 1 segundo antes do ataque
-                task.wait(0.5)
+                task.wait(0.3)
 
                 -- Confirma se continua vivo antes de atacar
                 if EmPartida() then
@@ -629,7 +629,7 @@ task.spawn(function()
             print("💰 Bolsa cheia! Aguardando 2.5 segundos para dar Reset...")
 
             -- ⏳ Espera os 2.5 segundos solicitados
-            task.wait(3.5)
+            task.wait(0.3)
 
             -- Confirma se ainda está vivo e na partida antes de resetar
             if EmPartida() then
@@ -656,6 +656,23 @@ local player = Players.LocalPlayer
 AutoShootAtivo = false
 local ExecutandoShoot = false
 local PRECISAO_FIXA = 50
+
+-- 📌 Variável global para sempre lembrar onde você estava farmando antes do TP Seguro
+_G.PosicaoFarmReal = _G.PosicaoFarmReal or nil
+
+-- 🔄 Atualiza continuamente a posição real no Farm (se não estiver invisível nem no Shoot)
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        if not ExecutandoShoot and not InvisivelAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            if hrp then
+                _G.PosicaoFarmReal = hrp.CFrame
+            end
+        end
+    end
+end)
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -692,7 +709,7 @@ local function ObterArma()
     return arma
 end
 
--- 🚀 LÓGICA PRINCIPAL DO SHOOT (INSTANTÂNEA)
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
     
@@ -720,10 +737,13 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 🔹 PASSO 1: Salva a posição original instantaneamente
-    local posOriginal = hrp.CFrame
+    -- 🔹 PASSO 1: Salva a posição guardada ANTES de ir pro lugar seguro
+    local posParaVoltar = _G.PosicaoFarmReal or hrp.CFrame
 
-    -- 🔹 PASSO 2: Ativa invisibilidade e equipa a arma INSTANTANEAMENTE (Sem waits)
+    -- Transição de 0.6s
+    task.wait(0.6)
+
+    -- 🔹 PASSO 2: Ativa invisibilidade e equipa a arma
     InvisivelAtivo = true
     hum.PlatformStand = false
 
@@ -731,14 +751,15 @@ local function IniciarSequenciaShoot()
         arma.Parent = char
     end
 
+    task.wait(0.6)
+
     local tempoComArma = 0
     local tempoSemArma = 0
     local estaComArma = true
 
-    -- 🔹 PASSO 3: Persegue colado nas costas atirando repetidamente
+    -- 🔹 PASSO 3: Persegue colado nas costas atirando
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- ✅ Posiciona colado atrás das costas instantaneamente
         hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
@@ -766,7 +787,7 @@ local function IniciarSequenciaShoot()
                 end
             end
 
-            tempoComArma = tempoComArma + 0.1
+            tempoComArma = tempoComArma + 0.15
 
             if tempoComArma >= 10.0 then
                 if arma and arma.Parent == char then
@@ -777,7 +798,7 @@ local function IniciarSequenciaShoot()
                 tempoSemArma = 0
             end
         else
-            tempoSemArma = tempoSemArma + 0.1
+            tempoSemArma = tempoSemArma + 0.15
 
             if tempoSemArma >= 1.0 then
                 if arma then
@@ -788,26 +809,26 @@ local function IniciarSequenciaShoot()
             end
         end
 
-        task.wait(0.1) -- Loop ultra rápido
+        task.wait(0.15)
     end
 
-    -- 🔹 PASSO 4: Murderer morreu — Reseta invisibilidade e volta instantaneamente à posição original
+    -- 🔹 PASSO 4: Fim do Shoot — Desliga invisibilidade e volta para o lugar correto do Farm
     InvisivelAtivo = false
 
-    if hrp and posOriginal then
-        hrp.CFrame = posOriginal
+    if hrp and posParaVoltar then
+        hrp.CFrame = posParaVoltar
     end
 
     ExecutandoShoot = false
 end
 
--- 🔄 LOOP DE CHECAGEM CONTÍNUA (Reação instantânea)
+-- 🔄 LOOP DE CHECAGEM CONTÍNUA
 task.spawn(function()
     while true do
         if AutoShootAtivo and not ExecutandoShoot then
             IniciarSequenciaShoot()
         end
-        task.wait(0.1)
+        task.wait(0.4)
     end
 end)
 
