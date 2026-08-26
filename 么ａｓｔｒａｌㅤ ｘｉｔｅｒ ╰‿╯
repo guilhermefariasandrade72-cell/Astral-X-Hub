@@ -556,7 +556,7 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 🎯 AUTO SHOOT + INVISIBILIDADE INTEGRADA (CÂMERA CORRIGIDA)
+-- 🎯 AUTO SHOOT + INVISIBILIDADE NAS COSTAS (2 STUDS)
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
@@ -565,6 +565,20 @@ local player = Players.LocalPlayer
 AutoShootAtivo = false
 local ExecutandoShoot = false
 local PRECISAO_FIXA = 35
+
+-- 👻 APLICA TRANSPARÊNCIA VISUAL NO PERSONAGEM
+local function DefinirInvisibilidade(estado)
+    local char = player.Character
+    if not char then return end
+    
+    for _, obj in ipairs(char:GetDescendants()) do
+        if obj:IsA("BasePart") and obj.Name ~= "HumanoidRootPart" then
+            obj.Transparency = estado and 0.8 or 0 -- Visão semi-transparente local
+        elseif obj:IsA("Decal") then
+            obj.Transparency = estado and 1 or 0
+        end
+    end
+end
 
 -- 🔍 BUSCAR MURDERER NA PARTIDA
 local function ObterMurderer()
@@ -605,12 +619,12 @@ end
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
     
-    -- 1. Só executa SE a bolsa estiver cheia
+    -- 1. Checa bolsa cheia
     if not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) then
         return
     end
 
-    -- 2. Espera estar com a arma
+    -- 2. Checa arma
     local arma = ObterArma()
     if not arma then return end
 
@@ -629,29 +643,25 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- 3. Salva a posição original e trava deitado
+    -- 3. Salva a posição original e trava física
     local posOriginal = hrp.CFrame
     hum.PlatformStand = true
 
-    -- 🔹 PASSO A: Teleporta para 75 studs de altura e LIGA a invisibilidade do seu sistema principal
-    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+    -- 🔹 SUBIDA INICIAL (75 STUDS) + ATIVA INVISIBILIDADE
+    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0)
     task.wait(0.1)
-    
-    -- Usa a variável global de invisibilidade que você já usa no menu principal
-    getgenv().InvisivelAtivo = true 
-    if _G.InvisivelAtivo ~= nil then _G.InvisivelAtivo = true end
-    
+    DefinirInvisibilidade(true)
     task.wait(0.1)
 
     local tempoComArma = 0
     local tempoSemArma = 0
     local estaComArma = true
 
-    -- 🔹 PASSO B: Desce para 7 studs e ataca invisível até o Murderer morrer
+    -- 🔹 GRUDADO NAS COSTAS (2 STUDS ATRÁS E 1 STUD ACIMA)
     while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
         
-        -- Mantém a perseguição a 7 studs do Murderer
-        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 7, 0) * CFrame.Angles(math.rad(-90), 0, 0)
+        -- ✅ POSICIONA EXATAMENTE ATRÁS DAS COSTAS DO MURDERER
+        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 2)
         hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
         hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
@@ -703,10 +713,8 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 🔹 PASSO C: Murderer morreu — DESLIGA a invisibilidade e volta à posição inicial
-    getgenv().InvisivelAtivo = false
-    if _G.InvisivelAtivo ~= nil then _G.InvisivelAtivo = false end
-    
+    -- 🔹 FIM DO ATAQUE: REMOVE INVISIBILIDADE E RETORNA
+    DefinirInvisibilidade(false)
     hum.PlatformStand = false
 
     if hrp and posOriginal then
