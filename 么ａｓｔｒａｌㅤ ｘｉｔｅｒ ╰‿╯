@@ -648,7 +648,7 @@ end)
 
 -- ==================================
 -- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
--- ==================================
+-- ================================== 
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local player = Players.LocalPlayer
@@ -692,50 +692,6 @@ local function ObterArma()
     return arma
 end
 
--- 🛡️ FUNÇÃO PARA O SEU AUTO FARM USAR (IGNORA MOEDAS A MENOS DE 25 STUDS DO MURDERER)
-function MoedaSegura(posicaoMoeda)
-    local charMurderer = ObterMurderer()
-    if charMurderer then
-        local hrpMurderer = charMurderer:FindFirstChild("HumanoidRootPart")
-        if hrpMurderer then
-            local dist = (posicaoMoeda - hrpMurderer.Position).Magnitude
-            if dist <= 25 then
-                return false -- Perigo: moeda muito perto do Murderer
-            end
-        end
-    end
-    return true -- Segura
-end
-
--- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA POR PROXIMIDADE (RAIO DE 25 STUDS)
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        
-        -- Só roda o monitoramento de proximidade se NÃO estiver executando o Auto Shoot
-        if not ExecutandoShoot then
-            local char = player.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local charMurderer = ObterMurderer()
-            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
-
-            if hrp and hrpMurderer then
-                local distancia = (hrp.Position - hrpMurderer.Position).Magnitude
-
-                if distancia <= 25 then
-                    if not InvisivelAtivo then
-                        InvisivelAtivo = true
-                    end
-                else
-                    if InvisivelAtivo then
-                        InvisivelAtivo = false
-                    end
-                end
-            end
-        end
-    end
-end)
-
 -- 🚀 LÓGICA PRINCIPAL DO SHOOT
 local function IniciarSequenciaShoot()
     if ExecutandoShoot then return end
@@ -764,11 +720,11 @@ local function IniciarSequenciaShoot()
 
     ExecutandoShoot = true
 
-    -- Salva a posição original no Farm
+    -- 3. Salva a posição original no Farm e trava física deitado
     local posOriginal = hrp.CFrame
+    hum.PlatformStand = true
 
     -- 🔹 PASSO 1: Sobe a 75 studs de altura
-    hum.PlatformStand = true
     hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 75, 0) * CFrame.Angles(math.rad(-90), 0, 0)
     task.wait(0.1)
 
@@ -776,20 +732,19 @@ local function IniciarSequenciaShoot()
     InvisivelAtivo = true
     task.wait(0.1)
 
-    -- 🔹 COLOCA EM PÉ PARA O ATAQUE
-    hum.PlatformStand = false
-
     local tempoComArma = 0
     local tempoSemArma = 0
     local estaComArma = true
 
-    -- 🔹 PASSO 3: Persegue colado nas costas (2 studs) EM PÉ atirando repetidamente
-    while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
-        
-        -- ✅ POSICIONA COLADO ATRÁS DAS COSTAS (EM PÉ)
-        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 2)
-        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+-- 🔹 PASSO 3: Persegue colado nas costas (2 studs) EM PÉ atirando repetidamente
+hum.PlatformStand = false -- 🟢 FICA EM PÉ
+
+while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
+    
+    -- ✅ POSICIONA COLADO ATRÁS DAS COSTAS (SEM ROTAÇÃO DEITADO)
+    hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 2)
+    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
 
         arma = ObterArma()
 
@@ -839,7 +794,7 @@ local function IniciarSequenciaShoot()
         task.wait(0.15)
     end
 
-    -- 🔹 PASSO 4: Murderer morreu — DESLIGA A INVISIBILIDADE e retorna ao Farm
+    -- 🔹 PASSO 4: Murderer morreu — DESLIGA A VARIÁVEL DE INVISIBILIDADE e retorna ao Farm
     InvisivelAtivo = false
     hum.PlatformStand = false
 
