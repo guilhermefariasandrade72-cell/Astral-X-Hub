@@ -1,23 +1,28 @@
 -- ==================================
 -- 🌐 ASTRAL X HUB V1
+-- 🎨 INTERFACE + TEMA RUBY PADRÃO
 -- ==================================
+
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
+
 local player = Players.LocalPlayer
 
 -- ==================================
--- CARREGAR INTERFACE
+-- CARREGAR WINDUI
 -- ==================================
+
 local WindUI = loadstring(game:HttpGet(
     "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
 ))()
 
 -- ==================================
--- FUNÇÃO DE COR GRADIENTE
+-- 🌈 FUNÇÃO DE GRADIENTE
 -- ==================================
+
 local function gradient(text, startColor, endColor)
     local result = ""
     local length = #text
@@ -54,140 +59,122 @@ end
 -- 🎨 CONFIGURAÇÃO VISUAL
 -- ==================================
 
--- 0 = totalmente opaco
--- 1 = totalmente transparente
 local WindowTransparency = 0.15
 
-local MainColor = Color3.fromHex("#18181b")
+local MainColor = Color3.fromHex("#18181B")
 
 -- ==================================
--- 🪟 CRIAR JANELA
+-- 🎨 TEMAS DO ASTRAL
 -- ==================================
-local Window = WindUI:CreateWindow({
-    Title = gradient(
-        "Astral X Hub V128",
-        Color3.fromHex("#ffffff"),
-        Color3.fromHex("#cccccc")
-    ),
 
-    Icon = "star",
-
-    Author = gradient(
-        "Script MM2 Keyless",
-        Color3.fromHex("#1bf2b2"),
-        Color3.fromHex("#1bcbf2")
-    ),
-
-    Size = UDim2.fromOffset(480, 340),
-    MinSize = Vector2.new(420, 300),
-
-    Transparent = true,
-    Transparency = WindowTransparency,
-
-    Theme = "Dark",
-
-    SideBarWidth = 120,
-    HasOutline = true,
-    HideSearchBar = true,
-})
-
--- ==================================
--- 🎨 TEMAS PERSONALIZADOS ASTRAL X
--- ==================================
 local CoresAstral = {
 
-    -- ==================================
-    -- ✨ CORES BONITAS
-    -- ==================================
+    -- ORIGINAL
+    ["Dark"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
 
+    -- RUBY
     ["Ruby"] = {
         Accent = "#E53935",
         Button = "#E53935",
         Icon = "#E53935",
     },
 
+    -- AMETISTA
     ["Ametista"] = {
         Accent = "#B026FF",
         Button = "#B026FF",
         Icon = "#B026FF",
     },
 
+    -- VERDE ÁGUA
     ["Verde Água"] = {
         Accent = "#2EE6A6",
         Button = "#2EE6A6",
         Icon = "#2EE6A6",
     },
 
+    -- AZUL GELO
     ["Azul Gelo"] = {
         Accent = "#A5F2F3",
         Button = "#A5F2F3",
         Icon = "#A5F2F3",
     },
 
+    -- ROXO NEON
     ["Roxo Neon"] = {
         Accent = "#BF00FF",
         Button = "#BF00FF",
         Icon = "#BF00FF",
     },
 
+    -- ROSA NEON
     ["Rosa Neon"] = {
         Accent = "#FF1493",
         Button = "#FF1493",
         Icon = "#FF1493",
     },
 
+    -- LARANJA NEON
     ["Laranja Neon"] = {
         Accent = "#FF5F00",
         Button = "#FF5F00",
         Icon = "#FF5F00",
     },
 
+    -- AMARELO NEON
     ["Amarelo Neon"] = {
         Accent = "#FFFF00",
         Button = "#FFFF00",
         Icon = "#FFFF00",
     },
 
+    -- TURQUESA
     ["Turquesa"] = {
         Accent = "#40E0D0",
         Button = "#40E0D0",
         Icon = "#40E0D0",
     },
 
+    -- LAVANDA
     ["Lavanda"] = {
         Accent = "#B57EDC",
         Button = "#B57EDC",
         Icon = "#B57EDC",
     },
 
+    -- CORAL
     ["Coral"] = {
         Accent = "#FF7F50",
         Button = "#FF7F50",
         Icon = "#FF7F50",
     },
 
+    -- DOURADO
     ["Dourado"] = {
         Accent = "#FFD700",
         Button = "#FFD700",
         Icon = "#FFD700",
     },
 
+    -- VIOLETA
     ["Violeta"] = {
         Accent = "#7F00FF",
         Button = "#7F00FF",
         Icon = "#7F00FF",
     },
 
+    -- PINK
     ["Pink"] = {
         Accent = "#FF69B4",
         Button = "#FF69B4",
         Icon = "#FF69B4",
     },
 
-    -- ==================================
-    -- 🎨 CORES COMUNS
-    -- ==================================
-
+    -- CORES COMUNS
     ["Verde"] = {
         Accent = "#1BF2B2",
         Button = "#1BF2B2",
@@ -242,6 +229,12 @@ local CoresAstral = {
         Icon = "#C0C0C0",
     },
 
+    ["Branco"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
     ["Cinza"] = {
         Accent = "#808080",
         Button = "#808080",
@@ -267,9 +260,8 @@ local CoresAstral = {
     },
 }
 
-
 -- ==================================
--- 🎨 CRIAR TEMAS NO WINDUI
+-- 🎨 REGISTRAR TEMAS
 -- ==================================
 
 for Nome, Cor in pairs(CoresAstral) do
@@ -290,52 +282,117 @@ for Nome, Cor in pairs(CoresAstral) do
 
 end
 
+-- ==================================
+-- ❤️ RUBY SERÁ A COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Ruby"
 
 -- ==================================
--- 🎯 COR INICIAL
+-- 🪟 CRIAR JANELA
 -- ==================================
 
-local CorSelecionada = "Dark"
+local Window = WindUI:CreateWindow({
+
+    Title = gradient(
+        "Astral X Hub V128",
+        Color3.fromHex("#FFFFFF"),
+        Color3.fromHex("#CCCCCC")
+    ),
+
+    Icon = "star",
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1BF2B2"),
+        Color3.fromHex("#1BCBF2")
+    ),
+
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+
+    Transparent = true,
+    Transparency = WindowTransparency,
+
+    -- ⭐ RUBY APLICADO AO INICIAR
+    Theme = "Astral_Ruby",
+
+    SideBarWidth = 120,
+    HasOutline = true,
+    HideSearchBar = true,
+})
 
 -- ==================================
--- 🎨 COR BASE DA JANELA
+-- 🎨 COR DO FUNDO
 -- ==================================
+
 pcall(function()
-    if Window.UIElements and Window.UIElements.Main then
-        Window.UIElements.Main.BackgroundColor3 = MainColor
+
+    if Window.UIElements then
+
+        if Window.UIElements.Main then
+            Window.UIElements.Main.BackgroundColor3 = MainColor
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
+        end
+
+        if Window.UIElements.SideBar then
+            Window.UIElements.SideBar.BackgroundTransparency =
+                math.clamp(WindowTransparency + 0.05, 0, 1)
+        end
+
+    elseif Window.Frame then
+
+        Window.Frame.BackgroundColor3 = MainColor
+        Window.Frame.BackgroundTransparency =
+            WindowTransparency
+
     end
+
 end)
 
 -- ==================================
 -- 🎚️ FUNÇÃO DE TRANSPARÊNCIA
 -- ==================================
+
 local function AplicarTransparencia(Value)
+
     WindowTransparency = Value
 
     pcall(function()
+
         if Window.SetBackgroundTransparency then
             Window:SetBackgroundTransparency(Value)
         end
+
     end)
+
 end
 
 -- ==================================
--- ⭐ BOTÃO DE ABRIR/FECHAR
+-- ❤️ BOTÃO FLUTUANTE
+-- Ruby: vermelho escuro → vermelho claro
 -- ==================================
+
 Window:EditOpenButton({
+
     Title = "Astral",
+
     Icon = "star",
 
     CornerRadius = UDim.new(0, 12),
+
     StrokeThickness = 2,
 
     Color = ColorSequence.new(
-        Color3.fromHex("#8B0000"), -- vermelho escuro (esquerda)
-        Color3.fromHex("#FF5555")  -- vermelho claro (direita)
+        Color3.fromHex("#9B111E"),
+        Color3.fromHex("#FF4D5A")
     ),
 
     Draggable = true,
+
 })
+
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
