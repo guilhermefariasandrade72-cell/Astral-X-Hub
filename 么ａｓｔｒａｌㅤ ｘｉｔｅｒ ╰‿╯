@@ -34,6 +34,10 @@ end
 -- ==================================
 -- INTERFACE (JANELA E BOTÃO)
 -- ==================================
+-- Parâmetros globais de transparência/cor para evitar o efeito cinza nos elementos
+local WindowTransparency = 0.15 -- Ajuste a transparência inicial (0 = opaco, 1 = invisível)
+local MainColor = Color3.fromHex("#18181b") -- Cor escura base que destaca os textos e botões
+
 local Window = WindUI:CreateWindow({
     Title = gradient("Astral X Hub V128", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
     Icon = "star",
@@ -41,11 +45,28 @@ local Window = WindUI:CreateWindow({
     Size = UDim2.fromOffset(480, 340),
     MinSize = Vector2.new(420, 300),
     Transparent = true,
+    Transparency = WindowTransparency, -- Define a transparência nativa na janela
     Theme = "Dark",
     SideBarWidth = 120,
     HasOutline = true,
     HideSearchBar = true,
 })
+
+-- Ajusta a transparência da estrutura do WindUI para não acinzentar os toggles
+pcall(function()
+    if Window.UIElements then
+        if Window.UIElements.Main then
+            Window.UIElements.Main.BackgroundTransparency = WindowTransparency
+            Window.UIElements.Main.BackgroundColor3 = MainColor
+        end
+        if Window.UIElements.SideBar then
+            Window.UIElements.SideBar.BackgroundTransparency = WindowTransparency + 0.05
+        end
+    elseif Window.Frame then
+        Window.Frame.BackgroundTransparency = WindowTransparency
+        Window.Frame.BackgroundColor3 = MainColor
+    end
+end)
 
 Window:EditOpenButton({
     Title = "Astral",
