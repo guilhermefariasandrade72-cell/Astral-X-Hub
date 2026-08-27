@@ -100,7 +100,11 @@ local CoresAstral = {
     -- 🌑 ORIGINAL
     -- ==================================
 
-    ["Dark"] = nil,
+    ["Dark"] = {
+    Accent = "#1B9CF2",
+    Button = "#1BF2B2",
+    Icon = "#FFFFFF",
+},
 
     -- ==================================
     -- ✨ CORES BONITAS
