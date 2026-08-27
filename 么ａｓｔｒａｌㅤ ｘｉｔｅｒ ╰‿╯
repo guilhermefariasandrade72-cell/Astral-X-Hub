@@ -97,16 +97,6 @@ local Window = WindUI:CreateWindow({
 local CoresAstral = {
 
     -- ==================================
-    -- 🌑 ORIGINAL
-    -- ==================================
-
-    ["Dark"] = {
-    Accent = "#1B9CF2", -- azul dos sliders/elementos
-    Button = "#1BF2B2", -- verde dos toggles/botões
-    Icon = "#FFFFFF",   -- branco dos ícones
-},
-
-    -- ==================================
     -- ✨ CORES BONITAS
     -- ==================================
 
@@ -250,12 +240,6 @@ local CoresAstral = {
         Accent = "#C0C0C0",
         Button = "#C0C0C0",
         Icon = "#C0C0C0",
-    },
-
-    ["Branco"] = {
-        Accent = "#FFFFFF",
-        Button = "#FFFFFF",
-        Icon = "#FFFFFF",
     },
 
     ["Cinza"] = {
@@ -3232,7 +3216,6 @@ Aba_Config:Slider({
 -- ==================================
 
 local ListaCores = {
-    "Dark",
 
     "Ruby",
     "Ametista",
@@ -3259,7 +3242,6 @@ local ListaCores = {
     "Amarelo",
     "Ciano",
     "Prata",
-    "Branco",
     "Cinza",
     "Índigo",
     "Salmão",
