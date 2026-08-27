@@ -646,6 +646,135 @@ task.spawn(function()
     end
 end)
 
+-- ===========================================
+-- AINLOCK / AIMBOT XERIFE 
+-- ===========================================
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+local Camera = Workspace.CurrentCamera
+
+-- 📌 ESTADOS E CONFIGURAÇÕES
+local LockCameraAtivo = false
+local MostrarCirculo = false
+local RaioFOV = 150 -- Tamanho do raio em pixels
+
+-- ==================================
+-- 🎨 CRIAR CÍRCULO VISUAL DE FOV
+-- ==================================
+local FOVScreen = Instance.new("ScreenGui")
+FOVScreen.Name = "FOVCircleGui"
+FOVScreen.ResetOnSpawn = false
+FOVScreen.Parent = CoreGui
+
+local FOVCircle = Instance.new("Frame")
+FOVCircle.Name = "Circle"
+FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+FOVCircle.BackgroundTransparency = 1
+FOVCircle.Visible = false
+FOVCircle.Parent = FOVScreen
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Neon Azul / Ciano
+UIStroke.Thickness = 2
+UIStroke.Parent = FOVCircle
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim2.new(1, 0)
+UICorner.Parent = FOVCircle
+
+-- ==================================
+-- 🔍 FUNÇÕES AUXILIARES
+-- ==================================
+
+-- Checa se o jogador possui a arma (na mão ou na mochila)
+local function TemArma()
+    local char = player.Character
+    if not char then return false end
+    
+    -- Checa na mão
+    local armaNoChar = char:FindFirstChild("Gun")
+    if not armaNoChar then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and item.Name:lower():find("gun") then
+                armaNoChar = item
+                break
+            end
+        end
+    end
+    if armaNoChar then return true end
+
+    -- Checa na mochila (Backpack)
+    local backpack = player:FindFirstChild("Backpack")
+    if backpack then
+        local armaNaMochila = backpack:FindFirstChild("Gun")
+        if not armaNaMochila then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item:IsA("Tool") and item.Name:lower():find("gun") then
+                    armaNaMochila = item
+                    break
+                end
+            end
+        end
+        if armaNaMochila then return true end
+    end
+
+    return false
+end
+
+-- Busca o Murderer ativo na partida
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local char = p.Character
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            
+            if hum and hum.Health > 0 and hrp then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = (p:GetAttribute("Role") == "Murderer") or (temFaca ~= nil)
+                
+                if eMurder then
+                    return hrp
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- Checa se a posição 3D do Murderer está dentro do Círculo FOV (2D na tela)
+local function EstaDentroDoFOV(posicao3D)
+    local posTela, visivel = Camera:WorldToViewportPoint(posicao3D)
+    if not visivel then return false end
+
+    local centroTela = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
+    local posAlvo2D = Vector2.new(posTela.X, posTela.Y)
+    
+    local distanciaPixels = (posAlvo2D - centroTela).Magnitude
+    return distanciaPixels <= (RaioFOV / 2)
+end
+
+-- ==================================
+-- 🎥 LOOP DE ATUALIZAÇÃO DA CÂMERA
+-- ==================================
+RunService.RenderStepped:Connect(function()
+    -- Só executa se a função estiver ativa E se você tiver a arma
+    if not LockCameraAtivo or not TemArma() then return end
+
+    local hrpMurderer = ObterMurderer()
+    if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
+        -- Aponta a câmera em direção ao torso/cabeça do Murderer
+        local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
+        Camera.CFrame = CFrame.new(Camera.CFrame.Position, posAlvo)
+    end
+end)
+
 -- ==================================
 -- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
 -- ==================================
@@ -1286,135 +1415,6 @@ local function RemoveGrabGunButton()
         GrabGunButtonGui = nil 
     end
 end
-
--- ===========================================
--- AINLOCK / AIMBOT XERIFE 
--- ===========================================
-local CoreGui = game:GetService("CoreGui")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local Workspace = game:GetService("Workspace")
-
-local player = Players.LocalPlayer
-local Camera = Workspace.CurrentCamera
-
--- 📌 ESTADOS E CONFIGURAÇÕES
-local LockCameraAtivo = false
-local MostrarCirculo = false
-local RaioFOV = 150 -- Tamanho do raio em pixels
-
--- ==================================
--- 🎨 CRIAR CÍRCULO VISUAL DE FOV
--- ==================================
-local FOVScreen = Instance.new("ScreenGui")
-FOVScreen.Name = "FOVCircleGui"
-FOVScreen.ResetOnSpawn = false
-FOVScreen.Parent = CoreGui
-
-local FOVCircle = Instance.new("Frame")
-FOVCircle.Name = "Circle"
-FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
-FOVCircle.BackgroundTransparency = 1
-FOVCircle.Visible = false
-FOVCircle.Parent = FOVScreen
-
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Neon Azul / Ciano
-UIStroke.Thickness = 2
-UIStroke.Parent = FOVCircle
-
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim2.new(1, 0)
-UICorner.Parent = FOVCircle
-
--- ==================================
--- 🔍 FUNÇÕES AUXILIARES
--- ==================================
-
--- Checa se o jogador possui a arma (na mão ou na mochila)
-local function TemArma()
-    local char = player.Character
-    if not char then return false end
-    
-    -- Checa na mão
-    local armaNoChar = char:FindFirstChild("Gun")
-    if not armaNoChar then
-        for _, item in ipairs(char:GetChildren()) do
-            if item:IsA("Tool") and item.Name:lower():find("gun") then
-                armaNoChar = item
-                break
-            end
-        end
-    end
-    if armaNoChar then return true end
-
-    -- Checa na mochila (Backpack)
-    local backpack = player:FindFirstChild("Backpack")
-    if backpack then
-        local armaNaMochila = backpack:FindFirstChild("Gun")
-        if not armaNaMochila then
-            for _, item in ipairs(backpack:GetChildren()) do
-                if item:IsA("Tool") and item.Name:lower():find("gun") then
-                    armaNaMochila = item
-                    break
-                end
-            end
-        end
-        if armaNaMochila then return true end
-    end
-
-    return false
-end
-
--- Busca o Murderer ativo na partida
-local function ObterMurderer()
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player and p.Character then
-            local char = p.Character
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            
-            if hum and hum.Health > 0 and hrp then
-                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
-                local eMurder = (p:GetAttribute("Role") == "Murderer") or (temFaca ~= nil)
-                
-                if eMurder then
-                    return hrp
-                end
-            end
-        end
-    end
-    return nil
-end
-
--- Checa se a posição 3D do Murderer está dentro do Círculo FOV (2D na tela)
-local function EstaDentroDoFOV(posicao3D)
-    local posTela, visivel = Camera:WorldToViewportPoint(posicao3D)
-    if not visivel then return false end
-
-    local centroTela = Vector2.new(Camera.ViewportSize.X / 2, Camera.ViewportSize.Y / 2)
-    local posAlvo2D = Vector2.new(posTela.X, posTela.Y)
-    
-    local distanciaPixels = (posAlvo2D - centroTela).Magnitude
-    return distanciaPixels <= (RaioFOV / 2)
-end
-
--- ==================================
--- 🎥 LOOP DE ATUALIZAÇÃO DA CÂMERA
--- ==================================
-RunService.RenderStepped:Connect(function()
-    -- Só executa se a função estiver ativa E se você tiver a arma
-    if not LockCameraAtivo or not TemArma() then return end
-
-    local hrpMurderer = ObterMurderer()
-    if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
-        -- Aponta a câmera em direção ao torso/cabeça do Murderer
-        local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
-        Camera.CFrame = CFrame.new(Camera.CFrame.Position, posAlvo)
-    end
-end)
 
 -- ===========================================
 -- 🗡️ SISTEMA MURDERER (KILL ALL)
