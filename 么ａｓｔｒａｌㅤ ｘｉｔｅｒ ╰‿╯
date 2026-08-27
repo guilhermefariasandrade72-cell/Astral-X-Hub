@@ -1497,16 +1497,16 @@ local player = Players.LocalPlayer
 
 local KillAuraAtivo = false
 local RaioKillAura = 15
-local MostrarCirculoAura = false -- Defina como true para mostrar o círculo diretamente
+local MostrarCirculoAura = false
 
 local CirculoAdornment = nil
 
--- 📏 CRIAR / ATUALIZAR O CÍRCULO VISUAL
+-- 📏 CRIAR / ATUALIZAR O CÍRCULO VERMELHO VISUAL
 local function AtualizarCirculoAura()
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    -- Se a opção de mostrar estiver desligada ou o personagem não existir
+    -- Removido o 'KillAuraAtivo' daqui para dependente apenas do 'MostrarCirculoAura'
     if not MostrarCirculoAura or not hrp then
         if CirculoAdornment then
             CirculoAdornment:Destroy()
@@ -1515,7 +1515,6 @@ local function AtualizarCirculoAura()
         return
     end
 
-    -- Cria oAdornment se não existir
     if not CirculoAdornment or not CirculoAdornment.Parent then
         CirculoAdornment = Instance.new("CylinderHandleAdornment")
         CirculoAdornment.Name = "KillAuraRangeVisual"
@@ -1526,10 +1525,9 @@ local function AtualizarCirculoAura()
         CirculoAdornment.CFrame = CFrame.Angles(math.rad(90), 0, 0)
     end
 
-    -- Vincula diretamente ao HumanoidRootPart do personagem
     CirculoAdornment.Adornee = hrp
     CirculoAdornment.Parent = hrp
-    CirculoAdornment.Height = 0.1
+    CirculoAdornment.Height = 0.2
     CirculoAdornment.Radius = RaioKillAura
 end
 
@@ -1557,7 +1555,7 @@ local function ExecutarAtaque(Alvo)
     end
 end
 
--- 🔴 LOOP INDEPENDENTE PARA DESENHAR O CÍRCULO
+-- 🔴 LOOP DE ATUALIZAÇÃO DO CÍRCULO (Roda de forma independente do Kill Aura)
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -1565,7 +1563,7 @@ task.spawn(function()
     end
 end)
 
--- ⚔️ LOOP INDEPENDENTE PARA ATAQUE
+-- ⚔️ LOOP DO KILL AURA (Roda apenas a lógica de ataque)
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -1597,12 +1595,9 @@ task.spawn(function()
     end
 end)
 
--- RESET AO RESPAWNAR
 player.CharacterAdded:Connect(function()
-    if CirculoAdornment then
-        CirculoAdornment:Destroy()
-        CirculoAdornment = nil
-    end
+    task.wait(1)
+    AtualizarCirculoAura()
 end)
 
 -- ==================================
