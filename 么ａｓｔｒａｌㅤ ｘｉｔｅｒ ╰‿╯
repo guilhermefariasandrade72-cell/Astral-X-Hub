@@ -2939,16 +2939,22 @@ Sec_ServerHop:Button({
 -- ===============================
 Aba_Config:Slider({
     Title = "Transparência do Fundo",
-    Value = { Min = 0, Max = 1, Default = 0, Step = 0.05 },
+    Value = { Min = 0, Max = 1, Default = WindowTransparency, Step = 0.05 },
     Callback = function(Value)
-        -- Altera apenas o fundo da janela principal
-        if Window.UIElements and Window.UIElements.Main then
-            Window.UIElements.Main.BackgroundTransparency = Value
+        WindowTransparency = Value
+        if Window.UIElements then
+            if Window.UIElements.Main then
+                Window.UIElements.Main.BackgroundTransparency = Value
+            end
+            if Window.UIElements.SideBar then
+                Window.UIElements.SideBar.BackgroundTransparency = math.clamp(Value + 0.05, 0, 1)
+            end
         elseif Window.Frame then
             Window.Frame.BackgroundTransparency = Value
         end
     end
 })
+
 
 
 
