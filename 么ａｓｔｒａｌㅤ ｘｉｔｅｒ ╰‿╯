@@ -2506,15 +2506,6 @@ Sec_AutoFarm:Toggle({
 
 local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
 
--- 🎯 BOTÃO DO AIMBOT / LOCK CAMERA (MIRA AUTOMÁTICA)
-Sec_Xerife:Toggle({
-    Title = "Aimbot / Lock Camera",
-    Default = false,
-    Callback = function(State)
-        LockCameraAtivo = State
-    end
-})
-
 Sec_Xerife:Toggle({
     Title = "Silent AIM Button",
     Default = false,
@@ -2557,23 +2548,31 @@ Sec_Xerife:Toggle({
 })
 
 Sec_Xerife:Toggle({
-    Title = "Mostrar Círculo FOV",
+    Title = "Aimbot",
     Default = false,
     Callback = function(State)
-        MostrarCirculo = State
-        if FOVCircle then
-            FOVCircle.Visible = State
-        end
+        LockCameraAtivo = State
     end
 })
 
 Sec_Xerife:Slider({
-    Title = "Tamanho do FOV",
+    Title = "FOV",
     Value = {Min = 50, Max = 500, Default = 150, Step = 5},
     Callback = function(Valor)
         RaioFOV = Valor
         if FOVCircle then
             FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
+        end
+    end
+})
+
+Sec_Xerife:Toggle({
+    Title = "FOV Cicle",
+    Default = false,
+    Callback = function(State)
+        MostrarCirculo = State
+        if FOVCircle then
+            FOVCircle.Visible = State
         end
     end
 })
