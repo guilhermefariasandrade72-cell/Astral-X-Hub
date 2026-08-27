@@ -2727,6 +2727,17 @@ if Sec_Xerife then
     })
 end
 
+    Sec_Xerife:Toggle({
+        Title = "Mostrar Círculo FOV",
+        Default = false,
+        Callback = function(State)
+            MostrarCirculo = State
+            if FOVCircle then
+                FOVCircle.Visible = State
+            end
+        end
+    })
+
     Sec_Xerife:Slider({
         Title = "Tamanho do FOV",
         Value = {Min = 50, Max = 500, Default = 150, Step = 5},
@@ -2740,17 +2751,6 @@ end
 else
     warn("Atenção: A variável Sec_Xerife não foi encontrada no script!")
 end
-
-    Sec_Xerife:Toggle({
-        Title = "Mostrar Círculo FOV",
-        Default = false,
-        Callback = function(State)
-            MostrarCirculo = State
-            if FOVCircle then
-                FOVCircle.Visible = State
-            end
-        end
-    })
 
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
