@@ -1491,22 +1491,23 @@ end
 
 -- ==================================
 -- 🔴 SISTEMA DE KILL AURA + CÍRCULO DINÂMICO
--- ==================================
+-- =================================
 local Players = game:GetService("Players")
 local player = Players.LocalPlayer
 
 local KillAuraAtivo = false
 local RaioKillAura = 15
-local MostrarCirculoAura = false
+local MostrarCirculoAura = true -- Defina como true para mostrar o círculo diretamente
 
 local CirculoAdornment = nil
 
--- 📏 CRIAR / ATUALIZAR O CÍRCULO VERMELHO VISUAL
+-- 📏 CRIAR / ATUALIZAR O CÍRCULO VISUAL
 local function AtualizarCirculoAura()
     local char = player.Character
     local hrp = char and char:FindFirstChild("HumanoidRootPart")
 
-    if not MostrarCirculoAura or not KillAuraAtivo or not hrp then
+    -- Se a opção de mostrar estiver desligada ou o personagem não existir
+    if not MostrarCirculoAura or not hrp then
         if CirculoAdornment then
             CirculoAdornment:Destroy()
             CirculoAdornment = nil
@@ -1514,6 +1515,7 @@ local function AtualizarCirculoAura()
         return
     end
 
+    -- Cria oAdornment se não existir
     if not CirculoAdornment or not CirculoAdornment.Parent then
         CirculoAdornment = Instance.new("CylinderHandleAdornment")
         CirculoAdornment.Name = "KillAuraRangeVisual"
@@ -1524,9 +1526,10 @@ local function AtualizarCirculoAura()
         CirculoAdornment.CFrame = CFrame.Angles(math.rad(90), 0, 0)
     end
 
+    -- Vincula diretamente ao HumanoidRootPart do personagem
     CirculoAdornment.Adornee = hrp
     CirculoAdornment.Parent = hrp
-    CirculoAdornment.Height = 0.2
+    CirculoAdornment.Height = 0.1
     CirculoAdornment.Radius = RaioKillAura
 end
 
@@ -1554,7 +1557,15 @@ local function ExecutarAtaque(Alvo)
     end
 end
 
--- 🔄 LOOP PRINCIPAL DA KILL AURA
+-- 🔴 LOOP INDEPENDENTE PARA DESENHAR O CÍRCULO
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        AtualizarCirculoAura()
+    end
+end)
+
+-- ⚔️ LOOP INDEPENDENTE PARA ATAQUE
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -1565,8 +1576,6 @@ task.spawn(function()
             local hum = char and char:FindFirstChildOfClass("Humanoid")
 
             if hrp and hum and hum.Health > 0 then
-                AtualizarCirculoAura()
-
                 for _, Alvo in ipairs(Players:GetPlayers()) do
                     if not KillAuraAtivo then break end
                     
@@ -1584,15 +1593,16 @@ task.spawn(function()
                     end
                 end
             end
-        else
-            AtualizarCirculoAura()
         end
     end
 end)
 
+-- RESET AO RESPAWNAR
 player.CharacterAdded:Connect(function()
-    task.wait(1)
-    AtualizarCirculoAura()
+    if CirculoAdornment then
+        CirculoAdornment:Destroy()
+        CirculoAdornment = nil
+    end
 end)
 
 -- ==================================
