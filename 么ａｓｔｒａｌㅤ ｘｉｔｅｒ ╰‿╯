@@ -930,7 +930,7 @@ local MostrarCirculo = false
 local RaioFOV = 150
 
 -- ==================================
--- 🎨 CÍRCULO VISUAL DE FOV (Redondo, Branco e Centralizado)
+-- 🎨 CÍRCULO VISUAL DE FOV (Corrigido para Redondo)
 -- ==================================
 local FOVCircle = nil
 
@@ -962,7 +962,7 @@ task.spawn(function()
     UIStroke.Parent = FOVCircle
 
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim2.new(1, 0) -- Formato redondo
+    UICorner.CornerRadius = UDim.new(1, 0) -- 📌 CORRIGIDO: UDim em vez de UDim2 (Cria o círculo perfeito)
     UICorner.Parent = FOVCircle
 end)
 
