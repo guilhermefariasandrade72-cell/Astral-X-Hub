@@ -92,6 +92,72 @@ local Window = WindUI:CreateWindow({
 })
 
 -- ==================================
+-- 🎨 TEMAS PERSONALIZADOS ASTRAL X
+-- ==================================
+
+local CoresAstral = {
+    ["Verde"] = {
+        Accent = "#1BF2B2",
+        Button = "#1BF2B2",
+        Icon = "#1BF2B2",
+    },
+
+    ["Azul"] = {
+        Accent = "#1B9CF2",
+        Button = "#1B9CF2",
+        Icon = "#1B9CF2",
+    },
+
+    ["Roxo"] = {
+        Accent = "#9B5CFF",
+        Button = "#9B5CFF",
+        Icon = "#9B5CFF",
+    },
+
+    ["Vermelho"] = {
+        Accent = "#FF4545",
+        Button = "#FF4545",
+        Icon = "#FF4545",
+    },
+
+    ["Laranja"] = {
+        Accent = "#FF8A00",
+        Button = "#FF8A00",
+        Icon = "#FF8A00",
+    },
+
+    ["Ciano"] = {
+        Accent = "#00D9FF",
+        Button = "#00D9FF",
+        Icon = "#00D9FF",
+    },
+
+    ["Rosa"] = {
+        Accent = "#FF4FA3",
+        Button = "#FF4FA3",
+        Icon = "#FF4FA3",
+    },
+}
+
+-- Cria os temas no WindUI
+for Nome, Cor in pairs(CoresAstral) do
+    WindUI:AddTheme({
+        Name = "Astral_" .. Nome,
+
+        Background = "#18181B",
+        Accent = Cor.Accent,
+        Button = Cor.Button,
+        Icon = Cor.Icon,
+
+        Text = "#FFFFFF",
+        Placeholder = "#888888",
+        Outline = "#303036",
+    })
+end
+
+local CorSelecionada = "Verde"
+
+-- ==================================
 -- 🎨 COR BASE DA JANELA
 -- ==================================
 pcall(function()
