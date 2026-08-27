@@ -1066,7 +1066,13 @@ local TweenService = game:GetService("TweenService")
 local LocalPlayer = Players.LocalPlayer
 
 -- ==================================
--- 🔍 BUSCA DE ASSASSINO
+-- 📌 ESTADOS E CONFIGURAÇÃO
+-- ==================================
+local InstantShootAtivo = false
+local executandoAtaque = false
+
+-- ==================================
+-- 🔍 BUSCA DO ASSASSINO
 -- ==================================
 local function ObterAssassino()
     local murderPlayer = nil
@@ -1100,11 +1106,45 @@ local function ObterAssassino()
 end
 
 -- ==================================
--- ⚡ AÇÃO DE TELEPORTE + ATAQUE (FLASH SHOT)
+-- 🎨 CRIAR BOTÃO FLUTUANTE (SHOOT)
 -- ==================================
-local executandoAtaque = false
+local parentGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or game:GetService("CoreGui")
 
-local function ExecutarAtaqueSurpresa()
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "InstantShootButtonGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Enabled = false -- Começa desligado até ativar o Toggle
+ScreenGui.Parent = parentGui
+
+local BotaoShoot = Instance.new("TextButton")
+BotaoShoot.Name = "BtnShoot"
+BotaoShoot.Size = UDim2.new(0, 70, 0, 70)
+BotaoShoot.Position = UDim2.new(0.82, 0, 0.55, 0)
+BotaoShoot.BackgroundColor3 = Color3.fromRGB(120, 0, 0) -- Vermelho escuro semi-transparente
+BotaoShoot.BackgroundTransparency = 0.45
+BotaoShoot.Text = "Shoot"
+BotaoShoot.TextColor3 = Color3.fromRGB(255, 255, 255)
+BotaoShoot.TextSize = 18
+BotaoShoot.Font = Enum.Font.SourceSansBold
+BotaoShoot.Parent = ScreenGui
+
+-- Borda Vermelha Marcante (Neon)
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 0, 30)
+UIStroke.Thickness = 2.5
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = BotaoShoot
+
+-- Arredondamento Perfeito
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = BotaoShoot
+
+-- ==================================
+-- ⚡ AÇÃO DE TELEPORTE ULTRA RÁPIDO
+-- ==================================
+local function ExecutarAtaqueFlash()
     if executandoAtaque then return end
     
     local char = LocalPlayer.Character
@@ -1118,12 +1158,11 @@ local function ExecutarAtaqueSurpresa()
 
     executandoAtaque = true
 
-    -- 1. Guarda a posição inicial e cria o Clone
+    -- 1. Cria o Clone no local original
     local posInicial = hrp.CFrame
     char.Archivable = true
     local clone = char:Clone()
     
-    -- Limpa scripts antigos do clone para não quebrar a física
     for _, item in ipairs(clone:GetDescendants()) do
         if item:IsA("Script") or item:IsA("LocalScript") then
             item:Destroy()
@@ -1134,13 +1173,13 @@ local function ExecutarAtaqueSurpresa()
     clone.HumanoidRootPart.CFrame = posInicial
     clone.Parent = workspace
 
-    -- 2. Passa a Câmera e o Controle para o Clone temporariamente
+    -- 2. Câmera acompanha o clone enquanto você se move
     local camera = workspace.CurrentCamera
-    if camera then
+    if camera and clone:FindFirstChildOfClass("Humanoid") then
         camera.CameraSubject = clone:FindFirstChildOfClass("Humanoid")
     end
 
-    -- 3. Deixa seu corpo ORIGINAL totalmente invisível
+    -- 3. Deixa o corpo original invisível
     for _, parte in ipairs(char:GetChildren()) do
         if parte:IsA("BasePart") and parte.Name ~= "HumanoidRootPart" then
             parte.Transparency = 1
@@ -1149,29 +1188,26 @@ local function ExecutarAtaqueSurpresa()
         end
     end
 
-    -- 4. Teleporta o Corpo Real para trás do Assassino (1.5 studs)
+    -- 4. Teleporta atrás do assassino e dispara
     local hrpAssassino = assassino.Character.HumanoidRootPart
     local posAtras = hrpAssassino.CFrame * CFrame.new(0, 0, 1.5)
     hrp.CFrame = posAtras
 
-    task.wait(0.06) -- Tempo para o servidor registrar a nova posição do corpo real
+    task.wait(0.03) -- Milissegundos para o servidor aceitar a posição
 
-    -- 5. Dispara a arma direto na cabeça/peito dele
     local shootEvent = ReplicatedStorage:FindFirstChild("Shoot", true)
     if shootEvent then
         local posAlvo = hrpAssassino.Position + Vector3.new(0, 0.5, 0)
         shootEvent:FireServer(CFrame.new(posAlvo))
     end
 
-    task.wait(0.06)
+    task.wait(0.03)
 
-    -- 6. Pega a posição exata de ONDE O CLONE PAROU enquanto você se movia
+    -- 5. Retorna para a posição onde o clone se moveu
     local posFinalClone = clone.HumanoidRootPart.CFrame
-
-    -- 7. Puxa seu corpo real de volta para a posição atual do clone
     hrp.CFrame = posFinalClone
 
-    -- 8. Restaura visibilidade e devolve a Câmera para o corpo real
+    -- 6. Restaura visibilidade e controle da câmera
     for _, parte in ipairs(char:GetChildren()) do
         if parte:IsA("BasePart") and parte.Name ~= "HumanoidRootPart" then
             parte.Transparency = 0
@@ -1184,10 +1220,18 @@ local function ExecutarAtaqueSurpresa()
         camera.CameraSubject = char:FindFirstChildOfClass("Humanoid")
     end
 
-    -- 9. Deleta o clone
     clone:Destroy()
     executandoAtaque = false
 end
+
+-- Evento de Clique no Botão Flutuante
+BotaoShoot.MouseButton1Click:Connect(function()
+    TweenService:Create(BotaoShoot, TweenInfo.new(0.08), {Size = UDim2.new(0, 62, 0, 62)}):Play()
+    task.wait(0.08)
+    TweenService:Create(BotaoShoot, TweenInfo.new(0.08), {Size = UDim2.new(0, 70, 0, 70)}):Play()
+
+    ExecutarAtaqueFlash()
+end)
 
 -- ==================================
 -- 🎨 BOTÃO PERSONALIZADO (Semi-Vermelho + Borda Marcante)
@@ -2694,13 +2738,16 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Toggle({
-    Title = "Shoot Murderer",
-    Default = false,
-    Callback = function(state)
-        getgenv().SheriffAim = state
-    end
-})
+if Sec_Xerife then
+    Sec_Xerife:Toggle({
+        Title = "Instant Shoot",
+        Default = false,
+        Callback = function(State)
+            InstantShootAtivo = State
+            ScreenGui.Enabled = State -- Mostra ou esconde o botão Shoot na tela
+        end
+    })
+end
 
 Sec_Xerife:Toggle({
     Title = "Grab Gun Button",
