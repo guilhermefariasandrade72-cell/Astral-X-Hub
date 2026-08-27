@@ -2519,17 +2519,6 @@ Sec_Xerife:Toggle({
     end
 })
 
-if Sec_Xerife then
-    Sec_Xerife:Toggle({
-        Title = "Instant Shoot",
-        Default = false,
-        Callback = function(State)
-            InstantShootAtivo = State
-            ScreenGui.Enabled = State -- Mostra ou esconde o botão Shoot na tela
-        end
-    })
-end
-
 Sec_Xerife:Toggle({
     Title = "Grab Gun Button",
     Default = false,
