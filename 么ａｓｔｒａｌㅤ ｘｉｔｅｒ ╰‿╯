@@ -336,10 +336,13 @@ pcall(function()
                 WindowTransparency
         end
 
-        if Window.UIElements.SideBar then
-            Window.UIElements.SideBar.BackgroundTransparency =
-                math.clamp(WindowTransparency + 0.05, 0, 1)
-        end
+if Window.UIElements.SideBar then
+    Window.UIElements.SideBar.BackgroundColor3 =
+        Color3.fromHex("#141417")
+
+    Window.UIElements.SideBar.BackgroundTransparency =
+        WindowTransparency
+end
 
     elseif Window.Frame then
 
