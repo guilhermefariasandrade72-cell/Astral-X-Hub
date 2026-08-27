@@ -86,9 +86,6 @@ local Window = WindUI:CreateWindow({
 
     Theme = "Dark",
 
-    -- ❤️ COR DE DESTAQUE
-    Accent = Color3.fromHex("#E53935"),
-
     SideBarWidth = 120,
     HasOutline = true,
     HideSearchBar = true,
@@ -2740,7 +2737,6 @@ local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm Coin Button",
     Default = false,
-    Color = Color3.fromHex("#E53935"),
     Callback = function(Ativo)
         if Ativo then
             CreateAutoFarmButton()
@@ -2753,7 +2749,6 @@ Sec_AutoFarm:Toggle({
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm Coin",
     Default = false,
-    Color = Color3.fromHex("#E53935"),
     Callback = function(Ativo)
         AutoFarmAtivo = Ativo
     end
@@ -2761,13 +2756,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Slider({
     Title = "Speed Farm",
-    Value = {
-        Min = 16,
-        Max = 20,
-        Default = 16,
-        Step = 1
-    },
-    Color = Color3.fromHex("#E53935"),
+    Value = {Min = 16, Max = 20, Default = 16, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
     end
@@ -2775,12 +2764,9 @@ Sec_AutoFarm:Slider({
 
 Sec_AutoFarm:Button({
     Title = "Anti-AFK",
-    Color = Color3.fromHex("#E53935"),
     Callback = function()
         pcall(function()
-            loadstring(game:HttpGet(
-                "https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"
-            ))()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
         end)
     end
 })
@@ -2788,7 +2774,6 @@ Sec_AutoFarm:Button({
 Sec_AutoFarm:Toggle({
     Title = "Auto Reset",
     Default = true,
-    Color = Color3.fromHex("#E53935"),
     Callback = function(estado)
         AutoResetAoEncher = estado
     end
@@ -2797,7 +2782,6 @@ Sec_AutoFarm:Toggle({
 Sec_AutoFarm:Toggle({
     Title = "Auto Shoot Murderer",
     Default = false,
-    Color = Color3.fromHex("#E53935"),
     Callback = function(Ativo)
         AutoShootAtivo = Ativo
     end
@@ -2806,7 +2790,6 @@ Sec_AutoFarm:Toggle({
 Sec_AutoFarm:Toggle({
     Title = "Kill All",
     Default = false,
-    Color = Color3.fromHex("#E53935"),
     Callback = function(estado)
         KillAllAoEncher = estado
     end
@@ -2815,7 +2798,6 @@ Sec_AutoFarm:Toggle({
 Sec_AutoFarm:Toggle({
     Title = "Safe TP",
     Default = false,
-    Color = Color3.fromHex("#E53935"),
     Callback = function(estado)
         TPSafeAoEncher = estado
     end
