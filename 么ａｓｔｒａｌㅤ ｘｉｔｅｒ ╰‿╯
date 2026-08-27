@@ -94,7 +94,6 @@ local Window = WindUI:CreateWindow({
 -- ==================================
 -- 🎨 TEMAS PERSONALIZADOS ASTRAL X
 -- ==================================
-
 local CoresAstral = {
 
     -- ==================================
@@ -108,7 +107,95 @@ local CoresAstral = {
     },
 
     -- ==================================
-    -- 🌈 CORES PRINCIPAIS
+    -- ✨ CORES BONITAS
+    -- ==================================
+
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
+
+    ["Ametista"] = {
+        Accent = "#B026FF",
+        Button = "#B026FF",
+        Icon = "#B026FF",
+    },
+
+    ["Verde Água"] = {
+        Accent = "#2EE6A6",
+        Button = "#2EE6A6",
+        Icon = "#2EE6A6",
+    },
+
+    ["Azul Gelo"] = {
+        Accent = "#A5F2F3",
+        Button = "#A5F2F3",
+        Icon = "#A5F2F3",
+    },
+
+    ["Roxo Neon"] = {
+        Accent = "#BF00FF",
+        Button = "#BF00FF",
+        Icon = "#BF00FF",
+    },
+
+    ["Rosa Neon"] = {
+        Accent = "#FF1493",
+        Button = "#FF1493",
+        Icon = "#FF1493",
+    },
+
+    ["Laranja Neon"] = {
+        Accent = "#FF5F00",
+        Button = "#FF5F00",
+        Icon = "#FF5F00",
+    },
+
+    ["Amarelo Neon"] = {
+        Accent = "#FFFF00",
+        Button = "#FFFF00",
+        Icon = "#FFFF00",
+    },
+
+    ["Turquesa"] = {
+        Accent = "#40E0D0",
+        Button = "#40E0D0",
+        Icon = "#40E0D0",
+    },
+
+    ["Lavanda"] = {
+        Accent = "#B57EDC",
+        Button = "#B57EDC",
+        Icon = "#B57EDC",
+    },
+
+    ["Coral"] = {
+        Accent = "#FF7F50",
+        Button = "#FF7F50",
+        Icon = "#FF7F50",
+    },
+
+    ["Dourado"] = {
+        Accent = "#FFD700",
+        Button = "#FFD700",
+        Icon = "#FFD700",
+    },
+
+    ["Violeta"] = {
+        Accent = "#7F00FF",
+        Button = "#7F00FF",
+        Icon = "#7F00FF",
+    },
+
+    ["Pink"] = {
+        Accent = "#FF69B4",
+        Button = "#FF69B4",
+        Icon = "#FF69B4",
+    },
+
+    -- ==================================
+    -- 🎨 CORES COMUNS
     -- ==================================
 
     ["Verde"] = {
@@ -159,126 +246,6 @@ local CoresAstral = {
         Icon = "#00D9FF",
     },
 
-    -- ==================================
-    -- ✨ CORES BONITAS
-    -- ==================================
-
-    ["Turquesa"] = {
-        Accent = "#40E0D0",
-        Button = "#40E0D0",
-        Icon = "#40E0D0",
-    },
-
-    ["Lavanda"] = {
-        Accent = "#B57EDC",
-        Button = "#B57EDC",
-        Icon = "#B57EDC",
-    },
-
-    ["Coral"] = {
-        Accent = "#FF7F50",
-        Button = "#FF7F50",
-        Icon = "#FF7F50",
-    },
-
-    ["Dourado"] = {
-        Accent = "#FFD700",
-        Button = "#FFD700",
-        Icon = "#FFD700",
-    },
-
-    ["Índigo"] = {
-        Accent = "#4B0082",
-        Button = "#4B0082",
-        Icon = "#4B0082",
-    },
-
-    ["Verde Água"] = {
-        Accent = "#2EE6A6",
-        Button = "#2EE6A6",
-        Icon = "#2EE6A6",
-    },
-
-    ["Azul Gelo"] = {
-        Accent = "#A5F2F3",
-        Button = "#A5F2F3",
-        Icon = "#A5F2F3",
-    },
-
-    -- ==================================
-    -- ⚡ NEON
-    -- ==================================
-
-    ["Verde Neon"] = {
-        Accent = "#39FF14",
-        Button = "#39FF14",
-        Icon = "#39FF14",
-    },
-
-    ["Azul Neon"] = {
-        Accent = "#00BFFF",
-        Button = "#00BFFF",
-        Icon = "#00BFFF",
-    },
-
-    ["Roxo Neon"] = {
-        Accent = "#BF00FF",
-        Button = "#BF00FF",
-        Icon = "#BF00FF",
-    },
-
-    ["Rosa Neon"] = {
-        Accent = "#FF1493",
-        Button = "#FF1493",
-        Icon = "#FF1493",
-    },
-
-    ["Laranja Neon"] = {
-        Accent = "#FF5F00",
-        Button = "#FF5F00",
-        Icon = "#FF5F00",
-    },
-
-    ["Amarelo Neon"] = {
-        Accent = "#FFFF00",
-        Button = "#FFFF00",
-        Icon = "#FFFF00",
-    },
-
-    -- ==================================
-    -- 🎨 OUTRAS
-    -- ==================================
-
-    ["Violeta"] = {
-        Accent = "#7F00FF",
-        Button = "#7F00FF",
-        Icon = "#7F00FF",
-    },
-
-    ["Pink"] = {
-        Accent = "#FF69B4",
-        Button = "#FF69B4",
-        Icon = "#FF69B4",
-    },
-
-    ["Esmeralda"] = {
-        Accent = "#00C853",
-        Button = "#00C853",
-        Icon = "#00C853",
-    },
-
-    ["Ruby"] = {
-        Accent = "#E53935",
-        Button = "#E53935",
-        Icon = "#E53935",
-    },
-
-    ["Ametista"] = {
-        Accent = "#B026FF",
-        Button = "#B026FF",
-        Icon = "#B026FF",
-    },
-
     ["Prata"] = {
         Accent = "#C0C0C0",
         Button = "#C0C0C0",
@@ -297,16 +264,22 @@ local CoresAstral = {
         Icon = "#808080",
     },
 
-    ["Marrom"] = {
-        Accent = "#8B4513",
-        Button = "#8B4513",
-        Icon = "#8B4513",
+    ["Índigo"] = {
+        Accent = "#4B0082",
+        Button = "#4B0082",
+        Icon = "#4B0082",
     },
 
     ["Salmão"] = {
         Accent = "#FA8072",
         Button = "#FA8072",
         Icon = "#FA8072",
+    },
+
+    ["Marrom"] = {
+        Accent = "#8B4513",
+        Button = "#8B4513",
+        Icon = "#8B4513",
     },
 }
 
