@@ -295,7 +295,7 @@ local CorSelecionada = "Ruby"
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub V128",
+        "Astral X Hub         V 136",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
@@ -370,24 +370,6 @@ end)
     end
 
 end)
-
--- ==================================
--- 🎚️ FUNÇÃO DE TRANSPARÊNCIA
--- ==================================
-
-local function AplicarTransparencia(Value)
-
-    WindowTransparency = Value
-
-    pcall(function()
-
-        if Window.SetBackgroundTransparency then
-            Window:SetBackgroundTransparency(Value)
-        end
-
-    end)
-
-end
 
 -- ==================================
 -- ❤️ BOTÃO FLUTUANTE
@@ -3266,26 +3248,6 @@ Sec_ServerHop:Button({
         ExecutarRejoin()
     end
 })
-
--- ===============================
--- BOTÕES DA ABA CONFIG UI
--- ===============================
-Aba_Config:Slider({
-    Title = "Transparência do Fundo",
-
-    Value = {
-        Min = 0,
-        Max = 1,
-        Default = WindowTransparency,
-    },
-
-    Step = 0.05,
-
-    Callback = function(Value)
-        AplicarTransparencia(Value)
-    end
-})
-
 
 -- ==================================
 -- 🎨 LISTA DE CORES
