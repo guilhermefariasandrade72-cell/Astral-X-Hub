@@ -61,7 +61,7 @@ end
 
 local WindowTransparency = 0.15
 
-local MainColor = Color3.fromHex("#18181B")
+local MainColor = Color3.fromHex("#141417")
 
 -- ==================================
 -- 🎨 TEMAS DO ASTRAL
