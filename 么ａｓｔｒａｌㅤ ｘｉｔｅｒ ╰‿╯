@@ -930,39 +930,49 @@ local MostrarCirculo = false
 local RaioFOV = 150
 
 -- ==================================
--- 🎨 CÍRCULO VISUAL DE FOV
+-- 🎨 CÍRCULO VISUAL DE FOV (Protegido)
 -- ==================================
-local parentGui = game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui") or game:GetService("CoreGui")
+local FOVCircle = nil
 
-local FOVScreen = Instance.new("ScreenGui")
-FOVScreen.Name = "FOVCircleGui"
-FOVScreen.ResetOnSpawn = false
-FOVScreen.Parent = parentGui
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local CoreGui = game:GetService("CoreGui")
+    local localPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+    
+    local parentGui = localPlayer:WaitForChild("PlayerGui", 5) or CoreGui
 
-local FOVCircle = Instance.new("Frame")
-FOVCircle.Name = "Circle"
-FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
-FOVCircle.BackgroundTransparency = 1
-FOVCircle.Visible = false
-FOVCircle.Parent = FOVScreen
+    local FOVScreen = Instance.new("ScreenGui")
+    FOVScreen.Name = "FOVCircleGui"
+    FOVScreen.ResetOnSpawn = false
+    FOVScreen.Parent = parentGui
 
-local UIStroke = Instance.new("UIStroke")
-UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Neon Ciano
-UIStroke.Thickness = 2
-UIStroke.Parent = FOVCircle
+    FOVCircle = Instance.new("Frame")
+    FOVCircle.Name = "Circle"
+    FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+    FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+    FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+    FOVCircle.BackgroundTransparency = 1
+    FOVCircle.Visible = false
+    FOVCircle.Parent = FOVScreen
 
-local UICorner = Instance.new("UICorner")
-UICorner.CornerRadius = UDim2.new(1, 0)
-UICorner.Parent = FOVCircle
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Color3.fromRGB(0, 255, 255)
+    UIStroke.Thickness = 2
+    UIStroke.Parent = FOVCircle
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim2.new(1, 0)
+    UICorner.Parent = FOVCircle
+end)
 
 -- ==================================
--- 🔍 FUNÇÕES AUXILIARES
+-- 🔍 FUNÇÕES AUXILIARES (Protegidas)
 -- ==================================
 
 local function TemArma()
-    local char = game:GetService("Players").LocalPlayer.Character
+    local localPlayer = game:GetService("Players").LocalPlayer
+    if not localPlayer then return false end
+    local char = localPlayer.Character
     if not char then return false end
     
     local armaNoChar = char:FindFirstChild("Gun")
@@ -976,7 +986,7 @@ local function TemArma()
     end
     if armaNoChar then return true end
 
-    local backpack = game:GetService("Players").LocalPlayer:FindFirstChild("Backpack")
+    local backpack = localPlayer:FindFirstChild("Backpack")
     if backpack then
         local armaNaMochila = backpack:FindFirstChild("Gun")
         if not armaNaMochila then
@@ -995,6 +1005,8 @@ end
 
 local function ObterMurderer()
     local localPlayer = game:GetService("Players").LocalPlayer
+    if not localPlayer then return nil end
+    
     for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
         if p ~= localPlayer and p.Character then
             local char = p.Character
@@ -1016,6 +1028,8 @@ end
 
 local function EstaDentroDoFOV(posicao3D)
     local camera = workspace.CurrentCamera
+    if not camera then return false end
+    
     local posTela, visivel = camera:WorldToViewportPoint(posicao3D)
     if not visivel then return false end
 
@@ -1035,8 +1049,10 @@ game:GetService("RunService").RenderStepped:Connect(function()
     local hrpMurderer = ObterMurderer()
     if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
         local camera = workspace.CurrentCamera
-        local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
-        camera.CFrame = CFrame.new(camera.CFrame.Position, posAlvo)
+        if camera then
+            local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
+            camera.CFrame = CFrame.new(camera.CFrame.Position, posAlvo)
+        end
     end
 end)
 
@@ -2603,31 +2619,39 @@ Sec_Xerife:Toggle({
 -- 🎛️ CONTROLES DA INTERFACE
 -- ==================================
 
-Sec_Xerife:Toggle({
-    Title = "Travar Câmera (Com Arma)",
-    Default = false,
-    Callback = function(State)
-        LockCameraAtivo = State
-    end
-})
+if Sec_Xerife then
+    Sec_Xerife:Toggle({
+        Title = "Travar Câmera (Com Arma)",
+        Default = false,
+        Callback = function(State)
+            LockCameraAtivo = State
+        end
+    })
 
-Sec_Xerife:Toggle({
-    Title = "Mostrar Círculo FOV",
-    Default = false,
-    Callback = function(State)
-        MostrarCirculo = State
-        FOVCircle.Visible = State
-    end
-})
+    Sec_Xerife:Toggle({
+        Title = "Mostrar Círculo FOV",
+        Default = false,
+        Callback = function(State)
+            MostrarCirculo = State
+            if FOVCircle then
+                FOVCircle.Visible = State
+            end
+        end
+    })
 
-Sec_Xerife:Slider({
-    Title = "Tamanho do FOV",
-    Value = {Min = 50, Max = 500, Default = 150, Step = 5},
-    Callback = function(Valor)
-        RaioFOV = Valor
-        FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
-    end
-})
+    Sec_Xerife:Slider({
+        Title = "Tamanho do FOV",
+        Value = {Min = 50, Max = 500, Default = 150, Step = 5},
+        Callback = function(Valor)
+            RaioFOV = Valor
+            if FOVCircle then
+                FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
+            end
+        end
+    })
+else
+    warn("Atenção: A variável Sec_Xerife não foi encontrada no script!")
+end
 
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
