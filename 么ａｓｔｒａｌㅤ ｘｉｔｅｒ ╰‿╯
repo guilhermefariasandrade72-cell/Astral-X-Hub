@@ -2506,6 +2506,15 @@ Sec_AutoFarm:Toggle({
 
 local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
 
+-- 🎯 BOTÃO DO AIMBOT / LOCK CAMERA (MIRA AUTOMÁTICA)
+Sec_Xerife:Toggle({
+    Title = "Aimbot / Lock Camera",
+    Default = false,
+    Callback = function(State)
+        LockCameraAtivo = State
+    end
+})
+
 Sec_Xerife:Toggle({
     Title = "Silent AIM Button",
     Default = false,
@@ -2516,6 +2525,14 @@ Sec_Xerife:Toggle({
         else
             RemoveShootButton()
         end
+    end
+})
+
+Sec_Xerife:Toggle({
+    Title = "Instant Shoot",
+    Default = false,
+    Callback = function(State)
+        InstantShootAtivo = State
     end
 })
 
@@ -2539,30 +2556,27 @@ Sec_Xerife:Toggle({
     end
 })
 
-    Sec_Xerife:Toggle({
-        Title = "Mostrar Círculo FOV",
-        Default = false,
-        Callback = function(State)
-            MostrarCirculo = State
-            if FOVCircle then
-                FOVCircle.Visible = State
-            end
+Sec_Xerife:Toggle({
+    Title = "Mostrar Círculo FOV",
+    Default = false,
+    Callback = function(State)
+        MostrarCirculo = State
+        if FOVCircle then
+            FOVCircle.Visible = State
         end
-    })
+    end
+})
 
-    Sec_Xerife:Slider({
-        Title = "Tamanho do FOV",
-        Value = {Min = 50, Max = 500, Default = 150, Step = 5},
-        Callback = function(Valor)
-            RaioFOV = Valor
-            if FOVCircle then
-                FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
-            end
+Sec_Xerife:Slider({
+    Title = "Tamanho do FOV",
+    Value = {Min = 50, Max = 500, Default = 150, Step = 5},
+    Callback = function(Valor)
+        RaioFOV = Valor
+        if FOVCircle then
+            FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
         end
-    })
-else
-    warn("Atenção: A variável Sec_Xerife não foi encontrada no script!")
-end
+    end
+})
 
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
