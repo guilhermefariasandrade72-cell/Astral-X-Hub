@@ -344,6 +344,23 @@ if Window.UIElements.SideBar then
         WindowTransparency
 end
 
+-- 👇 COLOQUE AQUI
+pcall(function()
+    if Window.UIElements and Window.UIElements.SideBar then
+        Window.UIElements.SideBar.ClipsDescendants = true
+
+        local Corner = Window.UIElements.SideBar:FindFirstChildOfClass("UICorner")
+
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 18)
+        else
+            Corner = Instance.new("UICorner")
+            Corner.CornerRadius = UDim.new(0, 18)
+            Corner.Parent = Window.UIElements.SideBar
+        end
+    end
+end)
+
     elseif Window.Frame then
 
         Window.Frame.BackgroundColor3 = MainColor
