@@ -96,6 +96,21 @@ local Window = WindUI:CreateWindow({
 -- ==================================
 
 local CoresAstral = {
+
+    -- ==================================
+    -- 🌑 ORIGINAL
+    -- ==================================
+
+    ["Dark"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    -- ==================================
+    -- 🌈 CORES PRINCIPAIS
+    -- ==================================
+
     ["Verde"] = {
         Accent = "#1BF2B2",
         Button = "#1BF2B2",
@@ -114,6 +129,12 @@ local CoresAstral = {
         Icon = "#9B5CFF",
     },
 
+    ["Rosa"] = {
+        Accent = "#FF4FA3",
+        Button = "#FF4FA3",
+        Icon = "#FF4FA3",
+    },
+
     ["Vermelho"] = {
         Accent = "#FF4545",
         Button = "#FF4545",
@@ -126,25 +147,181 @@ local CoresAstral = {
         Icon = "#FF8A00",
     },
 
+    ["Amarelo"] = {
+        Accent = "#FFD21F",
+        Button = "#FFD21F",
+        Icon = "#FFD21F",
+    },
+
     ["Ciano"] = {
         Accent = "#00D9FF",
         Button = "#00D9FF",
         Icon = "#00D9FF",
     },
 
-    ["Rosa"] = {
-        Accent = "#FF4FA3",
-        Button = "#FF4FA3",
-        Icon = "#FF4FA3",
+    -- ==================================
+    -- ✨ CORES BONITAS
+    -- ==================================
+
+    ["Turquesa"] = {
+        Accent = "#40E0D0",
+        Button = "#40E0D0",
+        Icon = "#40E0D0",
+    },
+
+    ["Lavanda"] = {
+        Accent = "#B57EDC",
+        Button = "#B57EDC",
+        Icon = "#B57EDC",
+    },
+
+    ["Coral"] = {
+        Accent = "#FF7F50",
+        Button = "#FF7F50",
+        Icon = "#FF7F50",
+    },
+
+    ["Dourado"] = {
+        Accent = "#FFD700",
+        Button = "#FFD700",
+        Icon = "#FFD700",
+    },
+
+    ["Índigo"] = {
+        Accent = "#4B0082",
+        Button = "#4B0082",
+        Icon = "#4B0082",
+    },
+
+    ["Verde Água"] = {
+        Accent = "#2EE6A6",
+        Button = "#2EE6A6",
+        Icon = "#2EE6A6",
+    },
+
+    ["Azul Gelo"] = {
+        Accent = "#A5F2F3",
+        Button = "#A5F2F3",
+        Icon = "#A5F2F3",
+    },
+
+    -- ==================================
+    -- ⚡ NEON
+    -- ==================================
+
+    ["Verde Neon"] = {
+        Accent = "#39FF14",
+        Button = "#39FF14",
+        Icon = "#39FF14",
+    },
+
+    ["Azul Neon"] = {
+        Accent = "#00BFFF",
+        Button = "#00BFFF",
+        Icon = "#00BFFF",
+    },
+
+    ["Roxo Neon"] = {
+        Accent = "#BF00FF",
+        Button = "#BF00FF",
+        Icon = "#BF00FF",
+    },
+
+    ["Rosa Neon"] = {
+        Accent = "#FF1493",
+        Button = "#FF1493",
+        Icon = "#FF1493",
+    },
+
+    ["Laranja Neon"] = {
+        Accent = "#FF5F00",
+        Button = "#FF5F00",
+        Icon = "#FF5F00",
+    },
+
+    ["Amarelo Neon"] = {
+        Accent = "#FFFF00",
+        Button = "#FFFF00",
+        Icon = "#FFFF00",
+    },
+
+    -- ==================================
+    -- 🎨 OUTRAS
+    -- ==================================
+
+    ["Violeta"] = {
+        Accent = "#7F00FF",
+        Button = "#7F00FF",
+        Icon = "#7F00FF",
+    },
+
+    ["Pink"] = {
+        Accent = "#FF69B4",
+        Button = "#FF69B4",
+        Icon = "#FF69B4",
+    },
+
+    ["Esmeralda"] = {
+        Accent = "#00C853",
+        Button = "#00C853",
+        Icon = "#00C853",
+    },
+
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
+
+    ["Ametista"] = {
+        Accent = "#B026FF",
+        Button = "#B026FF",
+        Icon = "#B026FF",
+    },
+
+    ["Prata"] = {
+        Accent = "#C0C0C0",
+        Button = "#C0C0C0",
+        Icon = "#C0C0C0",
+    },
+
+    ["Branco"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    ["Cinza"] = {
+        Accent = "#808080",
+        Button = "#808080",
+        Icon = "#808080",
+    },
+
+    ["Marrom"] = {
+        Accent = "#8B4513",
+        Button = "#8B4513",
+        Icon = "#8B4513",
+    },
+
+    ["Salmão"] = {
+        Accent = "#FA8072",
+        Button = "#FA8072",
+        Icon = "#FA8072",
     },
 }
 
--- Cria os temas no WindUI
+
+-- ==================================
+-- 🎨 CRIAR TEMAS NO WINDUI
+-- ==================================
+
 for Nome, Cor in pairs(CoresAstral) do
+
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
 
         Background = "#18181B",
+
         Accent = Cor.Accent,
         Button = Cor.Button,
         Icon = Cor.Icon,
@@ -153,9 +330,15 @@ for Nome, Cor in pairs(CoresAstral) do
         Placeholder = "#888888",
         Outline = "#303036",
     })
+
 end
 
-local CorSelecionada = "Verde"
+
+-- ==================================
+-- 🎯 COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Dark"
 
 -- ==================================
 -- 🎨 COR BASE DA JANELA
@@ -3070,20 +3253,76 @@ Aba_Config:Slider({
     end
 })
 
+
+-- ==================================
+-- 🎨 LISTA DE CORES
+-- ==================================
+
+local ListaCores = {
+    "Dark",
+
+    "Aurora",
+    "Galaxy",
+    "Cyberpunk",
+    "Neon",
+    "Sunset",
+    "Ocean",
+    "Ice",
+    "Sakura",
+    "Diamond",
+    "Toxic",
+    "Inferno",
+    "Fire",
+    "Dracula",
+    "Midnight",
+    "Candy",
+    "Emerald",
+    "Ruby",
+    "Ametista",
+    "Golden",
+    "Forest",
+
+    "Verde Água",
+    "Azul Gelo",
+    "Roxo Neon",
+    "Rosa Neon",
+    "Laranja Neon",
+    "Amarelo Neon",
+    "Turquesa",
+    "Lavanda",
+    "Coral",
+    "Dourado",
+    "Violeta",
+    "Pink",
+
+    "Verde",
+    "Azul",
+    "Roxo",
+    "Rosa",
+    "Vermelho",
+    "Laranja",
+    "Amarelo",
+    "Ciano",
+    "Verde Escuro",
+    "Azul Escuro",
+    "Vermelho Escuro",
+    "Prata",
+    "Branco",
+    "Cinza",
+    "Índigo",
+    "Salmão",
+    "Marrom",
+}
+
+
+-- ==================================
+-- 🎨 DROPDOWN
+-- ==================================
+
 Aba_Config:Dropdown({
-    Title = "Cor da Interface",
-
-    Values = {
-        "Verde",
-        "Azul",
-        "Roxo",
-        "Vermelho",
-        "Laranja",
-        "Ciano",
-        "Rosa",
-    },
-
-    Value = "Verde",
+    Title = "🎨 Cor da Interface",
+    Values = ListaCores,
+    Value = CorSelecionada,
 
     Callback = function(Value)
         CorSelecionada = Value
@@ -3091,25 +3330,30 @@ Aba_Config:Dropdown({
 })
 
 
+-- ==================================
+-- ✅ BOTÃO APLICAR
+-- ==================================
+
 Aba_Config:Button({
-    Title = "Aplicar Cor",
-    Icon = "palette",
+    Title = "✅ Aplicar Cor",
 
     Callback = function()
-        local Tema = "Astral_" .. CorSelecionada
 
+        local Cor = CoresAstral[CorSelecionada]
+
+        if not Cor then
+            return
+        end
+
+        -- Ativa o tema correspondente
         pcall(function()
-            WindUI:SetTheme(Tema)
+            WindUI:SetTheme("Astral_" .. CorSelecionada)
         end)
 
-        WindUI:Notify({
-            Title = "Astral X",
-            Content = "Cor aplicada: " .. CorSelecionada,
-            Icon = "palette",
-            Duration = 2
-        })
     end
 })
+
+
 
 
 
