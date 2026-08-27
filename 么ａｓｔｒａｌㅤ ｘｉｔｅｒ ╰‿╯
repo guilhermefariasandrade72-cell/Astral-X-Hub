@@ -330,13 +330,12 @@ Window:EditOpenButton({
     StrokeThickness = 2,
 
     Color = ColorSequence.new(
-        Color3.fromHex("#ffcc00"),
-        Color3.fromHex("#ff6600")
+        Color3.fromHex("#8B0000"), -- vermelho escuro (esquerda)
+        Color3.fromHex("#FF5555")  -- vermelho claro (direita)
     ),
 
     Draggable = true,
 })
-
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
