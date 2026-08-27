@@ -86,6 +86,9 @@ local Window = WindUI:CreateWindow({
 
     Theme = "Dark",
 
+    -- ❤️ COR DE DESTAQUE
+    Accent = Color3.fromHex("#E53935"),
+
     SideBarWidth = 120,
     HasOutline = true,
     HideSearchBar = true,
