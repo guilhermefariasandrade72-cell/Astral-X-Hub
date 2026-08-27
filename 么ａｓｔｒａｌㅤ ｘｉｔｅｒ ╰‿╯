@@ -1059,72 +1059,178 @@ end)
 
 -- ==================================
 -- 🎯 SILENT AIM — INSTANT KILL
--- ✅ A bala NASCE DENTRO do Assassino
--- ✅ MATA NA HORA — sem tempo de desvio
--- ✅ Precisão fixa em 35
--- ✅ Só 1 botão
 -- ==================================
 local Players = game:GetService("Players")
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local TweenService = game:GetService("TweenService")
+local LocalPlayer = Players.LocalPlayer
 
--- ✅ PRECISÃO FIXA
-getgenv().SheriffAim = false
-local PRECISAO_FIXA = 35
-local Murder = nil
-
--- 🔄 BUSCA O ASSASSINO
-task.spawn(function()
-    while task.wait(0.2) do
-        pcall(function()
-            Murder = nil
-            local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
-            if not GetPlayerData then return end
+-- ==================================
+-- 🔍 BUSCA DE ASSASSINO
+-- ==================================
+local function ObterAssassino()
+    local murderPlayer = nil
+    pcall(function()
+        local GetPlayerData = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+        if GetPlayerData then
             local Dados = GetPlayerData:InvokeServer()
-            if not Dados then return end
-            for Nome, Info in pairs(Dados) do
-                if Info and Info.Role == "Murderer" then
-                    Murder = Nome
-                    break
-                end
-            end
-        end)
-    end
-end)
-
--- 🎯 HOOK — BALA NASCE DENTRO!
-SilentAimHook = hookmetamethod(game, "__namecall", function(self, ...)
-    local method = getnamecallmethod()
-    local args = {...}
-
-    if not checkcaller() then
-        if typeof(self) == "Instance" and self.Name == "Shoot" and method == "FireServer" then
-            if getgenv().SheriffAim and Murder then
-                local TargetPlayer = Players[tostring(Murder)]
-                if not TargetPlayer or not TargetPlayer.Character then return end
-                
-                local Root = TargetPlayer.Character.PrimaryPart
-                if not Root then return end
-
-                -- ✅ PREVISÃO DE MOVIMENTO
-                local Veloc = Root.AssemblyLinearVelocity
-                local Pos = Root.Position + (Veloc * (PRECISAO_FIXA / 100))
-
-                -- ✅ A BALA NASCE DENTRO DO CORPO DELE — MATA INSTANTÂNEO!
-                if args[1] and typeof(args[1]) == "CFrame" then
-                    args[1] = CFrame.new(Pos)  -- ← SÓ A POSIÇÃO DELE, SEM ROTAÇÃO!
+            if Dados then
+                for Nome, Info in pairs(Dados) do
+                    if Info and Info.Role == "Murderer" then
+                        murderPlayer = Players:FindFirstChild(Nome)
+                        break
+                    end
                 end
             end
         end
+
+        if not murderPlayer then
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= LocalPlayer and p.Character then
+                    local temFaca = p.Character:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                    if temFaca then
+                        murderPlayer = p
+                        break
+                    end
+                end
+            end
+        end
+    end)
+    return murderPlayer
+end
+
+-- ==================================
+-- ⚡ AÇÃO DE TELEPORTE + ATAQUE (FLASH SHOT)
+-- ==================================
+local executandoAtaque = false
+
+local function ExecutarAtaqueSurpresa()
+    if executandoAtaque then return end
+    
+    local char = LocalPlayer.Character
+    if not char or not char:FindFirstChild("HumanoidRootPart") then return end
+    local hrp = char.HumanoidRootPart
+
+    local assassino = ObterAssassino()
+    if not assassino or not assassino.Character or not assassino.Character:FindFirstChild("HumanoidRootPart") then
+        return
     end
 
-    return SilentAimHook(self, unpack(args))
-end)
+    executandoAtaque = true
 
-print("=====================================")
-print("✅ INSTANT KILL ATIVADO!")
-print("💥 Bala nasce DENTRO do Assassino")
-print("⚙️ Precisão fixa: " .. PRECISAO_FIXA)
-print("=====================================")
+    -- 1. Guarda a posição inicial e cria o Clone
+    local posInicial = hrp.CFrame
+    char.Archivable = true
+    local clone = char:Clone()
+    
+    -- Limpa scripts antigos do clone para não quebrar a física
+    for _, item in ipairs(clone:GetDescendants()) do
+        if item:IsA("Script") or item:IsA("LocalScript") then
+            item:Destroy()
+        end
+    end
+    
+    clone.Name = "MovableClone"
+    clone.HumanoidRootPart.CFrame = posInicial
+    clone.Parent = workspace
+
+    -- 2. Passa a Câmera e o Controle para o Clone temporariamente
+    local camera = workspace.CurrentCamera
+    if camera then
+        camera.CameraSubject = clone:FindFirstChildOfClass("Humanoid")
+    end
+
+    -- 3. Deixa seu corpo ORIGINAL totalmente invisível
+    for _, parte in ipairs(char:GetChildren()) do
+        if parte:IsA("BasePart") and parte.Name ~= "HumanoidRootPart" then
+            parte.Transparency = 1
+        elseif parte:IsA("Accessory") and parte:FindFirstChild("Handle") then
+            parte.Handle.Transparency = 1
+        end
+    end
+
+    -- 4. Teleporta o Corpo Real para trás do Assassino (1.5 studs)
+    local hrpAssassino = assassino.Character.HumanoidRootPart
+    local posAtras = hrpAssassino.CFrame * CFrame.new(0, 0, 1.5)
+    hrp.CFrame = posAtras
+
+    task.wait(0.06) -- Tempo para o servidor registrar a nova posição do corpo real
+
+    -- 5. Dispara a arma direto na cabeça/peito dele
+    local shootEvent = ReplicatedStorage:FindFirstChild("Shoot", true)
+    if shootEvent then
+        local posAlvo = hrpAssassino.Position + Vector3.new(0, 0.5, 0)
+        shootEvent:FireServer(CFrame.new(posAlvo))
+    end
+
+    task.wait(0.06)
+
+    -- 6. Pega a posição exata de ONDE O CLONE PAROU enquanto você se movia
+    local posFinalClone = clone.HumanoidRootPart.CFrame
+
+    -- 7. Puxa seu corpo real de volta para a posição atual do clone
+    hrp.CFrame = posFinalClone
+
+    -- 8. Restaura visibilidade e devolve a Câmera para o corpo real
+    for _, parte in ipairs(char:GetChildren()) do
+        if parte:IsA("BasePart") and parte.Name ~= "HumanoidRootPart" then
+            parte.Transparency = 0
+        elseif parte:IsA("Accessory") and parte:FindFirstChild("Handle") then
+            parte.Handle.Transparency = 0
+        end
+    end
+
+    if camera and char:FindFirstChildOfClass("Humanoid") then
+        camera.CameraSubject = char:FindFirstChildOfClass("Humanoid")
+    end
+
+    -- 9. Deleta o clone
+    clone:Destroy()
+    executandoAtaque = false
+end
+
+-- ==================================
+-- 🎨 BOTÃO PERSONALIZADO (Semi-Vermelho + Borda Marcante)
+-- ==================================
+local parentGui = LocalPlayer:FindFirstChildOfClass("PlayerGui") or game:GetService("CoreGui")
+
+local ScreenGui = Instance.new("ScreenGui")
+ScreenGui.Name = "BackstabButtonGui"
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.Parent = parentGui
+
+local BotaoAtaque = Instance.new("TextButton")
+BotaoAtaque.Name = "BtnBackstab"
+BotaoAtaque.Size = UDim2.new(0, 70, 0, 70)
+BotaoAtaque.Position = UDim2.new(0.82, 0, 0.55, 0)
+BotaoAtaque.BackgroundColor3 = Color3.fromRGB(120, 0, 0) -- Fundo vermelho escuro
+BotaoAtaque.BackgroundTransparency = 0.45 -- Semi-transparente
+BotaoAtaque.Text = "🎯"
+BotaoAtaque.TextColor3 = Color3.fromRGB(255, 255, 255)
+BotaoAtaque.TextSize = 28
+BotaoAtaque.Parent = ScreenGui
+
+-- Borda Vermelha Marcante (Neon)
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(255, 0, 30)
+UIStroke.Thickness = 3
+UIStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+UIStroke.Parent = BotaoAtaque
+
+-- Arredondamento do Botão
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim.new(1, 0)
+UICorner.Parent = BotaoAtaque
+
+-- Evento do Botão
+BotaoAtaque.MouseButton1Click:Connect(function()
+    TweenService:Create(BotaoAtaque, TweenInfo.new(0.1), {Size = UDim2.new(0, 62, 0, 62)}):Play()
+    task.wait(0.1)
+    TweenService:Create(BotaoAtaque, TweenInfo.new(0.1), {Size = UDim2.new(0, 70, 0, 70)}):Play()
+
+    ExecutarAtaqueSurpresa()
+end)
 
 -- ===========================================
 -- 🎯 SISTEMA SHOOT MURDERER & AUTO GRAB GUN
