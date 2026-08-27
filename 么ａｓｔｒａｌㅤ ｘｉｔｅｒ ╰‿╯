@@ -12,7 +12,7 @@ local player = Players.LocalPlayer
 -- CARREGAR INTERFACE
 -- ==================================
 local WindUI = loadstring(game:HttpGet(
-"https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
 ))()
 
 -- ==================================
@@ -21,62 +21,113 @@ local WindUI = loadstring(game:HttpGet(
 local function gradient(text, startColor, endColor)
     local result = ""
     local length = #text
+
     for i = 1, length do
         local t = (i - 1) / math.max(length - 1, 1)
-        local r = math.floor((startColor.R + (endColor.R - startColor.R) * t) * 255)
-        local g = math.floor((startColor.G + (endColor.G - startColor.G) * t) * 255)
-        local b = math.floor((startColor.B + (endColor.B - startColor.B) * t) * 255)
-        result = result .. "<font color=\"rgb("..r..", "..g..", "..b..")\">"..text:sub(i, i).."</font>"
+
+        local r = math.floor(
+            (startColor.R + (endColor.R - startColor.R) * t) * 255
+        )
+
+        local g = math.floor(
+            (startColor.G + (endColor.G - startColor.G) * t) * 255
+        )
+
+        local b = math.floor(
+            (startColor.B + (endColor.B - startColor.B) * t) * 255
+        )
+
+        result = result
+            .. "<font color=\"rgb("
+            .. r .. ", "
+            .. g .. ", "
+            .. b
+            .. ")\">"
+            .. text:sub(i, i)
+            .. "</font>"
     end
+
     return result
 end
 
 -- ==================================
--- INTERFACE (JANELA E BOTÃO)
+-- 🎨 CONFIGURAÇÃO VISUAL
 -- ==================================
--- Parâmetros globais de transparência/cor para evitar o efeito cinza nos elementos
-local WindowTransparency = 0.15 -- Ajuste a transparência inicial (0 = opaco, 1 = invisível)
-local MainColor = Color3.fromHex("#18181b") -- Cor escura base que destaca os textos e botões
 
+-- 0 = totalmente opaco
+-- 1 = totalmente transparente
+local WindowTransparency = 0.15
+
+local MainColor = Color3.fromHex("#18181b")
+
+-- ==================================
+-- 🪟 CRIAR JANELA
+-- ==================================
 local Window = WindUI:CreateWindow({
-    Title = gradient("Astral X Hub V128", Color3.fromHex("#ffffff"), Color3.fromHex("#cccccc")),
+    Title = gradient(
+        "Astral X Hub V128",
+        Color3.fromHex("#ffffff"),
+        Color3.fromHex("#cccccc")
+    ),
+
     Icon = "star",
-    Author = gradient("Script MM2 Keyless", Color3.fromHex("#1bf2b2"), Color3.fromHex("#1bcbf2")),
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1bf2b2"),
+        Color3.fromHex("#1bcbf2")
+    ),
+
     Size = UDim2.fromOffset(480, 340),
     MinSize = Vector2.new(420, 300),
+
     Transparent = true,
-    Transparency = WindowTransparency, -- Define a transparência nativa na janela
+    Transparency = WindowTransparency,
+
     Theme = "Dark",
+
     SideBarWidth = 120,
     HasOutline = true,
     HideSearchBar = true,
 })
 
--- Ajusta a transparência da estrutura do WindUI para não acinzentar os toggles
+-- ==================================
+-- 🎨 COR BASE DA JANELA
+-- ==================================
 pcall(function()
-    if Window.UIElements then
-        if Window.UIElements.Main then
-            Window.UIElements.Main.BackgroundTransparency = WindowTransparency
-            Window.UIElements.Main.BackgroundColor3 = MainColor
-        end
-        if Window.UIElements.SideBar then
-            Window.UIElements.SideBar.BackgroundTransparency = WindowTransparency + 0.05
-        end
-    elseif Window.Frame then
-        Window.Frame.BackgroundTransparency = WindowTransparency
-        Window.Frame.BackgroundColor3 = MainColor
+    if Window.UIElements and Window.UIElements.Main then
+        Window.UIElements.Main.BackgroundColor3 = MainColor
     end
 end)
 
+-- ==================================
+-- 🎚️ FUNÇÃO DE TRANSPARÊNCIA
+-- ==================================
+local function AplicarTransparencia(Value)
+    WindowTransparency = Value
+
+    pcall(function()
+        if Window.SetBackgroundTransparency then
+            Window:SetBackgroundTransparency(Value)
+        end
+    end)
+end
+
+-- ==================================
+-- ⭐ BOTÃO DE ABRIR/FECHAR
+-- ==================================
 Window:EditOpenButton({
     Title = "Astral",
     Icon = "star",
+
     CornerRadius = UDim.new(0, 12),
     StrokeThickness = 2,
+
     Color = ColorSequence.new(
         Color3.fromHex("#ffcc00"),
         Color3.fromHex("#ff6600")
     ),
+
     Draggable = true,
 })
 
@@ -2939,19 +2990,17 @@ Sec_ServerHop:Button({
 -- ===============================
 Aba_Config:Slider({
     Title = "Transparência do Fundo",
-    Value = { Min = 0, Max = 1, Default = WindowTransparency, Step = 0.05 },
+
+    Value = {
+        Min = 0,
+        Max = 1,
+        Default = WindowTransparency,
+    },
+
+    Step = 0.05,
+
     Callback = function(Value)
-        WindowTransparency = Value
-        if Window.UIElements then
-            if Window.UIElements.Main then
-                Window.UIElements.Main.BackgroundTransparency = Value
-            end
-            if Window.UIElements.SideBar then
-                Window.UIElements.SideBar.BackgroundTransparency = math.clamp(Value + 0.05, 0, 1)
-            end
-        elseif Window.Frame then
-            Window.Frame.BackgroundTransparency = Value
-        end
+        AplicarTransparencia(Value)
     end
 })
 
