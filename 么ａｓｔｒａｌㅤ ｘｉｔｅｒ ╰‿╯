@@ -1497,7 +1497,7 @@ local player = Players.LocalPlayer
 
 local KillAuraAtivo = false
 local RaioKillAura = 15
-local MostrarCirculoAura = true -- Defina como true para mostrar o círculo diretamente
+local MostrarCirculoAura = false -- Defina como true para mostrar o círculo diretamente
 
 local CirculoAdornment = nil
 
