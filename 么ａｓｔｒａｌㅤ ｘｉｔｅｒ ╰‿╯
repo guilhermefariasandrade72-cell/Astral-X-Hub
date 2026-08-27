@@ -3070,10 +3070,46 @@ Aba_Config:Slider({
     end
 })
 
+Aba_Config:Dropdown({
+    Title = "Cor da Interface",
+
+    Values = {
+        "Verde",
+        "Azul",
+        "Roxo",
+        "Vermelho",
+        "Laranja",
+        "Ciano",
+        "Rosa",
+    },
+
+    Value = "Verde",
+
+    Callback = function(Value)
+        CorSelecionada = Value
+    end
+})
 
 
+Aba_Config:Button({
+    Title = "Aplicar Cor",
+    Icon = "palette",
 
+    Callback = function()
+        local Tema = "Astral_" .. CorSelecionada
 
+        pcall(function()
+            WindUI:SetTheme(Tema)
+        end)
+
+        WindUI:Notify({
+            Title = "Astral X",
+            Content = "Cor aplicada: " .. CorSelecionada,
+            Icon = "palette",
+            Duration = 2
+        })
+    end
+})
 
 
 
