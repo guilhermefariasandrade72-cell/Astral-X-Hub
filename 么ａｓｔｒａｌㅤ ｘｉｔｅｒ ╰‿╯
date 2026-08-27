@@ -101,9 +101,9 @@ local CoresAstral = {
     -- ==================================
 
     ["Dark"] = {
-    Accent = "#1B9CF2",
-    Button = "#1BF2B2",
-    Icon = "#FFFFFF",
+    Accent = "#1B9CF2", -- azul dos sliders/elementos
+    Button = "#1BF2B2", -- verde dos toggles/botões
+    Icon = "#FFFFFF",   -- branco dos ícones
 },
 
     -- ==================================
