@@ -923,6 +923,124 @@ local function RemoveAutoFarmButton()
 end
 
 -- ==================================
+-- 📌 CONFIGURAÇÕES E ESTADOS DO FOV
+-- ==================================
+local LockCameraAtivo = false
+local MostrarCirculo = false
+local RaioFOV = 150
+
+-- ==================================
+-- 🎨 CÍRCULO VISUAL DE FOV
+-- ==================================
+local parentGui = game:GetService("Players").LocalPlayer:FindFirstChildOfClass("PlayerGui") or game:GetService("CoreGui")
+
+local FOVScreen = Instance.new("ScreenGui")
+FOVScreen.Name = "FOVCircleGui"
+FOVScreen.ResetOnSpawn = false
+FOVScreen.Parent = parentGui
+
+local FOVCircle = Instance.new("Frame")
+FOVCircle.Name = "Circle"
+FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+FOVCircle.BackgroundTransparency = 1
+FOVCircle.Visible = false
+FOVCircle.Parent = FOVScreen
+
+local UIStroke = Instance.new("UIStroke")
+UIStroke.Color = Color3.fromRGB(0, 255, 255) -- Neon Ciano
+UIStroke.Thickness = 2
+UIStroke.Parent = FOVCircle
+
+local UICorner = Instance.new("UICorner")
+UICorner.CornerRadius = UDim2.new(1, 0)
+UICorner.Parent = FOVCircle
+
+-- ==================================
+-- 🔍 FUNÇÕES AUXILIARES
+-- ==================================
+
+local function TemArma()
+    local char = game:GetService("Players").LocalPlayer.Character
+    if not char then return false end
+    
+    local armaNoChar = char:FindFirstChild("Gun")
+    if not armaNoChar then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and item.Name:lower():find("gun") then
+                armaNoChar = item
+                break
+            end
+        end
+    end
+    if armaNoChar then return true end
+
+    local backpack = game:GetService("Players").LocalPlayer:FindFirstChild("Backpack")
+    if backpack then
+        local armaNaMochila = backpack:FindFirstChild("Gun")
+        if not armaNaMochila then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item:IsA("Tool") and item.Name:lower():find("gun") then
+                    armaNaMochila = item
+                    break
+                end
+            end
+        end
+        if armaNaMochila then return true end
+    end
+
+    return false
+end
+
+local function ObterMurderer()
+    local localPlayer = game:GetService("Players").LocalPlayer
+    for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
+        if p ~= localPlayer and p.Character then
+            local char = p.Character
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            
+            if hum and hum.Health > 0 and hrp then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = (p:GetAttribute("Role") == "Murderer") or (temFaca ~= nil)
+                
+                if eMurder then
+                    return hrp
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function EstaDentroDoFOV(posicao3D)
+    local camera = workspace.CurrentCamera
+    local posTela, visivel = camera:WorldToViewportPoint(posicao3D)
+    if not visivel then return false end
+
+    local centroTela = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local posAlvo2D = Vector2.new(posTela.X, posTela.Y)
+    
+    local distanciaPixels = (posAlvo2D - centroTela).Magnitude
+    return distanciaPixels <= (RaioFOV / 2)
+end
+
+-- ==================================
+-- 🎥 LOOP DA CÂMERA
+-- ==================================
+game:GetService("RunService").RenderStepped:Connect(function()
+    if not LockCameraAtivo or not TemArma() then return end
+
+    local hrpMurderer = ObterMurderer()
+    if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
+        local camera = workspace.CurrentCamera
+        local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
+        camera.CFrame = CFrame.new(camera.CFrame.Position, posAlvo)
+    end
+end)
+
+-- ==================================
 -- 🎯 SILENT AIM — INSTANT KILL
 -- ✅ A bala NASCE DENTRO do Assassino
 -- ✅ MATA NA HORA — sem tempo de desvio
@@ -2478,6 +2596,36 @@ Sec_Xerife:Toggle({
     Default = false,
     Callback = function(Ativo)
         AutoGrabGun = Ativo
+    end
+})
+
+-- ==================================
+-- 🎛️ CONTROLES DA INTERFACE
+-- ==================================
+
+Sec_Xerife:Toggle({
+    Title = "Travar Câmera (Com Arma)",
+    Default = false,
+    Callback = function(State)
+        LockCameraAtivo = State
+    end
+})
+
+Sec_Xerife:Toggle({
+    Title = "Mostrar Círculo FOV",
+    Default = false,
+    Callback = function(State)
+        MostrarCirculo = State
+        FOVCircle.Visible = State
+    end
+})
+
+Sec_Xerife:Slider({
+    Title = "Tamanho do FOV",
+    Value = {Min = 50, Max = 500, Default = 150, Step = 5},
+    Callback = function(Valor)
+        RaioFOV = Valor
+        FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
     end
 })
 
