@@ -1061,9 +1061,6 @@ end)
 -- 🎯 SILENT AIM — INSTANT KILL
 -- ==================================
 local Players = game:GetService("Players")
-local Workspace = game:GetService("Workspace")
-local RunService = game:GetService("RunService")
-local UserInputService = game:GetService("UserInputService")
 local CoreGui = game:GetService("CoreGui")
 
 local LocalPlayer = Players.LocalPlayer
@@ -1078,7 +1075,6 @@ local InstantShootExecutando = false
 local function ObterMurder()
     for _, plr in ipairs(Players:GetPlayers()) do
         if plr ~= LocalPlayer and plr.Character then
-            -- Verifica se segura ou tem o Knife no Backpack/Character
             if plr.Character:FindFirstChild("Knife") or (plr:FindFirstChild("Backpack") and plr.Backpack:FindFirstChild("Knife")) then
                 return plr.Character
             end
@@ -1096,26 +1092,20 @@ local function ExecutarAtaqueFlash()
 
     local murderChar = ObterMurder()
     local murderHrp = murderChar and murderChar:FindFirstChild("HumanoidRootPart")
-    
     if not murderHrp then return end
 
     InstantShootExecutando = true
 
-    -- 1. Salva a posição atual onde você está
     local posOriginal = hrp.CFrame
-
-    -- 2. Teleporta exatamente 3.5 studs atrás do Murder olhando para ele
     local posAtrasMurder = murderHrp.CFrame * CFrame.new(0, 0, 3.5)
     hrp.CFrame = posAtrasMurder
 
-    -- 3. Equipar e disparar a arma
     task.spawn(function()
         local gun = char:FindFirstChild("Gun") or (LocalPlayer:FindFirstChild("Backpack") and LocalPlayer.Backpack:FindFirstChild("Gun"))
         if gun then
-            gun.Parent = char -- Equipa
+            gun.Parent = char
             task.wait(0.05)
             
-            -- Dispara via evento remotos padrão/tool activate
             if gun:FindFirstChild("Shoot") then
                 gun.Shoot:FireServer(murderHrp.Position)
             elseif gun:FindFirstChild("KnifeServer") then
@@ -1126,7 +1116,6 @@ local function ExecutarAtaqueFlash()
         end
     end)
 
-    -- 4. Retorna instantaneamente à posição original
     task.wait(0.12)
     if hrp and hrp.Parent then
         hrp.CFrame = posOriginal
@@ -1202,7 +1191,6 @@ local function CreateInstantShootButton()
     Btn.InputEnded:Connect(function(Input)
         if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             if not isDraggingShoot then
-                -- Ao Clicar: Executa a ação de TP + Tiro + Retorno
                 ExecutarAtaqueFlash()
             end
             dragStartMousePos = nil
@@ -2713,19 +2701,19 @@ Sec_Xerife:Toggle({
     end
 })
 
-if Sec_Xerife then
-    Sec_Xerife:Toggle({
-        Title = "Instant Shoot Button",
-        Default = false,
-        Callback = function(State)
-            if State then
-                CreateInstantShootButton()
-            else
-                RemoveInstantShootButton()
-            end
+-- Certifique-se de colar a linha abaixo ONDE VOCÊ CRIA OS ELEMENTOS da aba Sec_Xerife:
+
+Sec_Xerife:Toggle({
+    Title = "Instant Shoot Button",
+    Default = false,
+    Callback = function(State)
+        if State then
+            CreateInstantShootButton()
+        else
+            RemoveInstantShootButton()
         end
-    })
-end
+    end
+})
 
     Sec_Xerife:Toggle({
         Title = "Mostrar Círculo FOV",
