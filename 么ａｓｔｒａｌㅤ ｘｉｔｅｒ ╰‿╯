@@ -391,12 +391,12 @@ local OpenButton = Window:EditOpenButton({
 })
 
 -- ==================================
--- 🔎 ENCONTRAR BOTÃO ASTRAL
+-- 🔴 BOTÃO ASTRAL
 -- ==================================
 
-task.wait(1)
-
 local BotaoAstral = nil
+
+task.wait(1)
 
 for _, Obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
     if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
@@ -405,22 +405,25 @@ for _, Obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
 
         if Pai and Pai:IsA("TextButton") then
             BotaoAstral = Pai
-
-            print("✅ BOTÃO ASTRAL ENCONTRADO!")
-            print("📌 Caminho:", BotaoAstral:GetFullName())
-            print("📐 Tamanho atual:", BotaoAstral.Size)
-
             break
         end
     end
 end
 
+-- Centraliza o crescimento
 if BotaoAstral then
-    BotaoAstral.Size = UDim2.fromOffset(230, 65)
+    BotaoAstral.AnchorPoint = Vector2.new(0.5, 0.5)
 
-    print("🟢 NOVO TAMANHO:", BotaoAstral.Size)
-else
-    print("❌ BOTÃO ASTRAL NÃO ENCONTRADO")
+    local Posicao = BotaoAstral.Position
+
+    BotaoAstral.Position = UDim2.new(
+        Posicao.X.Scale,
+        Posicao.X.Offset,
+        Posicao.Y.Scale,
+        Posicao.Y.Offset + 18
+    )
+
+    BotaoAstral.Size = UDim2.fromOffset(100, 36)
 end
 
 -- ==================================
@@ -3356,17 +3359,24 @@ Aba_Config:Button({
 })
 
 Aba_Config:Slider({
-    Title = "Tamanho do Botão Astral",
+    Title = "📐 Tamanho do Botão Astral",
 
     Value = {
-        Min = 40,
-        Max = 120,
-        Default = 60,
+        Min = 60,
+        Max = 250,
+        Default = 100,
     },
 
     Step = 5,
 
-    Callback = function(Value)
-        AlterarTamanhoBotao(Value)
+    Callback = function(Valor)
+
+        if BotaoAstral then
+            BotaoAstral.Size = UDim2.fromOffset(
+                Valor,
+                36
+            )
+        end
+
     end
 })
