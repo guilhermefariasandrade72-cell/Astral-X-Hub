@@ -548,6 +548,7 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- 🚶 AUTO FARM — ANDANDO EM PÉ (CORRIGIDO)
 -- ==================================
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -559,13 +560,13 @@ local player = Players.LocalPlayer
 local CONFIG_FARM = {
     velocidade = 18,
     alcance_maximo = 500,
-    raio_perigo_murder = 30 -- Se o Murderer estiver a menos dessa distância da moeda, ele ignora
+    raio_perigo_murder = 30 -- Raio de distância do Murderer
 }
 
 local AutoFarmAtivo = false
 local BolsaCheia = false
-local PartidaID = 0
 local collectedCoins = {}
+local moedasIgnoradasInvisivel = {} -- Guarda moedas que foram puladas por estar invisível
 
 local cachedCoinContainer = nil
 local ultimoCheckBolsa = 0
@@ -598,8 +599,8 @@ end
 -- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
-    PartidaID = PartidaID + 1
     table.clear(collectedCoins)
+    table.clear(moedasIgnoradasInvisivel)
     cachedCoinContainer = nil
 end
 
@@ -612,7 +613,36 @@ player:GetAttributeChangedSignal("Alive"):Connect(function()
 end)
 
 -- ==================================
--- 2. DETECTOR DE BOLSA CHEIA
+-- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA (25 STUDS DO MURDERER)
+-- ==================================
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if AutoFarmAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local charMurderer = ObterMurderer()
+            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+            if hrp and hrpMurderer then
+                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
+
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    if not InvisivelAtivo then
+                        InvisivelAtivo = true
+                    end
+                else
+                    if InvisivelAtivo then
+                        InvisivelAtivo = false
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 2. DETECTOR DE BOLSA CHEIA (OTIMIZADO)
 -- ==================================
 local function VerificarTextoBolsaCheia()
     local agora = os.clock()
@@ -676,7 +706,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA (COM RAIO DE SEGURANÇA DO MURDERER)
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA (COM FILTROS DE INVISIBILIDADE E MURDERER)
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -697,11 +727,21 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
 
-            -- FILTRO: Ignora se o Murderer estiver perto da moeda
+            -- 1. FILTRO: Ignora moedas a menos de 25 studs do Murderer
             if hrpMurderer then
-                local distMurderMoeda = (moeda.Position - hrpMurderer.Position).Magnitude
-                if distMurderMoeda <= CONFIG_FARM.raio_perigo_murder then
-                    continue -- Pula esta moeda enquanto o Murderer estiver perto
+                local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    continue
+                end
+            end
+
+            -- 2. FILTRO: Ignora moedas marcadas temporariamente por falha no toque (invisível)
+            if moedasIgnoradasInvisivel[moeda] then
+                -- Se a invisibilidade já desligou, libera a moeda para ser coletada!
+                if not InvisivelAtivo then
+                    moedasIgnoradasInvisivel[moeda] = nil
+                else
+                    continue
                 end
             end
 
@@ -716,7 +756,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
 -- ==================================
 task.spawn(function()
     while true do
@@ -725,11 +765,12 @@ task.spawn(function()
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
             if not EmPartida() or not hrp then
+                ResetarEstadoFarm()
                 task.wait(0.2)
                 continue
             end
 
-            -- Se a bolsa encher, interrompe a busca
+            -- Aguarda se a bolsa encher
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
                 task.wait(0.3)
@@ -739,27 +780,20 @@ task.spawn(function()
             local alvo = getNearestCoin(hrp.Position)
 
             if alvo then
+                local tempoPassadoNaMoeda = 0
+
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and not BolsaCheia and not VerificarTextoBolsaCheia()
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
-                    local charMurderer = ObterMurderer()
-                    local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
-
-                    -- Se o Murderer se aproximar da moeda que estamos indo buscar, abandona a moeda imediatamente
-                    if hrpMurderer then
-                        local distMurderAlvo = (alvo.Position - hrpMurderer.Position).Magnitude
-                        if distMurderAlvo <= CONFIG_FARM.raio_perigo_murder then
-                            break
-                        end
-                    end
-
-                    -- Se surgir outra moeda segura e mais próxima, altera a rota
+                    
+                    -- Se surgir uma moeda MAIS PERTO do seu caminho, ele troca de alvo
                     local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
                     if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
                         alvo = moedaMaisPertoAgora
+                        tempoPassadoNaMoeda = 0
                     end
 
                     if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
@@ -770,13 +804,19 @@ task.spawn(function()
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Coleta a moeda
+                    -- Chega exatamente no centro da moeda (0.8 studs)
                     if distancia <= 0.8 then
-                        collectedCoins[alvo] = true
-                        break
+                        -- 🚨 SE ESTIVER INVISÍVEL: O toque não registra! Marca como ignorada temporariamente
+                        if InvisivelAtivo then
+                            moedasIgnoradasInvisivel[alvo] = true
+                            break -- Abandona esta moeda e busca outra
+                        else
+                            collectedCoins[alvo] = true
+                            break
+                        end
                     end
 
-                    -- Movimentação contínua
+                    -- Movimentação suave via CFrame contínuo (Sem teleporte)
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
@@ -784,17 +824,24 @@ task.spawn(function()
 
                     hrp.CFrame = CFrame.new(novaPos)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+                    -- Trava de segurança: Se ficar mais de 1.5s travado na mesma moeda por estar invisível
+                    tempoPassadoNaMoeda = tempoPassadoNaMoeda + dt
+                    if tempoPassadoNaMoeda > 1.5 and InvisivelAtivo then
+                        moedasIgnoradasInvisivel[alvo] = true
+                        break
+                    end
                 end
             else
                 table.clear(collectedCoins)
                 task.wait(0.1)
             end
         else
-            task.wait(0.3)
+            ResetarEstadoFarm()
+            task.wait(0.5)
         end
     end
 end)
-
 
 -- ==================================
 -- 📌 CONFIGURAÇÕES E VARIÁVEIS
@@ -1156,85 +1203,6 @@ task.spawn(function()
             IniciarSequenciaShoot()
         end
         RunService.Heartbeat:Wait()
-    end
-end)
-
--- =================================
--- INVISIBLE 
--- =================================
-local AutoInvisivelAtivo = false
-local TransparenteAtivo = false
-
--- Função para alterar a transparência do personagem
-local function SetPersonagemInvisivel(estado)
-    local char = player.Character
-    if not char then return end
-
-    for _, part in ipairs(char:GetDescendants()) do
-        if part:IsA("BasePart") or part:IsA("Decal") then
-            if part.Name ~= "HumanoidRootPart" then
-                if estado then
-                    if not part:GetAttribute("OldTransparency") then
-                        part:SetAttribute("OldTransparency", part.Transparency)
-                    end
-                    part.Transparency = 1
-                else
-                    local oldTrans = part:GetAttribute("OldTransparency")
-                    part.Transparency = oldTrans or 0
-                    part:SetAttribute("OldTransparency", nil)
-                end
-            end
-        end
-    end
-    TransparenteAtivo = estado
-end
-
-local function RestaurarVisibilidade()
-    if TransparenteAtivo then
-        SetPersonagemInvisivel(false)
-    end
-end
-
--- Restaura ao morrer/renascer
-player.CharacterAdded:Connect(function()
-    TransparenteAtivo = false
-end)
-
--- Loop de verificação contínua do Murderer (30 Studs)
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        
-        if AutoInvisivelAtivo then
-            local char = player.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local charMurderer = ObterMurderer()
-            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
-
-            -- Se o Murderer existir, estiver vivo e na partida
-            if hrp and hrpMurderer and charMurderer.Parent then
-                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
-
-                if distMurder <= 30 then
-                    if not TransparenteAtivo then
-                        SetPersonagemInvisivel(true)
-                    end
-                else
-                    if TransparenteAtivo then
-                        SetPersonagemInvisivel(false)
-                    end
-                end
-            else
-                -- Se o Murderer morrer, resetar, sair do servidor ou a rodada acabar
-                if TransparenteAtivo then
-                    SetPersonagemInvisivel(false)
-                end
-            end
-        else
-            if TransparenteAtivo then
-                SetPersonagemInvisivel(false)
-            end
-        end
     end
 end)
 
@@ -2898,19 +2866,6 @@ Sec_AutoFarm:Toggle({
     Default = true,
     Callback = function(estado)
         AutoResetAoEncher = estado
-    end
-})
-
-Sec_AutoFarm:Toggle({
-    Title = "Invisível Perto do Murderer",
-    Desc = "Fica invisível automaticamente ao chegar a 30 studs do Murderer",
-    Value = false,
-    Callback = function(Value)
-        AutoInvisivelAtivo = Value
-        if not Value then
-            -- Restaura a visibilidade normal ao desligar a opção
-            RestaurarVisibilidade()
-        end
     end
 })
 
