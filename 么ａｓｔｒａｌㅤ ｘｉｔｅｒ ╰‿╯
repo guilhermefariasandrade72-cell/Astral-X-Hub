@@ -390,27 +390,11 @@ local OpenButton = Window:EditOpenButton({
     Draggable = true,
 })
 
-local CoreGui = game:GetService("CoreGui")
-
-task.wait(1)
-
 pcall(function()
-    for _, obj in ipairs(CoreGui:GetDescendants()) do
-        if obj:IsA("TextLabel") and obj.Text == "Astral" then
+    local BotaoAstral = Window.UIElements.Frame.Frame.TextButton
 
-            local BotaoAstral = obj.Parent
-
-            if BotaoAstral and BotaoAstral:IsA("TextButton") then
-                print("✅ BOTÃO ASTRAL ENCONTRADO!")
-                print("Nome:", BotaoAstral.Name)
-                print("Tamanho atual:", BotaoAstral.Size)
-
-                BotaoAstral.Size = UDim2.fromOffset(160, 60)
-
-                print("Novo tamanho:", BotaoAstral.Size)
-                break
-            end
-        end
+    if BotaoAstral and BotaoAstral:IsA("GuiButton") then
+        BotaoAstral.Size = UDim2.fromOffset(120, 60)
     end
 end)
 
