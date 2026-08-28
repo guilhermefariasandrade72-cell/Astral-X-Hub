@@ -394,14 +394,19 @@ local CoreGui = game:GetService("CoreGui")
 
 for _, Obj in ipairs(CoreGui:GetDescendants()) do
     if Obj:IsA("GuiButton") then
-        print(
-            "BOTÃO:",
-            Obj.Name,
-            "| Caminho:",
-            Obj:GetFullName(),
-            "| Tamanho:",
-            Obj.Size
-        )
+        local Caminho = Obj:GetFullName()
+
+        if string.find(Caminho, "WindUI")
+        or string.find(Caminho, "Astral")
+        or string.find(Caminho, "OpenButton") then
+
+            print(
+                "=== POSSÍVEL BOTÃO ASTRAL ===",
+                "\nNome:", Obj.Name,
+                "\nCaminho:", Caminho,
+                "\nTamanho:", Obj.Size
+            )
+        end
     end
 end
 
