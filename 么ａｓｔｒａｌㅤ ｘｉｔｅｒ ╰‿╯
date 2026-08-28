@@ -2853,7 +2853,7 @@ local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm Coin Button",
-    Desc = adiciona um botao de Farm na tela",
+    Desc = "adiciona um botao de Farm na tela",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -2914,7 +2914,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Shoot Murderer",
-    Desc = "apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar ",
+    Desc = "apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar",
     Default = false,
     Callback = function(Ativo)
         AutoShootAtivo = Ativo
