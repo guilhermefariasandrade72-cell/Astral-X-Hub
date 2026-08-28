@@ -393,19 +393,11 @@ local OpenButton = Window:EditOpenButton({
 local CoreGui = game:GetService("CoreGui")
 
 for _, Obj in ipairs(CoreGui:GetDescendants()) do
-    if Obj:IsA("GuiButton") then
-        local Caminho = Obj:GetFullName()
-
-        if string.find(Caminho, "Astral", 1, true) then
-            print(
-                "🎯 BOTÃO ASTRAL:",
-                Obj.Name,
-                "| Caminho:",
-                Caminho,
-                "| Tamanho:",
-                Obj.Size
-            )
-        end
+    if Obj:IsA("TextButton") and Obj.Text == "Astral" then
+        print("🎯 ENCONTRADO!")
+        print("Nome:", Obj.Name)
+        print("Caminho:", Obj:GetFullName())
+        print("Tamanho:", Obj.Size)
     end
 end
 
