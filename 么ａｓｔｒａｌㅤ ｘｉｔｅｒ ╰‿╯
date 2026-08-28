@@ -3105,7 +3105,7 @@ Players.PlayerRemoving:Connect(AtualizarListaJogadores)
 AtualizarListaJogadores()
 
 -- Toggle para ativar o Kill Aura no alvo escolhido
-Aba_Murderer:Toggle({
+Sec_Murderer:Toggle({
     Title = "Kill Aura (Alvo Selecionado)",
     Desc = "Elimina apenas o jogador selecionado na lista acima quando estiver no alcance",
     Value = false,
