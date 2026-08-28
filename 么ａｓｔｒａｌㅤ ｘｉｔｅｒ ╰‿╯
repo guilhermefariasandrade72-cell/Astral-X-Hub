@@ -3020,6 +3020,60 @@ Sec_Xerife:Toggle({
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 -- ==================================
+-- 🔘 KILL ALL BUTTON
+-- ==================================
+
+Sec_Murderer:Toggle({
+    Title = "Kill All Button",
+    Desc = "Adiciona um botão na tela que ao clicar mata todo mundo",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+            CreateKillAllButton()
+        else
+            RemoveKillAllButton()
+        end
+
+    end
+})
+
+
+-- ==================================
+-- 💀 KILL ALL
+-- ==================================
+
+Sec_Murderer:Toggle({
+    Title = "Kill All",
+    Desc = "Mata todo mundo automaticamente",
+    Default = false,
+
+    Callback = function(Ativo)
+        KillAura = Ativo
+    end
+})
+
+
+-- ==================================
+-- 🎯 KILL AURA
+-- ==================================
+
+Sec_Murderer:Toggle({
+    Title = "Kill Aura",
+    Desc = "Mata todo mundo em uma distância que você escolher",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        KillAuraAtivo = Ativo
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+-- ==================================
 -- 👤 SELECIONAR JOGADOR
 -- ==================================
 
@@ -3103,61 +3157,6 @@ end)
 
 -- Cria a lista inicialmente
 CriarDropdownJogadoresMurderer()
-
--- ==================================
--- 🔘 KILL ALL BUTTON
--- ==================================
-
-Sec_Murderer:Toggle({
-    Title = "Kill All Button",
-    Desc = "Adiciona um botão na tela que ao clicar mata todo mundo",
-    Default = false,
-
-    Callback = function(Ativo)
-
-        if Ativo then
-            CreateKillAllButton()
-        else
-            RemoveKillAllButton()
-        end
-
-    end
-})
-
-
--- ==================================
--- 💀 KILL ALL
--- ==================================
-
-Sec_Murderer:Toggle({
-    Title = "Kill All",
-    Desc = "Mata todo mundo automaticamente",
-    Default = false,
-
-    Callback = function(Ativo)
-        KillAura = Ativo
-    end
-})
-
-
--- ==================================
--- 🎯 KILL AURA
--- ==================================
-
-Sec_Murderer:Toggle({
-    Title = "Kill Aura",
-    Desc = "Mata todo mundo em uma distância que você escolher",
-    Default = false,
-
-    Callback = function(Ativo)
-
-        KillAuraAtivo = Ativo
-
-        AtualizarCirculoAura()
-
-    end
-})
-
 
 -- ==================================
 -- 📏 DISTÂNCIA KILL AURA
