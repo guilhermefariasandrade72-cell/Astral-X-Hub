@@ -375,15 +375,11 @@ end)
 -- ❤️ BOTÃO FLUTUANTE
 -- Ruby: vermelho escuro → vermelho claro
 -- ==================================
-
-Window:EditOpenButton({
-
+local OpenButton = Window:EditOpenButton({
     Title = "Astral",
-
     Icon = "star",
 
     CornerRadius = UDim.new(0, 12),
-
     StrokeThickness = 2,
 
     Color = ColorSequence.new(
@@ -392,7 +388,6 @@ Window:EditOpenButton({
     ),
 
     Draggable = true,
-
 })
 
 -- ==================================
@@ -3250,7 +3245,7 @@ Sec_ServerHop:Button({
 })
 
 -- ==================================
--- 🎨 LISTA DE CORES
+-- BOTOES DA ABA CONFIG UI
 -- ==================================
 
 local ListaCores = {
@@ -3325,8 +3320,25 @@ Aba_Config:Button({
     end
 })
 
+Aba_Config:Slider({
+    Title = "Tamanho do Botão Astral",
 
+    Value = {
+        Min = 40,
+        Max = 100,
+        Default = 60,
+    },
 
+    Step = 5,
+
+    Callback = function(Tamanho)
+        pcall(function()
+            if OpenButton then
+                OpenButton.Size = UDim2.fromOffset(Tamanho, Tamanho)
+            end
+        end)
+    end
+})
 
 
 
