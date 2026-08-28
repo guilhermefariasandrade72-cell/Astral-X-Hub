@@ -390,13 +390,38 @@ local OpenButton = Window:EditOpenButton({
     Draggable = true,
 })
 
-pcall(function()
-    local BotaoAstral = Window.UIElements.Frame.Frame.TextButton
+-- ==================================
+-- 🔎 ENCONTRAR BOTÃO ASTRAL
+-- ==================================
 
-    if BotaoAstral and BotaoAstral:IsA("GuiButton") then
-        BotaoAstral.Size = UDim2.fromOffset(120, 60)
+task.wait(1)
+
+local BotaoAstral = nil
+
+for _, Obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
+    if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
+
+        local Pai = Obj.Parent
+
+        if Pai and Pai:IsA("TextButton") then
+            BotaoAstral = Pai
+
+            print("✅ BOTÃO ASTRAL ENCONTRADO!")
+            print("📌 Caminho:", BotaoAstral:GetFullName())
+            print("📐 Tamanho atual:", BotaoAstral.Size)
+
+            break
+        end
     end
-end)
+end
+
+if BotaoAstral then
+    BotaoAstral.Size = UDim2.fromOffset(230, 65)
+
+    print("🟢 NOVO TAMANHO:", BotaoAstral.Size)
+else
+    print("❌ BOTÃO ASTRAL NÃO ENCONTRADO")
+end
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
