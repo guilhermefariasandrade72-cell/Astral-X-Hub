@@ -3074,6 +3074,78 @@ Sec_Murderer:Toggle({
 })
 
 -- ==================================
+-- 📏 DISTÂNCIA KILL AURA
+-- ==================================
+
+Sec_Murderer:Slider({
+    Title = "Distance Kill Aura",
+    Desc = "Ajuste a distância do Kill Aura",
+
+    Value = {
+        Min = 5,
+        Max = 50,
+        Default = 15,
+        Step = 1
+    },
+
+    Callback = function(Valor)
+
+        RaioKillAura = Valor
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+
+-- ==================================
+-- 🔵 CIRCLE AURA
+-- ==================================
+
+Sec_Murderer:Toggle({
+    Title = "Clicle Aura",
+    Desc = "Consegue ver a distância do kill aura",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        MostrarCirculoAura = Ativo
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+-- ==================================
+-- 🎯 BOTÃO KILL AURA
+-- ==================================
+
+Sec_Murderer:Button({
+
+    Title = "Kill Aura (Alvo Selecionado)",
+
+    Desc = "Clique para ativar a Kill Aura no jogador selecionado",
+
+    Callback = function()
+
+        if not JogadorSelecionado then
+            return
+        end
+
+        local alvo = Players:FindFirstChild(JogadorSelecionado)
+
+        if not alvo then
+            return
+        end
+
+        -- Ativa a variável do alvo selecionado
+        KillAuraAlvoAtivo = not KillAuraAlvoAtivo
+
+    end
+
+})
+
+-- ==================================
 -- 👤 SELECIONAR JOGADOR
 -- ==================================
 
@@ -3157,79 +3229,6 @@ end)
 
 -- Cria a lista inicialmente
 CriarDropdownJogadoresMurderer()
-
--- ==================================
--- 📏 DISTÂNCIA KILL AURA
--- ==================================
-
-Sec_Murderer:Slider({
-    Title = "Distance Kill Aura",
-    Desc = "Ajuste a distância do Kill Aura",
-
-    Value = {
-        Min = 5,
-        Max = 50,
-        Default = 15,
-        Step = 1
-    },
-
-    Callback = function(Valor)
-
-        RaioKillAura = Valor
-
-        AtualizarCirculoAura()
-
-    end
-})
-
-
--- ==================================
--- 🔵 CIRCLE AURA
--- ==================================
-
-Sec_Murderer:Toggle({
-    Title = "Clicle Aura",
-    Desc = "Consegue ver a distância do kill aura",
-    Default = false,
-
-    Callback = function(Ativo)
-
-        MostrarCirculoAura = Ativo
-
-        AtualizarCirculoAura()
-
-    end
-})
-
--- ==================================
--- 🎯 BOTÃO KILL AURA
--- ==================================
-
-Sec_Murderer:Button({
-
-    Title = "Kill Aura (Alvo Selecionado)",
-
-    Desc = "Clique para ativar a Kill Aura no jogador selecionado",
-
-    Callback = function()
-
-        if not JogadorSelecionado then
-            return
-        end
-
-        local alvo = Players:FindFirstChild(JogadorSelecionado)
-
-        if not alvo then
-            return
-        end
-
-        -- Ativa a variável do alvo selecionado
-        KillAuraAlvoAtivo = not KillAuraAlvoAtivo
-
-    end
-
-})
-
 
 -- ==================================
 -- BOTOES DA ABA ESP
