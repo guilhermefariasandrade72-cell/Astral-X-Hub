@@ -390,46 +390,53 @@ local OpenButton = Window:EditOpenButton({
     Draggable = true,
 })
 
--- ==================================
--- 🔴 ESCALA DO BOTÃO ASTRAL
--- ==================================
 
-local BotaoAstral = nil
-local EscalaAstral = nil
+-- ==========================================
+-- 🔴 TAMANHO DO BOTÃO ASTRAL
+-- ==========================================
+
+local EscalaBotaoAstral = nil
 
 task.wait(1)
 
-for _, Obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
+pcall(function()
 
-    if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
+    local CoreGui = game:GetService("CoreGui")
 
-        local Pai = Obj.Parent
+    for _, Obj in ipairs(CoreGui:GetDescendants()) do
 
-        if Pai and Pai:IsA("TextButton") then
-            BotaoAstral = Pai
-            break
+        if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
+
+            local TextButton = Obj.Parent
+
+            if TextButton and TextButton:IsA("TextButton") then
+
+                -- O Frame que contém o botão
+                local Container = TextButton.Parent
+
+                if Container then
+
+                    EscalaBotaoAstral =
+                        Container:FindFirstChildOfClass("UIScale")
+
+                    if not EscalaBotaoAstral then
+                        EscalaBotaoAstral = Instance.new("UIScale")
+                        EscalaBotaoAstral.Parent = Container
+                    end
+
+                    EscalaBotaoAstral.Scale = 1
+
+                    print("✅ Escala do botão Astral encontrada!")
+                    print("📦 Container:", Container:GetFullName())
+
+                end
+
+                break
+            end
         end
-
-    end
-end
-
-
-if BotaoAstral then
-
-    -- Cria a escala
-    EscalaAstral = BotaoAstral:FindFirstChildOfClass("UIScale")
-
-    if not EscalaAstral then
-        EscalaAstral = Instance.new("UIScale")
-        EscalaAstral.Parent = BotaoAstral
     end
 
-    -- Escala inicial
-    EscalaAstral.Scale = 1
-
-    print("✅ Escala do botão Astral encontrada/criada!")
-
-end
+end)
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
@@ -3367,8 +3374,8 @@ Aba_Config:Slider({
     Title = "📐 Tamanho do Botão Astral",
 
     Value = {
-        Min = 0.6,
-        Max = 2,
+        Min = 0.5,
+        Max = 3,
         Default = 1,
     },
 
@@ -3376,8 +3383,8 @@ Aba_Config:Slider({
 
     Callback = function(Valor)
 
-        if EscalaAstral then
-            EscalaAstral.Scale = Valor
+        if EscalaBotaoAstral then
+            EscalaBotaoAstral.Scale = Valor
         end
 
     end
