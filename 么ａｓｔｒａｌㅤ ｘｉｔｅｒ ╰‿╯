@@ -1980,6 +1980,47 @@ player.CharacterAdded:Connect(function()
 end)
 
 -- ==================================
+-- SISTEMA DE KILL AURA INDIVIDUAL
+-- ==================================
+local JogadorSelecionado = nil
+local KillAuraAlvoAtivo = false
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        
+        if KillAuraAlvoAtivo and JogadorSelecionado then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local faca = char and (char:FindFirstChild("Knife") or player.Backpack:FindFirstChild("Knife"))
+            
+            local charAlvo = JogadorSelecionado.Character
+            local hrpAlvo = charAlvo and charAlvo:FindFirstChild("HumanoidRootPart")
+            local humAlvo = charAlvo and charAlvo:FindFirstChild("Humanoid")
+            
+            -- Checa se você e o alvo estão prontos para o ataque (alcance de 15 studs)
+            if hrp and hrpAlvo and humAlvo and humAlvo.Health > 0 and faca then
+                local distancia = (hrp.Position - hrpAlvo.Position).Magnitude
+                
+                if distancia <= 15 then
+                    -- Equipa a faca se ela estiver na mochila
+                    if faca.Parent == player.Backpack then
+                        char.Humanoid:EquipTool(faca)
+                    end
+                    
+                    -- Envia o comando de ataque
+                    if faca:FindFirstChild("Stab") then
+                        faca.Stab:FireServer()
+                    elseif faca:FindFirstChild("Slash") then
+                        faca.Slash:FireServer()
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
 -- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
 -- ==================================
 local UltimaChecagemCargo = 0
@@ -3027,6 +3068,49 @@ Sec_Murderer:Toggle({
     Callback = function(Ativo)
         MostrarCirculoAura = Ativo
         AtualizarCirculoAura()
+    end
+})
+
+-- Dropdown para escolher o alvo
+local DropdownJogadores = Aba_Murderer:Dropdown({
+    Title = "Selecionar Alvo",
+    Desc = "Escolha o jogador para ativar o Kill Aura individual",
+    Values = {},
+    Value = nil,
+    Callback = function(NomeSelecionado)
+        JogadorSelecionado = Players:FindFirstChild(NomeSelecionado)
+    end
+})
+
+-- Função de atualização de jogadores na lista
+local function AtualizarListaJogadores()
+    local listaNomes = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(listaNomes, p.Name)
+        end
+    end
+    
+    DropdownJogadores:SetValues(listaNomes)
+    
+    -- Se o jogador escolhido saiu do jogo, reseta o alvo
+    if JogadorSelecionado and not Players:FindFirstChild(JogadorSelecionado.Name) then
+        JogadorSelecionado = nil
+    end
+end
+
+-- Eventos de conexão para atualizar a lista automaticamente
+Players.PlayerAdded:Connect(AtualizarListaJogadores)
+Players.PlayerRemoving:Connect(AtualizarListaJogadores)
+AtualizarListaJogadores()
+
+-- Toggle para ativar o Kill Aura no alvo escolhido
+Aba_Murderer:Toggle({
+    Title = "Kill Aura (Alvo Selecionado)",
+    Desc = "Elimina apenas o jogador selecionado na lista acima quando estiver no alcance",
+    Value = false,
+    Callback = function(Value)
+        KillAuraAlvoAtivo = Value
     end
 })
 
