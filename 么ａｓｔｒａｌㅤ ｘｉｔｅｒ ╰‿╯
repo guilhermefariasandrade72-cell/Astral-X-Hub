@@ -3019,6 +3019,90 @@ Sec_Xerife:Toggle({
 
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
+-- ==================================
+-- 👤 SELECIONAR JOGADOR
+-- ==================================
+
+local JogadorSelecionado = nil
+local DropdownJogadores = nil
+
+
+local function PegarListaJogadoresMurderer()
+
+    local lista = {}
+
+    for _, p in ipairs(Players:GetPlayers()) do
+
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+
+    end
+
+    return lista
+end
+
+
+-- ==================================
+-- 🎯 CRIAR DROPDOWN
+-- ==================================
+
+local function CriarDropdownJogadoresMurderer()
+
+    -- Remove o antigo
+    if DropdownJogadores then
+
+        pcall(function()
+            DropdownJogadores:Destroy()
+        end)
+
+        DropdownJogadores = nil
+    end
+
+
+    -- Cria primeiro o Dropdown
+    DropdownJogadores = Sec_Murderer:Dropdown({
+
+        Title = "Select Player",
+
+        Values = PegarListaJogadoresMurderer(),
+
+        Default = "",
+
+        Callback = function(nome)
+
+            JogadorSelecionado = nome
+
+        end
+    })
+
+end
+
+
+-- ==================================
+-- 🔄 ATUALIZAR LISTA
+-- ==================================
+
+Players.PlayerAdded:Connect(function()
+
+    task.wait(0.3)
+
+    CriarDropdownJogadoresMurderer()
+
+end)
+
+
+Players.PlayerRemoving:Connect(function()
+
+    task.wait(0.3)
+
+    CriarDropdownJogadoresMurderer()
+
+end)
+
+
+-- Cria a lista inicialmente
+CriarDropdownJogadoresMurderer()
 
 -- ==================================
 -- 🔘 KILL ALL BUTTON
@@ -3117,92 +3201,6 @@ Sec_Murderer:Toggle({
 
     end
 })
-
--- ==================================
--- 👤 SELECIONAR JOGADOR
--- ==================================
-
-local JogadorSelecionado = nil
-local DropdownJogadores = nil
-
-
-local function PegarListaJogadoresMurderer()
-
-    local lista = {}
-
-    for _, p in ipairs(Players:GetPlayers()) do
-
-        if p ~= player then
-            table.insert(lista, p.Name)
-        end
-
-    end
-
-    return lista
-end
-
-
--- ==================================
--- 🎯 CRIAR DROPDOWN
--- ==================================
-
-local function CriarDropdownJogadoresMurderer()
-
-    -- Remove o antigo
-    if DropdownJogadores then
-
-        pcall(function()
-            DropdownJogadores:Destroy()
-        end)
-
-        DropdownJogadores = nil
-    end
-
-
-    -- Cria primeiro o Dropdown
-    DropdownJogadores = Sec_Murderer:Dropdown({
-
-        Title = "Select Player",
-
-        Values = PegarListaJogadoresMurderer(),
-
-        Default = "",
-
-        Callback = function(nome)
-
-            JogadorSelecionado = nome
-
-        end
-    })
-
-end
-
-
--- ==================================
--- 🔄 ATUALIZAR LISTA
--- ==================================
-
-Players.PlayerAdded:Connect(function()
-
-    task.wait(0.3)
-
-    CriarDropdownJogadoresMurderer()
-
-end)
-
-
-Players.PlayerRemoving:Connect(function()
-
-    task.wait(0.3)
-
-    CriarDropdownJogadoresMurderer()
-
-end)
-
-
--- Cria a lista inicialmente
-CriarDropdownJogadoresMurderer()
-
 
 -- ==================================
 -- 🎯 BOTÃO KILL AURA
