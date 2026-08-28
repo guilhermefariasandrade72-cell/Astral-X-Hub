@@ -2890,6 +2890,7 @@ Sec_AutoFarm:Button({
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Reset",
+    Desc = "Morre automaticando ao ter coletado o max de moedas",
     Default = true,
     Callback = function(estado)
         AutoResetAoEncher = estado
