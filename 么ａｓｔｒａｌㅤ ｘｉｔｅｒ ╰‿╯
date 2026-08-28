@@ -1159,6 +1159,85 @@ task.spawn(function()
     end
 end)
 
+-- =================================
+-- INVISIBLE 
+-- =================================
+local AutoInvisivelAtivo = false
+local TransparenteAtivo = false
+
+-- Função para alterar a transparência do personagem
+local function SetPersonagemInvisivel(estado)
+    local char = player.Character
+    if not char then return end
+
+    for _, part in ipairs(char:GetDescendants()) do
+        if part:IsA("BasePart") or part:IsA("Decal") then
+            if part.Name ~= "HumanoidRootPart" then
+                if estado then
+                    if not part:GetAttribute("OldTransparency") then
+                        part:SetAttribute("OldTransparency", part.Transparency)
+                    end
+                    part.Transparency = 1
+                else
+                    local oldTrans = part:GetAttribute("OldTransparency")
+                    part.Transparency = oldTrans or 0
+                    part:SetAttribute("OldTransparency", nil)
+                end
+            end
+        end
+    end
+    TransparenteAtivo = estado
+end
+
+local function RestaurarVisibilidade()
+    if TransparenteAtivo then
+        SetPersonagemInvisivel(false)
+    end
+end
+
+-- Restaura ao morrer/renascer
+player.CharacterAdded:Connect(function()
+    TransparenteAtivo = false
+end)
+
+-- Loop de verificação contínua do Murderer (30 Studs)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        
+        if AutoInvisivelAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local charMurderer = ObterMurderer()
+            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+            -- Se o Murderer existir, estiver vivo e na partida
+            if hrp and hrpMurderer and charMurderer.Parent then
+                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
+
+                if distMurder <= 30 then
+                    if not TransparenteAtivo then
+                        SetPersonagemInvisivel(true)
+                    end
+                else
+                    if TransparenteAtivo then
+                        SetPersonagemInvisivel(false)
+                    end
+                end
+            else
+                -- Se o Murderer morrer, resetar, sair do servidor ou a rodada acabar
+                if TransparenteAtivo then
+                    SetPersonagemInvisivel(false)
+                end
+            end
+        else
+            if TransparenteAtivo then
+                SetPersonagemInvisivel(false)
+            end
+        end
+    end
+end)
+
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
 -- ===========================================
@@ -2814,6 +2893,19 @@ Sec_AutoFarm:Toggle({
     Default = true,
     Callback = function(estado)
         AutoResetAoEncher = estado
+    end
+})
+
+Sec_AutoFarm:Toggle({
+    Title = "Invisível Perto do Murderer",
+    Desc = "Fica invisível automaticamente ao chegar a 30 studs do Murderer",
+    Value = false,
+    Callback = function(Value)
+        AutoInvisivelAtivo = Value
+        if not Value then
+            -- Restaura a visibilidade normal ao desligar a opção
+            RestaurarVisibilidade()
+        end
     end
 })
 
