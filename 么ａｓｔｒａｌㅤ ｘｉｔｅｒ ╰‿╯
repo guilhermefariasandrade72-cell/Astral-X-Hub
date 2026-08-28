@@ -3019,100 +3019,217 @@ Sec_Xerife:Toggle({
 
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
+
+-- ==================================
+-- 🔘 KILL ALL BUTTON
+-- ==================================
+
 Sec_Murderer:Toggle({
     Title = "Kill All Button",
-    Desc = "Adiciona um botão na tela que ao clica mata todo mundo",
+    Desc = "Adiciona um botão na tela que ao clicar mata todo mundo",
     Default = false,
+
     Callback = function(Ativo)
+
         if Ativo then
             CreateKillAllButton()
         else
             RemoveKillAllButton()
         end
+
     end
 })
+
+
+-- ==================================
+-- 💀 KILL ALL
+-- ==================================
 
 Sec_Murderer:Toggle({
     Title = "Kill All",
     Desc = "Mata todo mundo automaticamente",
     Default = false,
+
     Callback = function(Ativo)
         KillAura = Ativo
     end
 })
 
+
+-- ==================================
+-- 🎯 KILL AURA
+-- ==================================
+
 Sec_Murderer:Toggle({
     Title = "Kill Aura",
     Desc = "Mata todo mundo em uma distância que você escolher",
     Default = false,
+
     Callback = function(Ativo)
+
         KillAuraAtivo = Ativo
+
         AtualizarCirculoAura()
+
     end
 })
+
+
+-- ==================================
+-- 📏 DISTÂNCIA KILL AURA
+-- ==================================
 
 Sec_Murderer:Slider({
     Title = "Distance Kill Aura",
     Desc = "Ajuste a distância do Kill Aura",
-    Value = {Min = 5, Max = 50, Default = 15, Step = 1},
+
+    Value = {
+        Min = 5,
+        Max = 50,
+        Default = 15,
+        Step = 1
+    },
+
     Callback = function(Valor)
+
         RaioKillAura = Valor
+
         AtualizarCirculoAura()
+
     end
 })
+
+
+-- ==================================
+-- 🔵 CIRCLE AURA
+-- ==================================
 
 Sec_Murderer:Toggle({
     Title = "Clicle Aura",
     Desc = "Consegue ver a distância do kill aura",
     Default = false,
+
     Callback = function(Ativo)
+
         MostrarCirculoAura = Ativo
+
         AtualizarCirculoAura()
+
     end
 })
 
+
+-- ==================================
+-- 👤 SELECIONAR JOGADOR
+-- ==================================
+
+local JogadorSelecionado = nil
+
+local DropdownJogadores = Sec_Murderer:Dropdown({
+
+    Title = "🎯 Selecionar Jogador",
+
+    Values = {},
+
+    Value = nil,
+
+    Callback = function(Value)
+
+        if Value then
+            JogadorSelecionado = Players:FindFirstChild(Value)
+        else
+            JogadorSelecionado = nil
+        end
+
+    end
+})
+
+
+-- ==================================
+-- 🔄 ATUALIZAR LISTA
+-- ==================================
+
 local function AtualizarListaJogadores()
+
     local listaNomes = {}
 
     for _, p in ipairs(Players:GetPlayers()) do
+
         if p ~= player then
             table.insert(listaNomes, p.Name)
         end
+
     end
 
+
     if DropdownJogadores then
+
         pcall(function()
             DropdownJogadores:SetValues(listaNomes)
         end)
+
     end
 
+
+    -- Se o jogador selecionado saiu
     if JogadorSelecionado
         and not Players:FindFirstChild(JogadorSelecionado.Name) then
 
         JogadorSelecionado = nil
+
     end
+
 end
 
+
+-- ==================================
+-- 👥 JOGADOR ENTROU
+-- ==================================
+
 Players.PlayerAdded:Connect(function()
+
     task.wait(0.2)
+
     AtualizarListaJogadores()
+
 end)
+
+
+-- ==================================
+-- 👋 JOGADOR SAIU
+-- ==================================
 
 Players.PlayerRemoving:Connect(function()
+
     task.wait(0.2)
+
     AtualizarListaJogadores()
+
 end)
 
+
+-- Atualiza assim que a interface é criada
 AtualizarListaJogadores()
 
+
+-- ==================================
+-- 🎯 KILL AURA NO ALVO
+-- ==================================
+
 Sec_Murderer:Toggle({
+
     Title = "Kill Aura (Alvo Selecionado)",
+
     Desc = "Elimina apenas o jogador selecionado na lista acima quando estiver no alcance",
+
     Default = false,
 
     Callback = function(Value)
+
         KillAuraAlvoAtivo = Value
+
     end
+
 })
 
 -- ==================================
