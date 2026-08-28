@@ -390,14 +390,28 @@ local OpenButton = Window:EditOpenButton({
     Draggable = true,
 })
 
+-- ==================================
+-- 🔎 PROCURAR O TEXTO "ASTRAL"
+-- ==================================
+
 local CoreGui = game:GetService("CoreGui")
 
 for _, Obj in ipairs(CoreGui:GetDescendants()) do
-    if Obj:IsA("TextButton") and Obj.Text == "Astral" then
-        print("🎯 ENCONTRADO!")
-        print("Nome:", Obj.Name)
-        print("Caminho:", Obj:GetFullName())
-        print("Tamanho:", Obj.Size)
+
+    if Obj:IsA("TextLabel") or Obj:IsA("TextButton") then
+
+        if string.lower(Obj.Text) == "astral" then
+
+            print("================================")
+            print("🎯 ASTRAL ENCONTRADO")
+            print("Classe:", Obj.ClassName)
+            print("Nome:", Obj.Name)
+            print("Caminho:", Obj:GetFullName())
+            print("Tamanho:", Obj.Size)
+            print("Pai:", Obj.Parent and Obj.Parent.Name)
+            print("================================")
+
+        end
     end
 end
 
