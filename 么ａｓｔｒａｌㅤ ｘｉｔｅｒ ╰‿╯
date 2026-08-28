@@ -3118,98 +3118,84 @@ Sec_Murderer:Toggle({
     end
 })
 
-
 -- ==================================
--- 👤 SELECIONAR JOGADOR
+-- 👤 SELEÇÃO DE JOGADOR
 -- ==================================
 
 local JogadorSelecionado = nil
+local DropdownJogadores = nil
 
-local DropdownJogadores = Sec_Murderer:Dropdown({
-
-    Title = "🎯 Selecionar Jogador",
-
-    Values = {},
-
-    Value = nil,
-
-    Callback = function(Value)
-
-        if Value then
-            JogadorSelecionado = Players:FindFirstChild(Value)
-        else
-            JogadorSelecionado = nil
-        end
-
-    end
-})
-
-
--- ==================================
--- 🔄 ATUALIZAR LISTA
--- ==================================
-
-local function AtualizarListaJogadores()
-
-    local listaNomes = {}
+local function PegarListaJogadoresMurderer()
+    local lista = {}
 
     for _, p in ipairs(Players:GetPlayers()) do
-
         if p ~= player then
-            table.insert(listaNomes, p.Name)
+            table.insert(lista, p.Name)
         end
-
     end
 
+    return lista
+end
 
+
+local function CriarDropdownJogadoresMurderer()
+
+    -- Remove o Dropdown antigo
     if DropdownJogadores then
-
         pcall(function()
-            DropdownJogadores:SetValues(listaNomes)
+            DropdownJogadores:Destroy()
         end)
 
+        DropdownJogadores = nil
     end
 
 
-    -- Se o jogador selecionado saiu
-    if JogadorSelecionado
-        and not Players:FindFirstChild(JogadorSelecionado.Name) then
+    -- Cria novamente com a lista atual
+    DropdownJogadores = Sec_Murderer:Dropdown({
 
-        JogadorSelecionado = nil
+        Title = "Select Player",
 
-    end
+        Values = PegarListaJogadoresMurderer(),
+
+        Default = "",
+
+        Callback = function(nome)
+
+            JogadorSelecionado = nome
+
+        end
+    })
 
 end
 
 
 -- ==================================
--- 👥 JOGADOR ENTROU
+-- 🔄 ATUALIZAR QUANDO ENTRAR/SAIR
 -- ==================================
 
 Players.PlayerAdded:Connect(function()
 
-    task.wait(0.2)
+    task.wait(0.3)
 
-    AtualizarListaJogadores()
+    CriarDropdownJogadoresMurderer()
 
 end)
 
-
--- ==================================
--- 👋 JOGADOR SAIU
--- ==================================
 
 Players.PlayerRemoving:Connect(function()
 
-    task.wait(0.2)
+    task.wait(0.3)
 
-    AtualizarListaJogadores()
+    CriarDropdownJogadoresMurderer()
 
 end)
 
 
--- Atualiza assim que a interface é criada
-AtualizarListaJogadores()
+-- ==================================
+-- 🚀 CRIA A LISTA INICIAL
+-- ==================================
+
+CriarDropdownJogadoresMurderer()
 
 
 -- ==================================
