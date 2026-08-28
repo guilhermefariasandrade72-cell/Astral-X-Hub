@@ -533,7 +533,6 @@ local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ff
 -- ==================================
 -- 🚶 AUTO FARM — ANDANDO EM PÉ (CORRIGIDO)
 -- ==================================
--- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -550,6 +549,7 @@ local CONFIG_FARM = {
 
 local AutoFarmAtivo = false
 local BolsaCheia = false
+local PartidaID = 0 -- Identificador para saber se mudou de partida
 local collectedCoins = {}
 local moedasIgnoradasInvisivel = {} -- Guarda moedas que foram puladas por estar invisível
 
@@ -584,6 +584,7 @@ end
 -- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
+    PartidaID = PartidaID + 1 -- Incrementa a partida para renovar a coleta
     table.clear(collectedCoins)
     table.clear(moedasIgnoradasInvisivel)
     cachedCoinContainer = nil
@@ -750,7 +751,6 @@ task.spawn(function()
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
             if not EmPartida() or not hrp then
-                ResetarEstadoFarm()
                 task.wait(0.2)
                 continue
             end
@@ -822,11 +822,13 @@ task.spawn(function()
                 task.wait(0.1)
             end
         else
-            ResetarEstadoFarm()
-            task.wait(0.5)
+            -- Quando desligar o botão, apenas espera sem resetar o estado da bolsa da partida atual
+            task.wait(0.3)
         end
     end
 end)
+
+
 
 -- ==================================
 -- 📌 CONFIGURAÇÕES E VARIÁVEIS
