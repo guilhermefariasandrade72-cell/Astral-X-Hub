@@ -3119,29 +3119,38 @@ Sec_Murderer:Toggle({
 })
 
 -- ==================================
--- 👤 SELEÇÃO DE JOGADOR
+-- 👤 SELECIONAR JOGADOR
 -- ==================================
 
 local JogadorSelecionado = nil
 local DropdownJogadores = nil
 
+
 local function PegarListaJogadoresMurderer()
+
     local lista = {}
 
     for _, p in ipairs(Players:GetPlayers()) do
+
         if p ~= player then
             table.insert(lista, p.Name)
         end
+
     end
 
     return lista
 end
 
 
+-- ==================================
+-- 🎯 CRIAR DROPDOWN
+-- ==================================
+
 local function CriarDropdownJogadoresMurderer()
 
-    -- Remove o Dropdown antigo
+    -- Remove o antigo
     if DropdownJogadores then
+
         pcall(function()
             DropdownJogadores:Destroy()
         end)
@@ -3150,7 +3159,7 @@ local function CriarDropdownJogadoresMurderer()
     end
 
 
-    -- Cria novamente com a lista atual
+    -- Cria primeiro o Dropdown
     DropdownJogadores = Sec_Murderer:Dropdown({
 
         Title = "Select Player",
@@ -3170,7 +3179,7 @@ end
 
 
 -- ==================================
--- 🔄 ATUALIZAR QUANDO ENTRAR/SAIR
+-- 🔄 ATUALIZAR LISTA
 -- ==================================
 
 Players.PlayerAdded:Connect(function()
@@ -3191,32 +3200,39 @@ Players.PlayerRemoving:Connect(function()
 end)
 
 
--- ==================================
--- 🚀 CRIA A LISTA INICIAL
--- ==================================
-
+-- Cria a lista inicialmente
 CriarDropdownJogadoresMurderer()
 
 
 -- ==================================
--- 🎯 KILL AURA NO ALVO
+-- 🎯 BOTÃO KILL AURA
 -- ==================================
 
-Sec_Murderer:Toggle({
+Sec_Murderer:Button({
 
     Title = "Kill Aura (Alvo Selecionado)",
 
-    Desc = "Elimina apenas o jogador selecionado na lista acima quando estiver no alcance",
+    Desc = "Clique para ativar a Kill Aura no jogador selecionado",
 
-    Default = false,
+    Callback = function()
 
-    Callback = function(Value)
+        if not JogadorSelecionado then
+            return
+        end
 
-        KillAuraAlvoAtivo = Value
+        local alvo = Players:FindFirstChild(JogadorSelecionado)
+
+        if not alvo then
+            return
+        end
+
+        -- Ativa a variável do alvo selecionado
+        KillAuraAlvoAtivo = not KillAuraAlvoAtivo
 
     end
 
 })
+
 
 -- ==================================
 -- BOTOES DA ABA ESP
