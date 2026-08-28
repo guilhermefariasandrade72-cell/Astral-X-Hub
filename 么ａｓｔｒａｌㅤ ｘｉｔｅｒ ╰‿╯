@@ -559,14 +559,13 @@ local player = Players.LocalPlayer
 local CONFIG_FARM = {
     velocidade = 18,
     alcance_maximo = 500,
-    raio_perigo_murder = 30 -- Raio de distância do Murderer
+    raio_perigo_murder = 30 -- Se o Murderer estiver a menos dessa distância da moeda, ele ignora
 }
 
 local AutoFarmAtivo = false
 local BolsaCheia = false
-local PartidaID = 0 -- Identificador para saber se mudou de partida
+local PartidaID = 0
 local collectedCoins = {}
-local moedasIgnoradasInvisivel = {} -- Guarda moedas que foram puladas por estar invisível
 
 local cachedCoinContainer = nil
 local ultimoCheckBolsa = 0
@@ -599,9 +598,8 @@ end
 -- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
-    PartidaID = PartidaID + 1 -- Incrementa a partida para renovar a coleta
+    PartidaID = PartidaID + 1
     table.clear(collectedCoins)
-    table.clear(moedasIgnoradasInvisivel)
     cachedCoinContainer = nil
 end
 
@@ -614,36 +612,7 @@ player:GetAttributeChangedSignal("Alive"):Connect(function()
 end)
 
 -- ==================================
--- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA (25 STUDS DO MURDERER)
--- ==================================
-task.spawn(function()
-    while true do
-        task.wait(0.1)
-        if AutoFarmAtivo then
-            local char = player.Character
-            local hrp = char and char:FindFirstChild("HumanoidRootPart")
-            local charMurderer = ObterMurderer()
-            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
-
-            if hrp and hrpMurderer then
-                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
-
-                if distMurder <= CONFIG_FARM.raio_perigo_murder then
-                    if not InvisivelAtivo then
-                        InvisivelAtivo = true
-                    end
-                else
-                    if InvisivelAtivo then
-                        InvisivelAtivo = false
-                    end
-                end
-            end
-        end
-    end
-end)
-
--- ==================================
--- 2. DETECTOR DE BOLSA CHEIA (OTIMIZADO)
+-- 2. DETECTOR DE BOLSA CHEIA
 -- ==================================
 local function VerificarTextoBolsaCheia()
     local agora = os.clock()
@@ -707,7 +676,7 @@ local function EmPartida()
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA (COM FILTROS DE INVISIBILIDADE E MURDERER)
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA (COM RAIO DE SEGURANÇA DO MURDERER)
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -728,21 +697,11 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
 
-            -- 1. FILTRO: Ignora moedas a menos de 25 studs do Murderer
+            -- FILTRO: Ignora se o Murderer estiver perto da moeda
             if hrpMurderer then
-                local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
-                if distMurder <= CONFIG_FARM.raio_perigo_murder then
-                    continue
-                end
-            end
-
-            -- 2. FILTRO: Ignora moedas marcadas temporariamente por falha no toque (invisível)
-            if moedasIgnoradasInvisivel[moeda] then
-                -- Se a invisibilidade já desligou, libera a moeda para ser coletada!
-                if not InvisivelAtivo then
-                    moedasIgnoradasInvisivel[moeda] = nil
-                else
-                    continue
+                local distMurderMoeda = (moeda.Position - hrpMurderer.Position).Magnitude
+                if distMurderMoeda <= CONFIG_FARM.raio_perigo_murder then
+                    continue -- Pula esta moeda enquanto o Murderer estiver perto
                 end
             end
 
@@ -757,7 +716,7 @@ local function getNearestCoin(minhaPos)
 end
 
 -- ==================================
--- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO
 -- ==================================
 task.spawn(function()
     while true do
@@ -770,7 +729,7 @@ task.spawn(function()
                 continue
             end
 
-            -- Aguarda se a bolsa encher
+            -- Se a bolsa encher, interrompe a busca
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
                 task.wait(0.3)
@@ -780,20 +739,27 @@ task.spawn(function()
             local alvo = getNearestCoin(hrp.Position)
 
             if alvo then
-                local tempoPassadoNaMoeda = 0
-
                 while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and not BolsaCheia and not VerificarTextoBolsaCheia()
                 and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
                     
                     local minhaPosAtual = hrp.Position
-                    
-                    -- Se surgir uma moeda MAIS PERTO do seu caminho, ele troca de alvo
+                    local charMurderer = ObterMurderer()
+                    local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+                    -- Se o Murderer se aproximar da moeda que estamos indo buscar, abandona a moeda imediatamente
+                    if hrpMurderer then
+                        local distMurderAlvo = (alvo.Position - hrpMurderer.Position).Magnitude
+                        if distMurderAlvo <= CONFIG_FARM.raio_perigo_murder then
+                            break
+                        end
+                    end
+
+                    -- Se surgir outra moeda segura e mais próxima, altera a rota
                     local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
                     if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
                         alvo = moedaMaisPertoAgora
-                        tempoPassadoNaMoeda = 0
                     end
 
                     if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
@@ -804,19 +770,13 @@ task.spawn(function()
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Chega exatamente no centro da moeda (0.8 studs)
+                    -- Coleta a moeda
                     if distancia <= 0.8 then
-                        -- 🚨 SE ESTIVER INVISÍVEL: O toque não registra! Marca como ignorada temporariamente
-                        if InvisivelAtivo then
-                            moedasIgnoradasInvisivel[alvo] = true
-                            break -- Abandona esta moeda e busca outra
-                        else
-                            collectedCoins[alvo] = true
-                            break
-                        end
+                        collectedCoins[alvo] = true
+                        break
                     end
 
-                    -- Movimentação suave via CFrame contínuo (Sem teleporte)
+                    -- Movimentação contínua
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
@@ -824,25 +784,16 @@ task.spawn(function()
 
                     hrp.CFrame = CFrame.new(novaPos)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-
-                    -- Trava de segurança: Se ficar mais de 1.5s travado na mesma moeda por estar invisível
-                    tempoPassadoNaMoeda = tempoPassadoNaMoeda + dt
-                    if tempoPassadoNaMoeda > 1.5 and InvisivelAtivo then
-                        moedasIgnoradasInvisivel[alvo] = true
-                        break
-                    end
                 end
             else
                 table.clear(collectedCoins)
                 task.wait(0.1)
             end
         else
-            -- Quando desligar o botão, apenas espera sem resetar o estado da bolsa da partida atual
             task.wait(0.3)
         end
     end
 end)
-
 
 
 -- ==================================
