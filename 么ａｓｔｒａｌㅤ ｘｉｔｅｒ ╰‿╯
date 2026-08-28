@@ -2853,7 +2853,7 @@ local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm Coin Button",
-    Desc = "Adiciona um botao de Farm na tela",
+    Desc = "Adiciona um botão de Farm na tela",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -2945,7 +2945,7 @@ local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
 
 Sec_Xerife:Toggle({
     Title = "Silent AIM Button",
-    Desc = "Adiciona um botao na tela que ao clicar atira no assassino",
+    Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
     Default = false,
     Callback = function(Ativo)
         AutoShoot = Ativo
@@ -2968,6 +2968,7 @@ Sec_Xerife:Toggle({
 
 Sec_Xerife:Toggle({
     Title = "Grab Gun Button",
+    Desc = "Adicionar um botão na tela que ao clicar traz a Gun para seu personagem",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -2980,6 +2981,7 @@ Sec_Xerife:Toggle({
 
 Sec_Xerife:Toggle({
     Title = "Grab Gun",
+    Desc = "Verifca se a Gun esta no chão e traz ela pra você",
     Default = false,
     Callback = function(Ativo)
         AutoGrabGun = Ativo
@@ -2988,6 +2990,7 @@ Sec_Xerife:Toggle({
 
 Sec_Xerife:Toggle({
     Title = "Aimbot",
+    Desc = "Centraliza a mira no peito do assassino",
     Default = false,
     Callback = function(State)
         LockCameraAtivo = State
@@ -2996,6 +2999,7 @@ Sec_Xerife:Toggle({
 
 Sec_Xerife:Slider({
     Title = "FOV",
+    Desc = "Ajuste o Aimbot",
     Value = {Min = 50, Max = 500, Default = 150, Step = 5},
     Callback = function(Valor)
         RaioFOV = Valor
@@ -3007,6 +3011,7 @@ Sec_Xerife:Slider({
 
 Sec_Xerife:Toggle({
     Title = "FOV Cicle",
+   Desc = "Adiciona o Fov na tela",
     Default = false,
     Callback = function(State)
         MostrarCirculo = State
@@ -3020,6 +3025,7 @@ local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 Sec_Murderer:Toggle({
     Title = "Kill All Button",
+    Desc = "Adiciona um botão na tela que ao clica mata todo mundo",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -3032,6 +3038,7 @@ Sec_Murderer:Toggle({
 
 Sec_Murderer:Toggle({
     Title = "Kill All",
+    Desc = "Mata todo mundo automaticamente",
     Default = false,
     Callback = function(Ativo)
         KillAura = Ativo
@@ -3040,6 +3047,7 @@ Sec_Murderer:Toggle({
 
 Sec_Murderer:Toggle({
     Title = "Kill Aura",
+    Desc = "Mata todo mundo em uma distância que você escolher",
     Default = false,
     Callback = function(Ativo)
         KillAuraAtivo = Ativo
@@ -3049,6 +3057,7 @@ Sec_Murderer:Toggle({
 
 Sec_Murderer:Slider({
     Title = "Distance Kill Aura",
+    Desc = "Ajuste a distância do Kill Aura",
     Value = {Min = 5, Max = 50, Default = 15, Step = 1},
     Callback = function(Valor)
         RaioKillAura = Valor
@@ -3058,6 +3067,7 @@ Sec_Murderer:Slider({
 
 Sec_Murderer:Toggle({
     Title = "Clicle Aura",
+    Desc = "Consegue ver a distância do kill aura",
     Default = false,
     Callback = function(Ativo)
         MostrarCirculoAura = Ativo
@@ -3121,6 +3131,7 @@ local Sec_Extras = Aba_Local:Section({Title = "Extras"})
 
 Sec_Extras:Toggle({
     Title = "Invisível",
+    Desc = "Move seu personagem pata um lugar distante fazendo parecer que estar invisivel",
     Default = false,
     Callback = function(Ativo)
         InvisivelAtivo = Ativo
@@ -3129,6 +3140,7 @@ Sec_Extras:Toggle({
 
 Sec_Extras:Toggle({
     Title = "Invisível (botão)",
+    Desc = "Adiciona um botão que ao clicar deixa seu personagem invisivel",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -3143,6 +3155,7 @@ local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
 
 Sec_Movimento:Slider({
     Title = "Speed",
+    Desc = "Ajuste a valocidade do seu personagem",
     Value = {Min = 16, Max = 30, Default = 16, Step = 1},
     Callback = function(Valor)
         VelocidadePadrao = Valor
@@ -3155,6 +3168,7 @@ Sec_Movimento:Slider({
 
 Sec_Movimento:Slider({
     Title = "Jump",
+    Desc = "Ajuste o pulo do seu personagem",
     Value = {Min = 50, Max = 75, Default = 50, Step = 1},
     Callback = function(Valor)
         ForcaPuloPadrao = Valor
@@ -3168,6 +3182,7 @@ Sec_Movimento:Slider({
 
 Sec_Movimento:Toggle({
     Title = "Fly",
+    Desc = "Consegue voar pelo mapa",
     Default = false,
     Callback = function(Ativo)
         ToggleFly(Ativo)
@@ -3176,6 +3191,7 @@ Sec_Movimento:Toggle({
 
 Sec_Movimento:Slider({
     Title = "Fly Speed",
+    Desc = "Ajuste a velocidade do Voo",
     Value = {Min = 16, Max = 100, Default = 16, Step = 1},
     Callback = function(Valor)
         FlyVelocidade = Valor
@@ -3184,6 +3200,7 @@ Sec_Movimento:Slider({
 
 Sec_Movimento:Toggle({
     Title = "Infinite Jump",
+    Desc = "Consegue pular infinitamente ao presionar o botão de pulo",
     Default = false,
     Callback = function(Ativo)
         _G.PuloInfinito = Ativo
@@ -3192,6 +3209,7 @@ Sec_Movimento:Toggle({
 
 Sec_Movimento:Toggle({
     Title = "Walk Fling",
+    Desc = "Faz seu personagem fica jirando e consegue jogar jogadores pra longe",
     Default = false,
     Callback = function(Ativo)
         ToggleWalkFling(Ativo)
@@ -3200,6 +3218,7 @@ Sec_Movimento:Toggle({
 
 Sec_Movimento:Toggle({
     Title = "Anti-Fling",
+    Desc = "Impede que outros scripts te jogue pra longe",
     Default = false,
     Callback = function(Ativo)
         getgenv().AntiFling = Ativo
@@ -3208,6 +3227,7 @@ Sec_Movimento:Toggle({
 
 Sec_Movimento:Toggle({
     Title = "Speed glith",
+    Desc = "Aplica velocidade 300 ao pular e volta ao normal quando encostar mo chão",
     Default = false,
     Callback = function(Ativo)
         _G.SpeedNoPulo = Ativo
@@ -3219,6 +3239,7 @@ local Sec_Camera = Aba_Local:Section({Title = "Câmera"})
 -- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
 Sec_Camera:Toggle({
     Title = "Infinite Zoom",
+    Desc = "Consegue dar zoom para uma distância de 99999",
     Default = false,
     Callback = function(Ativo)
         _G.CameraInfinita = Ativo
@@ -3235,6 +3256,7 @@ Sec_Camera:Toggle({
 
 Sec_Camera:Toggle({
     Title = "Noclip camera",
+    Desc = "Impede que sua camera encoste em paredes",
     Default = false,
     Callback = function(Ativo)
         _G.CameraNoClip = Ativo
@@ -3243,6 +3265,7 @@ Sec_Camera:Toggle({
 
 Sec_Camera:Slider({
     Title = "Fov",
+    Desc = "Ajuste o Fov de sua camera",
     Value = {Min = 70, Max = 130, Default = 70, Step = 1},
     Callback = function(Valor)
         FOV_Padrao = Valor
