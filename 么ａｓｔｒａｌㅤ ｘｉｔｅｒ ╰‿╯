@@ -2875,7 +2875,6 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Slider({
     Title = "Speed Farm",
-    Desc = "muda a velocidade do auto farm",
     Value = {Min = 16, Max = 20, Default = 16, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
