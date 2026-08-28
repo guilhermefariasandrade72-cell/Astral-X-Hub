@@ -391,14 +391,16 @@ local OpenButton = Window:EditOpenButton({
 })
 
 -- ==================================
--- 🔴 BOTÃO ASTRAL
+-- 🔴 ESCALA DO BOTÃO ASTRAL
 -- ==================================
 
 local BotaoAstral = nil
+local EscalaAstral = nil
 
 task.wait(1)
 
 for _, Obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
+
     if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
 
         local Pai = Obj.Parent
@@ -407,23 +409,26 @@ for _, Obj in ipairs(game:GetService("CoreGui"):GetDescendants()) do
             BotaoAstral = Pai
             break
         end
+
     end
 end
 
--- Centraliza o crescimento
+
 if BotaoAstral then
-    BotaoAstral.AnchorPoint = Vector2.new(0.5, 0.5)
 
-    local Posicao = BotaoAstral.Position
+    -- Cria a escala
+    EscalaAstral = BotaoAstral:FindFirstChildOfClass("UIScale")
 
-    BotaoAstral.Position = UDim2.new(
-        Posicao.X.Scale,
-        Posicao.X.Offset,
-        Posicao.Y.Scale,
-        Posicao.Y.Offset + 18
-    )
+    if not EscalaAstral then
+        EscalaAstral = Instance.new("UIScale")
+        EscalaAstral.Parent = BotaoAstral
+    end
 
-    BotaoAstral.Size = UDim2.fromOffset(100, 36)
+    -- Escala inicial
+    EscalaAstral.Scale = 1
+
+    print("✅ Escala do botão Astral encontrada/criada!")
+
 end
 
 -- ==================================
@@ -3362,20 +3367,17 @@ Aba_Config:Slider({
     Title = "📐 Tamanho do Botão Astral",
 
     Value = {
-        Min = 60,
-        Max = 250,
-        Default = 100,
+        Min = 0.6,
+        Max = 2,
+        Default = 1,
     },
 
-    Step = 5,
+    Step = 0.1,
 
     Callback = function(Valor)
 
-        if BotaoAstral then
-            BotaoAstral.Size = UDim2.fromOffset(
-                Valor,
-                36
-            )
+        if EscalaAstral then
+            EscalaAstral.Scale = Valor
         end
 
     end
