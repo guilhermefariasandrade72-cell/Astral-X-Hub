@@ -3337,7 +3337,7 @@ local ListaCores = {
 -- ==================================
 
 Aba_Config:Dropdown({
-    Title = "🎨 Cor da Interface",
+    Title = "Cor da Interface",
     Values = ListaCores,
     Value = CorSelecionada,
 
@@ -3352,7 +3352,7 @@ Aba_Config:Dropdown({
 -- ==================================
 
 Aba_Config:Button({
-    Title = "✅ Aplicar Cor",
+    Title = "Aplicar Cor",
 
     Callback = function()
 
@@ -3371,21 +3371,19 @@ Aba_Config:Button({
 })
 
 Aba_Config:Slider({
-    Title = "📐 Tamanho do Botão Astral",
+    Title = "Tamanho do Botão Astral",
 
     Value = {
-        Min = 0.5,
-        Max = 3,
-        Default = 1,
+        Min = 0.7,
+        Max = 2.5,
+        Default = 0.7,
     },
 
     Step = 0.1,
 
     Callback = function(Valor)
-
         if EscalaBotaoAstral then
             EscalaBotaoAstral.Scale = Valor
         end
-
     end
 })
