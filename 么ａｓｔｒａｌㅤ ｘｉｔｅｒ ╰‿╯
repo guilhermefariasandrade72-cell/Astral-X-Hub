@@ -2853,6 +2853,7 @@ local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm Coin Button",
+    Desc = adiciona um botao de Farm na tela",
     Default = false,
     Callback = function(Ativo)
         if Ativo then
@@ -2865,6 +2866,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Farm Coin",
+    Desc = "voa ate as moedas mas proxima e para ao coletar o max de moedas",
     Default = false,
     Callback = function(Ativo)
         AutoFarmAtivo = Ativo
@@ -2873,6 +2875,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Slider({
     Title = "Speed Farm",
+    Desc = "muda a velocidade do auto farm",
     Value = {Min = 16, Max = 20, Default = 16, Step = 1},
     Callback = function(Valor)
         CONFIG_FARM.velocidade = Valor
@@ -2912,6 +2915,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Toggle({
     Title = "Auto Shoot Murderer",
+    Desc = "apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar ",
     Default = false,
     Callback = function(Ativo)
         AutoShootAtivo = Ativo
@@ -2920,6 +2924,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Toggle({
     Title = "Kill All",
+    Desc = "mata todo mundo apos ter coletado o max de moedas",
     Default = false,
     Callback = function(estado)
         KillAllAoEncher = estado
@@ -2928,6 +2933,7 @@ Sec_AutoFarm:Toggle({
 
 Sec_AutoFarm:Toggle({
     Title = "Safe TP",
+    Desc = "apos ter coletado o max de moeda e teleprtado para um lugar seguror",
     Default = false,
     Callback = function(estado)
         TPSafeAoEncher = estado
