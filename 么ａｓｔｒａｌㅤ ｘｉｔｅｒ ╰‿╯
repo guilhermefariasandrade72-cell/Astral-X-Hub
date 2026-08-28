@@ -3374,9 +3374,9 @@ Aba_Config:Slider({
     Title = "Tamanho do Botão Astral",
 
     Value = {
-        Min = 0.7,
-        Max = 2.5,
-        Default = 0.7,
+        Min = 1.0,
+        Max = 1.9,
+        Default = 1.0,
     },
 
     Step = 0.1,
@@ -3387,3 +3387,11 @@ Aba_Config:Slider({
         end
     end
 })
+
+
+
+
+
+
+
+
