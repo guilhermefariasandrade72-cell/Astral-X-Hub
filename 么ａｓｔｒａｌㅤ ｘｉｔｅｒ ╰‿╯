@@ -3071,44 +3071,45 @@ Sec_Murderer:Toggle({
     end
 })
 
--- Dropdown para escolher o alvo
-local DropdownJogadores = Aba_Murderer:Dropdown({
-    Title = "Selecionar Alvo",
-    Desc = "Escolha o jogador para ativar o Kill Aura individual",
-    Values = {},
-    Value = nil,
-    Callback = function(NomeSelecionado)
-        JogadorSelecionado = Players:FindFirstChild(NomeSelecionado)
-    end
-})
-
--- Função de atualização de jogadores na lista
 local function AtualizarListaJogadores()
     local listaNomes = {}
+
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player then
             table.insert(listaNomes, p.Name)
         end
     end
-    
-    DropdownJogadores:SetValues(listaNomes)
-    
-    -- Se o jogador escolhido saiu do jogo, reseta o alvo
-    if JogadorSelecionado and not Players:FindFirstChild(JogadorSelecionado.Name) then
+
+    if DropdownJogadores then
+        pcall(function()
+            DropdownJogadores:SetValues(listaNomes)
+        end)
+    end
+
+    if JogadorSelecionado
+        and not Players:FindFirstChild(JogadorSelecionado.Name) then
+
         JogadorSelecionado = nil
     end
 end
 
--- Eventos de conexão para atualizar a lista automaticamente
-Players.PlayerAdded:Connect(AtualizarListaJogadores)
-Players.PlayerRemoving:Connect(AtualizarListaJogadores)
+Players.PlayerAdded:Connect(function()
+    task.wait(0.2)
+    AtualizarListaJogadores()
+end)
+
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.2)
+    AtualizarListaJogadores()
+end)
+
 AtualizarListaJogadores()
 
--- Toggle para ativar o Kill Aura no alvo escolhido
 Sec_Murderer:Toggle({
     Title = "Kill Aura (Alvo Selecionado)",
     Desc = "Elimina apenas o jogador selecionado na lista acima quando estiver no alcance",
-    Value = false,
+    Default = false,
+
     Callback = function(Value)
         KillAuraAlvoAtivo = Value
     end
