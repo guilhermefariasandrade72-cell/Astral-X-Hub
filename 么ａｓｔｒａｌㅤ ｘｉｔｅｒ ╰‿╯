@@ -390,30 +390,19 @@ local OpenButton = Window:EditOpenButton({
     Draggable = true,
 })
 
--- ==================================
--- 📏 TAMANHO DO BOTÃO DE ABRIR
--- ==================================
+local CoreGui = game:GetService("CoreGui")
 
-local TamanhoBotao = 60
-
-local function AlterarTamanhoBotao(Tamanho)
-    TamanhoBotao = Tamanho
-
-    pcall(function()
-        -- Procura o botão criado pelo WindUI
-        local CoreGui = game:GetService("CoreGui")
-
-        for _, Obj in ipairs(CoreGui:GetDescendants()) do
-            if Obj:IsA("GuiButton") then
-                if Obj.Name == "OpenButton"
-                    or Obj.Name == "Open"
-                    or Obj.Name == "Astral" then
-
-                    Obj.Size = UDim2.fromOffset(Tamanho, Tamanho)
-                end
-            end
-        end
-    end)
+for _, Obj in ipairs(CoreGui:GetDescendants()) do
+    if Obj:IsA("GuiButton") then
+        print(
+            "BOTÃO:",
+            Obj.Name,
+            "| Caminho:",
+            Obj:GetFullName(),
+            "| Tamanho:",
+            Obj.Size
+        )
+    end
 end
 
 -- ==================================
