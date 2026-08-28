@@ -390,30 +390,29 @@ local OpenButton = Window:EditOpenButton({
     Draggable = true,
 })
 
--- ==================================
--- 🔎 PROCURAR O TEXTO "ASTRAL"
--- ==================================
-
 local CoreGui = game:GetService("CoreGui")
 
-for _, Obj in ipairs(CoreGui:GetDescendants()) do
+task.wait(1)
 
-    if Obj:IsA("TextLabel") or Obj:IsA("TextButton") then
+pcall(function()
+    for _, obj in ipairs(CoreGui:GetDescendants()) do
+        if obj:IsA("TextLabel") and obj.Text == "Astral" then
 
-        if string.lower(Obj.Text) == "astral" then
+            local BotaoAstral = obj.Parent
 
-            print("================================")
-            print("🎯 ASTRAL ENCONTRADO")
-            print("Classe:", Obj.ClassName)
-            print("Nome:", Obj.Name)
-            print("Caminho:", Obj:GetFullName())
-            print("Tamanho:", Obj.Size)
-            print("Pai:", Obj.Parent and Obj.Parent.Name)
-            print("================================")
+            if BotaoAstral and BotaoAstral:IsA("TextButton") then
+                print("✅ BOTÃO ASTRAL ENCONTRADO!")
+                print("Nome:", BotaoAstral.Name)
+                print("Tamanho atual:", BotaoAstral.Size)
 
+                BotaoAstral.Size = UDim2.fromOffset(160, 60)
+
+                print("Novo tamanho:", BotaoAstral.Size)
+                break
+            end
         end
     end
-end
+end)
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
