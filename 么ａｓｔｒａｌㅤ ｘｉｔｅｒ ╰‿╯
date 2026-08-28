@@ -391,6 +391,32 @@ local OpenButton = Window:EditOpenButton({
 })
 
 -- ==================================
+-- 📏 TAMANHO DO BOTÃO DE ABRIR
+-- ==================================
+
+local TamanhoBotao = 60
+
+local function AlterarTamanhoBotao(Tamanho)
+    TamanhoBotao = Tamanho
+
+    pcall(function()
+        -- Procura o botão criado pelo WindUI
+        local CoreGui = game:GetService("CoreGui")
+
+        for _, Obj in ipairs(CoreGui:GetDescendants()) do
+            if Obj:IsA("GuiButton") then
+                if Obj.Name == "OpenButton"
+                    or Obj.Name == "Open"
+                    or Obj.Name == "Astral" then
+
+                    Obj.Size = UDim2.fromOffset(Tamanho, Tamanho)
+                end
+            end
+        end
+    end)
+end
+
+-- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
 -- AITO FARM 
@@ -3325,21 +3351,13 @@ Aba_Config:Slider({
 
     Value = {
         Min = 40,
-        Max = 100,
+        Max = 120,
         Default = 60,
     },
 
     Step = 5,
 
-    Callback = function(Tamanho)
-        pcall(function()
-            if OpenButton then
-                OpenButton.Size = UDim2.fromOffset(Tamanho, Tamanho)
-            end
-        end)
+    Callback = function(Value)
+        AlterarTamanhoBotao(Value)
     end
 })
-
-
-
-
