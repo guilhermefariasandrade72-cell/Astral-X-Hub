@@ -396,15 +396,14 @@ for _, Obj in ipairs(CoreGui:GetDescendants()) do
     if Obj:IsA("GuiButton") then
         local Caminho = Obj:GetFullName()
 
-        if string.find(Caminho, "WindUI")
-        or string.find(Caminho, "Astral")
-        or string.find(Caminho, "OpenButton") then
-
+        if string.find(Caminho, "Astral", 1, true) then
             print(
-                "=== POSSÍVEL BOTÃO ASTRAL ===",
-                "\nNome:", Obj.Name,
-                "\nCaminho:", Caminho,
-                "\nTamanho:", Obj.Size
+                "🎯 BOTÃO ASTRAL:",
+                Obj.Name,
+                "| Caminho:",
+                Caminho,
+                "| Tamanho:",
+                Obj.Size
             )
         end
     end
