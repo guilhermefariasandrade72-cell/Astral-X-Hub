@@ -16,7 +16,7 @@ local player = Players.LocalPlayer
 -- ==================================
 
 local WindUI = loadstring(game:HttpGet(
-    "https://github.com/Footagesus/WindUI/releases/latest/download/main.lua"
+    "https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"
 ))()
 
 -- ==================================
