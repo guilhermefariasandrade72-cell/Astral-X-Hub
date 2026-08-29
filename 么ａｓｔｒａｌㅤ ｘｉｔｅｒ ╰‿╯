@@ -2844,10 +2844,11 @@ end
 
 
 -- ==================================
--- BOTOES DA ABA MAIN
+-- BOTOES DA ABA AUTO FARM
 -- ==================================
+
 Aba_AutoFarm:Section({
-    Title = "Auto Farm",
+    Title = "AUTO FARM",
     Box = false,
     TextSize = 18,
 })
@@ -2894,7 +2895,7 @@ Aba_AutoFarm:Button({
 })
 
 Aba_AutoFarm:Section({
-    Title = "Senttoings Auto Farm",
+    Title = "SENTTINGS AUTO FARM",
     Box = false,
     TextSize = 18,
 })
@@ -2935,9 +2936,11 @@ Aba_AutoFarm:Toggle({
     end
 })
 
-local Sec_Xerife = Aba_Main:Section({Title = "Xerife"})
+-- ===================================================
+-- BOTOES DA ABA SHERIFF
+-- ===================================================
 
-Sec_Xerife:Toggle({
+Aba_Xerife:Toggle({
     Title = "Silent AIM Button",
     Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
     Default = false,
@@ -2951,7 +2954,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Toggle({
+Aba_Xerife:Toggle({
     Title = "Instant Shoot",
     Desc = "Adiciona um botão na tela que ao clicar teleporta atras do assassino e atira nele",
     Default = false,
@@ -2960,7 +2963,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Toggle({
+Aba_Xerife:Toggle({
     Title = "Grab Gun Button",
     Desc = "Adicionar um botão na tela que ao clicar traz a Gun para seu personagem",
     Default = false,
@@ -2973,7 +2976,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Toggle({
+Aba_Xerife:Toggle({
     Title = "Grab Gun",
     Desc = "Verifca se a Gun esta no chão e traz ela pra você",
     Default = false,
@@ -2982,7 +2985,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Toggle({
+Aba_Xerife:Toggle({
     Title = "Aimbot",
     Desc = "Centraliza a mira no peito do assassino",
     Default = false,
@@ -2991,7 +2994,7 @@ Sec_Xerife:Toggle({
     end
 })
 
-Sec_Xerife:Slider({
+Aba_Xerife:Slider({
     Title = "FOV",
     Desc = "Ajuste o Aimbot",
     Value = {Min = 50, Max = 500, Default = 150, Step = 5},
@@ -3003,7 +3006,7 @@ Sec_Xerife:Slider({
     end
 })
 
-Sec_Xerife:Toggle({
+Aba_Xerife:Toggle({
     Title = "FOV Cicle",
    Desc = "Adiciona o Fov na tela",
     Default = false,
@@ -3015,11 +3018,15 @@ Sec_Xerife:Toggle({
     end
 })
 
-local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
-
 -- ==================================
 -- 👤 DROPDOWN DE JOGADORES
 -- ==================================
+
+Aba_Murderer:Section({
+    Title = "Murderer",
+    Box = false,
+    TextSize = 18,
+})
 
 local JogadorSelecionado = nil
 
@@ -3113,7 +3120,7 @@ end)
 
 
 -- 6. Botão de teste
-Sec_Murderer:Button({
+Aba_Murderer:Button({
 
     Title = "Ver Jogador Selecionado",
 
@@ -3139,7 +3146,7 @@ Sec_Murderer:Button({
 
 })
 
-Sec_Murderer:Toggle({
+Aba_Murderer:Toggle({
     Title = "Kill All Button",
     Desc = "Adiciona um botão na tela que ao clicar mata todo mundo",
     Default = false,
@@ -3155,7 +3162,7 @@ Sec_Murderer:Toggle({
     end
 })
 
-Sec_Murderer:Toggle({
+Aba_Murderer:Toggle({
     Title = "Kill All",
     Desc = "Mata todo mundo automaticamente",
     Default = false,
@@ -3165,7 +3172,7 @@ Sec_Murderer:Toggle({
     end
 })
 
-Sec_Murderer:Toggle({
+Aba_Murderer:Toggle({
     Title = "Kill Aura",
     Desc = "Mata todo mundo em uma distância que você escolher",
     Default = false,
@@ -3179,7 +3186,7 @@ Sec_Murderer:Toggle({
     end
 })
 
-Sec_Murderer:Slider({
+Aba_Murderer:Slider({
     Title = "Distance Kill Aura",
     Desc = "Ajuste a distância do Kill Aura",
 
@@ -3199,7 +3206,7 @@ Sec_Murderer:Slider({
     end
 })
 
-Sec_Murderer:Toggle({
+Aba_Murderer:Toggle({
     Title = "Clicle Aura",
     Desc = "Consegue ver a distância do kill aura",
     Default = false,
