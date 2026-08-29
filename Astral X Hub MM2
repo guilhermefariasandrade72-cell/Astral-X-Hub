@@ -966,6 +966,187 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
+-- ==================================
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+AutoShootAtivo = false
+local ExecutandoShoot = false
+local PRECISAO_FIXA = 50
+
+-- 🔍 BUSCAR MURDERER NA PARTIDA
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+                
+                if eMurder then
+                    return char
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- 🔍 BUSCAR A ARMA (MÃO OU BACKPACK)
+local function ObterArma()
+    local char = player.Character
+    if not char then return nil end
+    
+    local arma = char:FindFirstChild("Gun")
+    if not arma then
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            arma = backpack:FindFirstChild("Gun")
+        end
+    end
+    return arma
+end
+
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT
+local function IniciarSequenciaShoot()
+    if ExecutandoShoot then return end
+
+    -- 1. Checa se a bolsa encheu e se está em partida
+    local bolsaEncheu = (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()))
+    local emJogo = (EmPartida and EmPartida()) or true
+
+    if not (bolsaEncheu and emJogo) then
+        return
+    end
+
+    -- 2. Checa se possui a arma
+    local arma = ObterArma()
+    if not arma then return end
+
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local backpack = player:FindFirstChild("Backpack")
+    if not hrp or not hum or not backpack then return end
+
+    local charMurderer = ObterMurderer()
+    if not charMurderer then return end
+    
+    local hrpMurderer = charMurderer:FindFirstChild("HumanoidRootPart")
+    local humMurderer = charMurderer:FindFirstChild("Humanoid")
+    if not hrpMurderer or not humMurderer then return end
+
+    ExecutandoShoot = true
+
+    -- ⏳ PASSO 1: Aguarda 3 SEGUNDOS após a bolsa encher (Tempo para o TP Safe te levar à plataforma)
+    task.wait(3.0)
+
+    -- 📍 PASSO 2: MARCA A POSIÇÃO AGORA (Já com o boneco salvo na plataforma)
+    local posOriginal = hrp.CFrame
+
+    -- 🔹 PASSO 3: Ativa a invisibilidade e equipa a arma
+    InvisivelAtivo = true
+    hum.PlatformStand = false
+
+    if arma.Parent ~= char then
+        arma.Parent = char
+    end
+
+    task.wait(0.1)
+
+    local tempoComArma = 0
+    local tempoSemArma = 0
+    local estaComArma = true
+
+    -- 🔹 PASSO 4: Loop de ataque colado nas costas do Murderer
+    while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
+        
+        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
+        arma = ObterArma()
+
+        if estaComArma then
+            if arma and arma.Parent ~= char then
+                arma.Parent = char
+            end
+
+            -- 🎯 DISPARO COM PREVISÃO
+            if arma then
+                local shootEvent = arma:FindFirstChild("Shoot") 
+                    or arma:FindFirstChild("ShootEvent") 
+                    or ReplicatedStorage:FindFirstChild("Shoot", true)
+                
+                if shootEvent and shootEvent:IsA("RemoteEvent") then
+                    local veloc = hrpMurderer.AssemblyLinearVelocity
+                    local posComPrevisao = hrpMurderer.Position + (veloc * (PRECISAO_FIXA / 100))
+                    
+                    pcall(function()
+                        shootEvent:FireServer(hrp.CFrame, CFrame.new(posComPrevisao))
+                    end)
+                end
+            end
+
+            tempoComArma = tempoComArma + 0.15
+
+            if tempoComArma >= 10.0 then
+                if arma and arma.Parent == char then
+                    arma.Parent = backpack
+                end
+                estaComArma = false
+                tempoComArma = 0
+                tempoSemArma = 0
+            end
+        else
+            tempoSemArma = tempoSemArma + 0.15
+
+            if tempoSemArma >= 1.0 then
+                if arma then
+                    arma.Parent = char
+                end
+                estaComArma = true
+                tempoSemArma = 0
+            end
+        end
+
+        task.wait(0.15)
+    end
+
+    -- 🔹 PASSO 5: Murderer morreu — Desliga invisibilidade e volta para a plataforma
+    InvisivelAtivo = false
+
+    if hrp and posOriginal then
+        hrp.CFrame = posOriginal
+    end
+
+    -- 🔄 PASSO 6: Aguarda a bolsa esvaziar/reiniciar partida para rearmar
+    repeat
+        RunService.Heartbeat:Wait()
+    until not AutoShootAtivo 
+       or (EmPartida and not EmPartida()) 
+       or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) 
+       or player:GetAttribute("Alive") ~= true
+
+    ExecutandoShoot = false
+end
+
+-- 🔄 LOOP DE EXECUÇÃO CONTÍNUA
+task.spawn(function()
+    while true do
+        if AutoShootAtivo and not ExecutandoShoot then
+            IniciarSequenciaShoot()
+        end
+        RunService.Heartbeat:Wait()
+    end
+end)
+
 -- ===========================================
 -- 🔘 SISTEMA DO BOTÃO NA TELA
 -- ===========================================
