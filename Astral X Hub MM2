@@ -143,5 +143,121 @@ local CoresAstral = {
     ["Lavanda"] = {
         Accent = "#B57EDC",
         Button = "#B57EDC",
-        Icon = "#B57EDC",
+   
+
+    -- CORAL
+    ["Coral"] = {
+        Accent = "#FF7F50",
+        Button = "#FF7F50",
+        Icon = "#FF7F50",
     },
+
+    -- DOURADO
+    ["Dourado"] = {
+        Accent = "#FFD700",
+        Button = "#FFD700",
+        Icon = "#FFD700",
+    },
+
+    -- VIOLETA
+    ["Violeta"] = {
+        Accent = "#7F00FF",
+        Button = "#7F00FF",
+        Icon = "#7F00FF",
+    },
+
+    -- PINK
+    ["Pink"] = {
+        Accent = "#FF69B4",
+        Button = "#FF69B4",
+        Icon = "#FF69B4",
+    },
+
+    -- CORES COMUNS
+    ["Verde"] = {
+        Accent = "#1BF2B2",
+        Button = "#1BF2B2",
+        Icon = "#1BF2B2",
+    },
+
+    ["Azul"] = {
+        Accent = "#1B9CF2",
+        Button = "#1B9CF2",
+        Icon = "#1B9CF2",
+    },
+
+    ["Roxo"] = {
+        Accent = "#9B5CFF",
+        Button = "#9B5CFF",
+        Icon = "#9B5CFF",
+    },
+
+    ["Rosa"] = {
+        Accent = "#FF4FA3",
+        Button = "#FF4FA3",
+        Icon = "#FF4FA3",
+    },
+
+    ["Vermelho"] = {
+        Accent = "#FF4545",
+        Button = "#FF4545",
+        Icon = "#FF4545",
+    },
+
+    ["Laranja"] = {
+        Accent = "#FF8A00",
+        Button = "#FF8A00",
+        Icon = "#FF8A00",
+    },
+
+    ["Amarelo"] = {
+        Accent = "#FFD21F",
+        Button = "#FFD21F",
+        Icon = "#FFD21F",
+    },
+
+    ["Ciano"] = {
+        Accent = "#00D9FF",
+        Button = "#00D9FF",
+        Icon = "#00D9FF",
+    },
+
+    ["Prata"] = {
+        Accent = "#C0C0C0",
+        Button = "#C0C0C0",
+        Icon = "#C0C0C0",
+    },
+
+    ["Branco"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    ["Cinza"] = {
+        Accent = "#808080",
+        Button = "#808080",
+        Icon = "#808080",
+    },
+
+    ["Índigo"] = {
+        Accent = "#4B0082",
+        Button = "#4B0082",
+        Icon = "#4B0082",
+    },
+
+    ["Salmão"] = {
+        Accent = "#FA8072",
+        Button = "#FA8072",
+        Icon = "#FA8072",
+    },
+
+    ["Marrom"] = {
+        Accent = "#8B4513",
+        Button = "#8B4513",
+        Icon = "#8B4513",
+    },
+}
+Icon = "#B57EDC",
+    },
+
