@@ -1246,9 +1246,93 @@ end
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
 
--- ====================================================
+-- ===================================================
 -- BOTOES DA ABA SHERIFF
--- ====================================================
+-- ===================================================
+
+Aba_Sheriff:Section({
+    Title = "SHERIFF",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Silent AIM Button",
+    Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShoot = Ativo
+        if Ativo then
+            CreateShootButton()
+        else
+            RemoveShootButton()
+        end
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Instant Shoot Beta!",
+    Desc = "Adiciona um botão na tela que ao clicar teleporta atras do assassino e atira nele",
+    Default = false,
+    Callback = function(State)
+        InstantShootAtivo = State
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Grab Gun Button",
+    Desc = "Adicionar um botão na tela que ao clicar traz a Gun para seu personagem",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateGrabGunButton()
+        else
+            RemoveGrabGunButton()
+        end
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Grab Gun",
+    Desc = "Verifca se a Gun esta no chão e traz ela pra você",
+    Default = false,
+    Callback = function(Ativo)
+        AutoGrabGun = Ativo
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Aimbot",
+    Desc = "Centraliza a mira no peito do assassino",
+    Default = false,
+    Callback = function(State)
+        LockCameraAtivo = State
+    end
+})
+
+Aba_Sheriff:Slider({
+    Title = "FOV",
+    Desc = "Ajuste o Aimbot",
+    Value = {Min = 50, Max = 500, Default = 150, Step = 5},
+    Callback = function(Valor)
+        RaioFOV = Valor
+        if FOVCircle then
+            FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
+        end
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "FOV Cicle",
+   Desc = "Adiciona o Fov na tela",
+    Default = false,
+    Callback = function(State)
+        MostrarCirculo = State
+        if FOVCircle then
+            FOVCircle.Visible = State
+        end
+    end
+})
 
 -- ====================================================
 -- BOTOES DA ABA AUTO FARM
