@@ -483,5 +483,102 @@ local Aba_Config = Window:Tab({
 })
 
 -- ====================================================
--- ABA AUTO FARM
+-- BOTOES DA ABA MURDERER 
 -- ====================================================
+
+-- ====================================================
+-- BOTOES DA ABA SHERIFF
+-- ====================================================
+
+-- ====================================================
+-- BOTOES DA ABA AUTO FARM
+-- ====================================================
+
+Aba_AutoFarm:Section({
+    Title = "AUTO FARM COIN",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Farm Coin Button",
+    Desc = "Adiciona um botão de Farm na tela",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateAutoFarmButton()
+        else
+            RemoveAutoFarmButton()
+        end
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Farm Coin",
+    Desc = "Voa ate as moedas mas proxima e para ao coletar o max de moedas",
+    Default = false,
+    Callback = function(Ativo)
+        AutoFarmAtivo = Ativo
+    end
+})
+
+Aba_AutoFarm:Slider({
+    Title = "Speed Farm",
+    Desc = "Ajuate a velocidade do auto farm",
+    Value = {Min = 16, Max = 20, Default = 16, Step = 1},
+    Callback = function(Valor)
+        CONFIG_FARM.velocidade = Valor
+    end
+})
+
+Aba_AutoFarm:Button({
+    Title = "Anti-AFK",
+    Desc = "Executa um script de Anti-AFK",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+        end)
+    end
+})
+
+Aba_AutoFarm:Section({
+    Title = "SENTTINGS AUTO FARM",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Reset",
+    Desc = "Morre automaticando ao ter coletado o max de moedas",
+    Default = true,
+    Callback = function(estado)
+        AutoResetAoEncher = estado
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Shoot Murderer",
+    Desc = "Apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShootAtivo = Ativo
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Kill All",
+    Desc = "Mata todo mundo apos ter coletado o max de moedas",
+    Default = false,
+    Callback = function(estado)
+        KillAllAoEncher = estado
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Safe TP",
+    Desc = "Apos ter coletado o max de moeda e teleprtado para um lugar seguro",
+    Default = false,
+    Callback = function(estado)
+        TPSafeAoEncher = estado
+    end
+})
