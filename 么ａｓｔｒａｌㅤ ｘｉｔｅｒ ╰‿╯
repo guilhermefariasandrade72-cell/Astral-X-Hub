@@ -539,40 +539,41 @@ local ServidoresVisitados = {}
 -- ==================================
 -- ABAS
 -- ==================================
-local Aba_Main = Window:Tab({Title = gradient("Main", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "monitor"})
--- ==================================
--- 🔪 ABA MURDERER
--- ==================================
 
 local Aba_Murderer = Window:Tab({
     Title = "Murderer",
     Icon = "knife",
 })
 
-
--- ==================================
--- 🎯 ABA SHERIFF
--- ==================================
-
 local Aba_Sheriff = Window:Tab({
     Title = "Sheriff",
     Icon = "crosshair",
 })
-
-
--- ==================================
--- 🪙 ABA AUTO FARM
--- ==================================
 
 local Aba_AutoFarm = Window:Tab({
     Title = "Auto Farm",
     Icon = "coins",
 })
 
-local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "eye"})
-local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "user"})
-local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
-local Aba_Config = Window:Tab({Title = gradient("Config UI", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "settings"})
+local Aba_ESP = Window:Tab({
+    Title = "ESP",
+    Icon = "eye",
+})
+
+local Aba_Local = Window:Tab({
+    Title = "Local Player",
+    Icon = "user",
+})
+
+local Aba_Tele = Window:Tab({
+    Title = "Teleporte",
+    Icon = "globe",
+})
+
+local Aba_Config = Window:Tab({
+    Title = "Config UI",
+    Icon = "settings",
+})
 
 -- ==================================
 -- 🚶 AUTO FARM — ANDANDO EM PÉ (CORRIGIDO)
@@ -3021,124 +3022,6 @@ Aba_Sheriff:Toggle({
 -- ==================================
 -- 👤 DROPDOWN DE JOGADORES
 -- ==================================
-
-local JogadorSelecionado = nil
-
-
--- 1. Coleta os jogadores ativos
-local function PegarListaJogadores()
-
-    local lista = {}
-
-    for _, p in ipairs(Players:GetPlayers()) do
-
-        if p ~= player then
-            table.insert(lista, p.Name)
-        end
-
-    end
-
-    table.sort(lista)
-
-    if #lista == 0 then
-        table.insert(lista, "Nenhum Jogador")
-    end
-
-    return lista
-
-end
-
-
--- 2. Cria o Dropdown
-local DropdownJogadores = Sec_Murderer:Dropdown({
-
-    Title = "Selecionar Alvo",
-
-    Desc = "Escolha um jogador da lista",
-
-    Values = PegarListaJogadores(),
-
-    Value = nil,
-
-    AllowNone = true,
-
-    Callback = function(Value)
-
-        if typeof(Value) == "table" then
-            JogadorSelecionado = Value[1]
-        else
-            JogadorSelecionado = Value
-        end
-
-        if JogadorSelecionado == "Nenhum Jogador" then
-            JogadorSelecionado = nil
-        end
-
-    end
-
-})
-
-
--- 3. Atualiza o Dropdown sem recriá-lo
-local function AtualizarListaJogadores()
-
-    local novaLista = PegarListaJogadores()
-
-    pcall(function()
-
-        DropdownJogadores:Refresh(novaLista)
-
-    end)
-
-end
-
-
--- 4. Atualiza quando alguém entra
-Players.PlayerAdded:Connect(function()
-
-    task.wait(0.5)
-
-    AtualizarListaJogadores()
-
-end)
-
-
--- 5. Atualiza quando alguém sai
-Players.PlayerRemoving:Connect(function()
-
-    task.wait(0.5)
-
-    AtualizarListaJogadores()
-
-end)
-
-
--- 6. Botão de teste
-Aba_Murderer:Button({
-
-    Title = "Ver Jogador Selecionado",
-
-    Desc = "Mostra o jogador atualmente selecionado",
-
-    Callback = function()
-
-        if not JogadorSelecionado then
-            return
-        end
-
-        local alvo =
-            Players:FindFirstChild(JogadorSelecionado)
-
-        if alvo then
-            print(
-                "Jogador selecionado:",
-                alvo.Name
-            )
-        end
-
-    end
-
-})
 
 Aba_Murderer:Toggle({
     Title = "Kill All Button",
