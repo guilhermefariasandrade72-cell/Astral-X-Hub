@@ -3404,9 +3404,10 @@ Aba_Tele:Button({
     end
 })
 
-local Aba_Tele = Window:Tab({
-    Title = "Hop serve",
-    Icon = "camera",
+Aba_Tele:Section({
+    Title = "Hop Serve",
+    Box = false,
+    TextSize = 18,
 })
 
 Aba_Tele:Button({
