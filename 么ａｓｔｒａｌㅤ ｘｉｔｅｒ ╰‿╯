@@ -3493,6 +3493,12 @@ Aba_Tele:Button({
 
 })
 
+Aba_Tele:Button({
+    Title = "TP Safe",
+    Callback = function()
+        TeleportarParaSafe()
+    end
+})
 
 -- ==================================
 -- 🌐 TÍTULO: HOP SERVER
