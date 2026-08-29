@@ -370,3 +370,70 @@ end)
     end
 
 end)
+
+-- ==================================
+-- ❤️ BOTÃO FLUTUANTE
+-- Ruby: vermelho escuro → vermelho claro
+-- ==================================
+local OpenButton = Window:EditOpenButton({
+    Title = "Astral",
+    Icon = "star",
+
+    CornerRadius = UDim.new(0, 12),
+    StrokeThickness = 2,
+
+    Color = ColorSequence.new(
+        Color3.fromHex("#9B111E"),
+        Color3.fromHex("#FF4D5A")
+    ),
+
+    Draggable = true,
+})
+
+
+-- ==========================================
+-- 🔴 TAMANHO DO BOTÃO ASTRAL
+-- ==========================================
+
+local EscalaBotaoAstral = nil
+
+task.wait(1)
+
+pcall(function()
+
+    local CoreGui = game:GetService("CoreGui")
+
+    for _, Obj in ipairs(CoreGui:GetDescendants()) do
+
+        if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
+
+            local TextButton = Obj.Parent
+
+            if TextButton and TextButton:IsA("TextButton") then
+
+                -- O Frame que contém o botão
+                local Container = TextButton.Parent
+
+                if Container then
+
+                    EscalaBotaoAstral =
+                        Container:FindFirstChildOfClass("UIScale")
+
+                    if not EscalaBotaoAstral then
+                        EscalaBotaoAstral = Instance.new("UIScale")
+                        EscalaBotaoAstral.Parent = Container
+                    end
+
+                    EscalaBotaoAstral.Scale = 1
+
+                    print("✅ Escala do botão Astral encontrada!")
+                    print("📦 Container:", Container:GetFullName())
+
+                end
+
+                break
+            end
+        end
+    end
+
+end)
