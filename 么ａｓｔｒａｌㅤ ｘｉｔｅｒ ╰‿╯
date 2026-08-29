@@ -3363,7 +3363,7 @@ Aba_Tele:Button({
     end
 })
 
-Sec_Iele:Button({
+Sec_Tele:Button({
     Title = "TP Murderer",
     Callback = function()
         TeleportarPorCargo("Murderer")
