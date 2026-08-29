@@ -2979,91 +2979,126 @@ Sec_Xerife:Toggle({
 local Sec_Murderer = Aba_Main:Section({Title = "Murderer"})
 
 -- ==================================
--- 👤 DROPDOWN E KILL AURA INDIVIDUAL
+-- 👤 DROPDOWN DE JOGADORES
 -- ==================================
+
 local JogadorSelecionado = nil
 
--- 1. Função que coleta os jogadores ativos no servidor
+
+-- 1. Coleta os jogadores ativos
 local function PegarListaJogadores()
+
     local lista = {}
+
     for _, p in ipairs(Players:GetPlayers()) do
+
         if p ~= player then
             table.insert(lista, p.Name)
         end
+
     end
+
+    table.sort(lista)
+
     if #lista == 0 then
         table.insert(lista, "Nenhum Jogador")
     end
+
     return lista
+
 end
 
--- 2. Criamos o Dropdown (Garante que Values sempre tenha itens)
-local ListaDrop = PegarListaJogadores()
 
+-- 2. Cria o Dropdown
 local DropdownJogadores = Sec_Murderer:Dropdown({
+
     Title = "Selecionar Alvo",
-    Desc = "Escolha o jogador da lista",
-    Values = ListaDrop,
-    Value = ListaDrop[1] or "Nenhum Jogador",
+
+    Desc = "Escolha um jogador da lista",
+
+    Values = PegarListaJogadores(),
+
+    Value = nil,
+
+    AllowNone = true,
+
     Callback = function(Value)
+
         if typeof(Value) == "table" then
             JogadorSelecionado = Value[1]
         else
             JogadorSelecionado = Value
         end
+
+        if JogadorSelecionado == "Nenhum Jogador" then
+            JogadorSelecionado = nil
+        end
+
     end
+
 })
 
--- 3. Função de atualização dinâmica dos nomes
+
+-- 3. Atualiza o Dropdown sem recriá-lo
 local function AtualizarListaJogadores()
+
     local novaLista = PegarListaJogadores()
-    
+
     pcall(function()
-        if DropdownJogadores and DropdownJogadores.SetValues then
-            DropdownJogadores:SetValues(novaLista)
-        elseif DropdownJogadores and DropdownJogadores.Set then
-            DropdownJogadores:Set(novaLista)
-        elseif DropdownJogadores and DropdownJogadores.Refresh then
-            DropdownJogadores:Refresh(novaLista, true)
-        end
+
+        DropdownJogadores:Refresh(novaLista)
+
     end)
+
 end
 
--- 4. Conexão dos eventos de entrada e saída do servidor
+
+-- 4. Atualiza quando alguém entra
 Players.PlayerAdded:Connect(function()
+
     task.wait(0.5)
+
     AtualizarListaJogadores()
+
 end)
 
+
+-- 5. Atualiza quando alguém sai
 Players.PlayerRemoving:Connect(function()
+
     task.wait(0.5)
+
     AtualizarListaJogadores()
+
 end)
 
--- 5. Botão de ativação do Kill Aura no Alvo
+
+-- 6. Botão de teste
 Sec_Murderer:Button({
-    Title = "Kill Aura (Alvo Selecionado)",
-    Desc = "Clique para ativar/desativar o ataque no jogador",
+
+    Title = "Ver Jogador Selecionado",
+
+    Desc = "Mostra o jogador atualmente selecionado",
+
     Callback = function()
-        if not JogadorSelecionado or JogadorSelecionado == "Nenhum Jogador" then
+
+        if not JogadorSelecionado then
             return
         end
 
-        local alvo = Players:FindFirstChild(JogadorSelecionado)
-        if not alvo then
-            return
+        local alvo =
+            Players:FindFirstChild(JogadorSelecionado)
+
+        if alvo then
+            print(
+                "Jogador selecionado:",
+                alvo.Name
+            )
         end
 
-        KillAuraAlvoAtivo = not KillAuraAlvoAtivo
     end
+
 })
-
-
--- ==================================
--- 🔄 ATUALIZAR LISTA
--- ==================================
-
-
 
 Sec_Murderer:Toggle({
     Title = "Kill All Button",
