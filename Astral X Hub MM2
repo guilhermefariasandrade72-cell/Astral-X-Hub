@@ -820,6 +820,103 @@ RunService.Heartbeat:Connect(function()
     GetGun()
 end)
 
+-- ===========================================
+-- 🔫 BOTÃO FLUTUANTE & SISTEMA GRAB GUN (UNIFICADO)
+-- ===========================================
+local function CreateGrabGunButton()
+    if GrabGunButtonGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_GrabGunButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.5, -21)
+    Btn.BackgroundColor3 = Color3.fromRGB(20, 100, 150)
+    Btn.BackgroundTransparency = 0.3
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(50, 180, 255)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Grab Gun"
+    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Texto.TextSize = 15
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    -- 🖐️ Lógica de Arrastar o Botão
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingGrab = true
+            buttonStartPosGrab = Btn.Position
+            dragStartPosGrab = Input.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then 
+                    isDraggingGrab = false 
+                end
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if isDraggingGrab and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Btn.Position = buttonStartPosGrab + UDim2.fromOffset(Input.Position.X - dragStartPosGrab.X, Input.Position.Y - dragStartPosGrab.Y)
+        end
+    end)
+
+    -- 🎯 Clique no Botão (Busca e puxa a arma direto pro player)
+    Btn.MouseButton1Click:Connect(function() 
+        if not isDraggingGrab then 
+            local Char = player.Character
+            if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+            local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
+            local mapToSearch = MapContainer or Workspace
+            local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
+
+            if gunDrop then
+                if gunDrop:IsA("BasePart") then
+                    gunDrop.CFrame = Char.HumanoidRootPart.CFrame
+                elseif gunDrop:IsA("Model") and gunDrop.PrimaryPart then
+                    gunDrop:SetPrimaryPartCFrame(Char.HumanoidRootPart.CFrame)
+                else
+                    local handle = gunDrop:FindFirstChild("Handle") or gunDrop:FindFirstChildOfClass("BasePart")
+                    if handle then
+                        handle.CFrame = Char.HumanoidRootPart.CFrame
+                    end
+                end
+            end
+        end 
+    end)
+
+    GrabGunButtonGui = GuiBtn
+end
+
+local function RemoveGrabGunButton()
+    if GrabGunButtonGui then 
+        GrabGunButtonGui:Destroy() 
+        GrabGunButtonGui = nil 
+    end
+end
 
 
 
