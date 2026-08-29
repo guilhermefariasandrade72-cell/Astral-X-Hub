@@ -653,7 +653,136 @@ local function EmPartida()
     return true
 end
 
+-- ==================================
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA
+-- ==================================
+local function getNearestCoin(minhaPos)
+    local melhorMoeda, menorDistancia = nil, math.huge
 
+    if not cachedCoinContainer or not cachedCoinContainer.Parent then
+        cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    end
+    
+    if not cachedCoinContainer then return nil end
+
+    local charMurderer = ObterMurderer()
+    local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+    for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
+        if moeda:IsA("BasePart") 
+        and moeda.Name == "Coin_Server"
+        and moeda:FindFirstChild("TouchInterest") 
+        and not collectedCoins[moeda] 
+        and not moeda:GetAttribute("Collected") then
+
+            -- 1. FILTRO: Ignora moedas a menos de 30 studs do Murderer
+            if hrpMurderer then
+                local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    continue
+                end
+            end
+
+            -- 2. FILTRO: Ignora moedas marcadas por invisibilidade
+            if moedasIgnoradasInvisivel[moeda] then
+                if not InvisivelAtivo then
+                    moedasIgnoradasInvisivel[moeda] = nil
+                else
+                    continue
+                end
+            end
+
+            local distancia = (minhaPos - moeda.Position).Magnitude
+            if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
+                menorDistancia = distancia
+                melhorMoeda = moeda
+            end
+        end
+    end
+    return melhorMoeda
+end
+
+-- ==================================
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
+-- ==================================
+task.spawn(function()
+    while true do
+        if AutoFarmAtivo then
+            local c = player.Character
+            local hrp = c and c:FindFirstChild("HumanoidRootPart")
+
+            -- Se não está em partida, apenas espera sem resetar a bolsa
+            if not EmPartida() or not hrp then
+                task.wait(0.5)
+                continue
+            end
+
+            -- Aguarda se a bolsa estiver cheia
+            if BolsaCheia or VerificarTextoBolsaCheia() then
+                BolsaCheia = true
+                task.wait(0.5)
+                continue
+            end
+
+            local alvo = getNearestCoin(hrp.Position)
+
+            if alvo then
+                local tempoPassadoNaMoeda = 0
+
+                while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
+                and not BolsaCheia and not VerificarTextoBolsaCheia()
+                and not alvo:GetAttribute("Collected") 
+                and not collectedCoins[alvo] do
+                    
+                    local minhaPosAtual = hrp.Position
+                    
+                    local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
+                    if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
+                        alvo = moedaMaisPertoAgora
+                        tempoPassadoNaMoeda = 0
+                    end
+
+                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
+                        break
+                    end
+
+                    local posAlvo = alvo.Position
+                    local direcao = (posAlvo - minhaPosAtual)
+                    local distancia = direcao.Magnitude
+
+                    if distancia <= 0.8 then
+                        if InvisivelAtivo then
+                            moedasIgnoradasInvisivel[alvo] = true
+                            break
+                        else
+                            collectedCoins[alvo] = true
+                            break
+                        end
+                    end
+
+                    local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
+                    local dt = RunService.Heartbeat:Wait()
+                    local passo = math.min(velAtual * dt, distancia)
+                    local novaPos = minhaPosAtual + (direcao.Unit * passo)
+
+                    hrp.CFrame = CFrame.new(novaPos)
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+                    tempoPassadoNaMoeda = tempoPassadoNaMoeda + dt
+                    if tempoPassadoNaMoeda > 1.5 and InvisivelAtivo then
+                        moedasIgnoradasInvisivel[alvo] = true
+                        break
+                    end
+                end
+            else
+                task.wait(0.2)
+            end
+        else
+            -- Quando desliga o botão, apenas aguarda sem limpar a bolsa
+            task.wait(0.5)
+        end
+    end
+end)
 
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
