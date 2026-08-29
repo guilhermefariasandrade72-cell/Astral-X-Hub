@@ -3285,10 +3285,12 @@ Aba_LocalPlayer:Toggle({
     end
 })
 
-local Sec_Camera = Aba_Local:Section({Title = "Câmera"})
+-- =========================================
+-- ABA CAMERA 
+-- =========================================
 
 -- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
-Sec_Camera:Toggle({
+Aba_Camera:Toggle({
     Title = "Infinite Zoom",
     Desc = "Consegue dar zoom para uma distância de 99999",
     Default = false,
@@ -3305,7 +3307,7 @@ Sec_Camera:Toggle({
     end
 })
 
-Sec_Camera:Toggle({
+Aba_Camera:Toggle({
     Title = "Noclip camera",
     Desc = "Impede que sua camera encoste em paredes",
     Default = false,
@@ -3314,7 +3316,7 @@ Sec_Camera:Toggle({
     end
 })
 
-Sec_Camera:Slider({
+Aba_Camera:Slider({
     Title = "Fov",
     Desc = "Ajuste o Fov de sua camera",
     Value = {Min = 70, Max = 130, Default = 70, Step = 1},
