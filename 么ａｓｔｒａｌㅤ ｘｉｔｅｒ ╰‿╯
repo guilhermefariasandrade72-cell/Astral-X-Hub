@@ -540,6 +540,35 @@ local ServidoresVisitados = {}
 -- ABAS
 -- ==================================
 local Aba_Main = Window:Tab({Title = gradient("Main", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "monitor"})
+-- ==================================
+-- 🔪 ABA MURDERER
+-- ==================================
+
+local Aba_Murderer = Window:Tab({
+    Title = "Murderer",
+    Icon = "knife",
+})
+
+
+-- ==================================
+-- 🎯 ABA SHERIFF
+-- ==================================
+
+local Aba_Sheriff = Window:Tab({
+    Title = "Sheriff",
+    Icon = "crosshair",
+})
+
+
+-- ==================================
+-- 🪙 ABA AUTO FARM
+-- ==================================
+
+local Aba_AutoFarm = Window:Tab({
+    Title = "Auto Farm",
+    Icon = "coins",
+})
+
 local Aba_ESP = Window:Tab({Title = gradient("ESP", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "eye"})
 local Aba_Local = Window:Tab({Title = gradient("Local Player", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "user"})
 local Aba_Tele = Window:Tab({Title = gradient("Teleporte", Color3.fromHex("#ffffff"), Color3.fromHex("#ffffff")), Icon = "globe"})
@@ -2817,9 +2846,7 @@ end
 -- ==================================
 -- BOTOES DA ABA MAIN
 -- ==================================
-local Sec_AutoFarm = Aba_Main:Section({Title = "Auto Farm Coin"})
-
-Sec_AutoFarm:Toggle({
+Aba_AutoFarm:Toggle({
     Title = "Auto Farm Coin Button",
     Desc = "Adiciona um botão de Farm na tela",
     Default = false,
@@ -2832,7 +2859,7 @@ Sec_AutoFarm:Toggle({
     end
 })
 
-Sec_AutoFarm:Toggle({
+Aba_AutoFarm:Toggle({
     Title = "Auto Farm Coin",
     Desc = "Voa ate as moedas mas proxima e para ao coletar o max de moedas",
     Default = false,
@@ -2841,7 +2868,7 @@ Sec_AutoFarm:Toggle({
     end
 })
 
-Sec_AutoFarm:Slider({
+Aba_AutoFarm:Slider({
     Title = "Speed Farm",
     Desc = "Ajuate a velocidade do auto farm",
     Value = {Min = 16, Max = 20, Default = 16, Step = 1},
@@ -2850,7 +2877,7 @@ Sec_AutoFarm:Slider({
     end
 })
 
-Sec_AutoFarm:Button({
+Aba_AutoFarm:Button({
     Title = "Anti-AFK",
     Desc = "Executa um script de Anti-AFK",
     Callback = function()
@@ -2860,7 +2887,7 @@ Sec_AutoFarm:Button({
     end
 })
 
-Sec_AutoFarm:Toggle({
+Aba_AutoFarm:Toggle({
     Title = "Auto Reset",
     Desc = "Morre automaticando ao ter coletado o max de moedas",
     Default = true,
@@ -2869,7 +2896,7 @@ Sec_AutoFarm:Toggle({
     end
 })
 
-Sec_AutoFarm:Toggle({
+Aba_AutoFarm:Toggle({
     Title = "Auto Shoot Murderer",
     Desc = "Apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar",
     Default = false,
@@ -2878,7 +2905,7 @@ Sec_AutoFarm:Toggle({
     end
 })
 
-Sec_AutoFarm:Toggle({
+Aba_AutoFarm:Toggle({
     Title = "Kill All",
     Desc = "Mata todo mundo apos ter coletado o max de moedas",
     Default = false,
@@ -2887,7 +2914,7 @@ Sec_AutoFarm:Toggle({
     end
 })
 
-Sec_AutoFarm:Toggle({
+Aba_AutoFarm:Toggle({
     Title = "Safe TP",
     Desc = "Apos ter coletado o max de moeda e teleprtado para um lugar seguro",
     Default = false,
