@@ -3334,7 +3334,7 @@ local function CriarDropdownJogadores()
     if DropdownJogadores then
         pcall(function() DropdownJogadores:Destroy() end)
     end
-    DropdownJogadores = Sec_TPPlayer:Dropdown({
+    DropdownJogadores = Aba_Tele:Dropdown({
         Title = "Select Player",
         Values = PegarListaJogadores(),
         Default = "",
@@ -3363,7 +3363,7 @@ Aba_Tele:Button({
     end
 })
 
-Sec_Tele:Button({
+Aba_Tele:Button({
     Title = "TP Murderer",
     Callback = function()
         TeleportarPorCargo("Murderer")
@@ -3465,7 +3465,7 @@ local ListaCores = {
 -- 🎨 DROPDOWN
 -- ==================================
 
-Aba_ConfigUI:Dropdown({
+Aba_Config:Dropdown({
     Title = "Cor da Interface",
     Values = ListaCores,
     Value = CorSelecionada,
@@ -3480,7 +3480,7 @@ Aba_ConfigUI:Dropdown({
 -- ✅ BOTÃO APLICAR
 -- ==================================
 
-Aba_ConfigUI:Button({
+Aba_Config:Button({
     Title = "Aplicar Cor",
 
     Callback = function()
@@ -3499,7 +3499,7 @@ Aba_ConfigUI:Button({
     end
 })
 
-Aba_ConfigUI:Slider({
+Aba_Config:Slider({
     Title = "Tamanho do Botão Astral",
 
     Value = {
