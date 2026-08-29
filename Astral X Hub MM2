@@ -1,1 +1,147 @@
+-- ==================================
+-- 🌐 ASTRAL X HUB V1
+-- 🎨 INTERFACE + TEMA RUBY PADRÃO
+-- ==================================
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- ==================================
+-- CARREGAR WINDUI
+-- ==================================
+
+local WindUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"
+))()
+
+-- ==================================
+-- 🌈 FUNÇÃO DE GRADIENTE
+-- ==================================
+
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+
+        local r = math.floor(
+            (startColor.R + (endColor.R - startColor.R) * t) * 255
+        )
+
+        local g = math.floor(
+            (startColor.G + (endColor.G - startColor.G) * t) * 255
+        )
+
+        local b = math.floor(
+            (startColor.B + (endColor.B - startColor.B) * t) * 255
+        )
+
+        result = result
+            .. "<font color=\"rgb("
+            .. r .. ", "
+            .. g .. ", "
+            .. b
+            .. ")\">"
+            .. text:sub(i, i)
+            .. "</font>"
+    end
+
+    return result
+end
+
+-- ==================================
+-- 🎨 CONFIGURAÇÃO VISUAL
+-- ==================================
+
+local WindowTransparency = 0.15
+
+local MainColor = Color3.fromHex("#000000")
+
+-- ==================================
+-- 🎨 TEMAS DO ASTRAL
+-- ==================================
+
+local CoresAstral = {
+
+    -- ORIGINAL
+    ["Dark"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    -- RUBY
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
+
+    -- AMETISTA
+    ["Ametista"] = {
+        Accent = "#B026FF",
+        Button = "#B026FF",
+        Icon = "#B026FF",
+    },
+
+    -- VERDE ÁGUA
+    ["Verde Água"] = {
+        Accent = "#2EE6A6",
+        Button = "#2EE6A6",
+        Icon = "#2EE6A6",
+    },
+
+    -- AZUL GELO
+    ["Azul Gelo"] = {
+        Accent = "#A5F2F3",
+        Button = "#A5F2F3",
+        Icon = "#A5F2F3",
+    },
+
+    -- ROXO NEON
+    ["Roxo Neon"] = {
+        Accent = "#BF00FF",
+        Button = "#BF00FF",
+        Icon = "#BF00FF",
+    },
+
+    -- ROSA NEON
+    ["Rosa Neon"] = {
+        Accent = "#FF1493",
+        Button = "#FF1493",
+        Icon = "#FF1493",
+    },
+
+    -- LARANJA NEON
+    ["Laranja Neon"] = {
+        Accent = "#FF5F00",
+        Button = "#FF5F00",
+        Icon = "#FF5F00",
+    },
+
+    -- AMARELO NEON
+    ["Amarelo Neon"] = {
+        Accent = "#FFFF00",
+        Button = "#FFFF00",
+        Icon = "#FFFF00",
+    },
+
+    -- TURQUESA
+    ["Turquesa"] = {
+        Accent = "#40E0D0",
+        Button = "#40E0D0",
+        Icon = "#40E0D0",
+    },
+
+    -- LAVANDA
+    ["Lavanda"] = {
+        Accent = "#B57EDC",
+        Button = "#B57EDC",
+        Icon = "#B57EDC",
+    },
