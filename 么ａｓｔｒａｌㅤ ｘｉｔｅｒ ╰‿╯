@@ -2846,6 +2846,10 @@ end
 -- ==================================
 -- BOTOES DA ABA MAIN
 -- ==================================
+Aba_AutoFarm:Paragraph({
+    Title = "Auto Farm",
+})
+
 Aba_AutoFarm:Toggle({
     Title = "Auto Farm Coin Button",
     Desc = "Adiciona um botão de Farm na tela",
@@ -2885,6 +2889,10 @@ Aba_AutoFarm:Button({
             loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
         end)
     end
+})
+
+Aba_AutoFarm:Paragraph({
+    Title = "Senttings Auto Farm",
 })
 
 Aba_AutoFarm:Toggle({
