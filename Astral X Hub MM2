@@ -438,6 +438,7 @@ pcall(function()
 
 end)
 
+
 -- ====================================================
 -- ABAS
 -- ====================================================
@@ -481,6 +482,178 @@ local Aba_Config = Window:Tab({
     Title = "Config UI",
     Icon = "settings",
 })
+
+-- ====================================================
+-- SISTEMA DA ABA AUTO FARM
+-- ====================================================
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+
+-- Configurações Base do Auto Farm
+local CONFIG_FARM = {
+    velocidade = 18,
+    alcance_maximo = 500,
+    raio_perigo_murder = 30 -- Raio de distância do Murderer
+}
+
+local AutoFarmAtivo = false
+local BolsaCheia = false
+local collectedCoins = {}
+local moedasIgnoradasInvisivel = {}
+
+local cachedCoinContainer = nil
+local ultimoCheckBolsa = 0
+local resultadoUltimoCheckBolsa = false
+
+-- ==================================
+-- 🔍 DETECTOR DO MURDERER
+-- ==================================
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+                
+                if eMurder then
+                    return char
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- ==================================
+-- 1. RESETS AUTOMÁTICOS DE RODADA (SOMENTE NA PRÓXIMA PARTIDA)
+-- ==================================
+local function ResetarEstadoFarm()
+    BolsaCheia = false
+    table.clear(collectedCoins)
+    table.clear(moedasIgnoradasInvisivel)
+    cachedCoinContainer = nil
+end
+
+player.CharacterAdded:Connect(ResetarEstadoFarm)
+
+player:GetAttributeChangedSignal("Alive"):Connect(function()
+    if player:GetAttribute("Alive") == true then
+        ResetarEstadoFarm()
+    end
+end)
+
+-- ==================================
+-- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA
+-- ==================================
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if AutoFarmAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local charMurderer = ObterMurderer()
+            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+            if hrp and hrpMurderer then
+                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
+
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    if not InvisivelAtivo then
+                        InvisivelAtivo = true
+                    end
+                else
+                    if InvisivelAtivo then
+                        InvisivelAtivo = false
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 2. DETECTOR DE BOLSA CHEIA
+-- ==================================
+local function VerificarTextoBolsaCheia()
+    local agora = os.clock()
+    if agora - ultimoCheckBolsa < 0.5 then 
+        return resultadoUltimoCheckBolsa 
+    end
+    ultimoCheckBolsa = agora
+
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if not playerGui then return false end
+
+    local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
+    if not mainGui then return false end
+
+    for _, gui in ipairs(mainGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
+            local texto = string.lower(gui.Text)
+            if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
+               (string.find(texto, "bag") and string.find(texto, "full")) or
+               string.find(texto, "full coin") or string.find(texto, "max coins") then 
+                resultadoUltimoCheckBolsa = true
+                return true
+            end
+        end
+    end
+
+    resultadoUltimoCheckBolsa = false
+    return false
+end
+
+-- Detecção via Remote Event nativo
+task.spawn(function()
+    local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
+    if Remotes then
+        local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
+        if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
+            coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
+                if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
+                    if tonumber(atual) and tonumber(maximo) then
+                        BolsaCheia = (tonumber(atual) >= tonumber(maximo))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- ==================================
+-- 3. VERIFICAÇÃO DE PARTIDA RIGOROSA
+-- ==================================
+local function EmPartida()
+    local c = player.Character
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    if not c:FindFirstChild("HumanoidRootPart") then return false end
+    
+    -- Checa se o jogador está realmente vivo no status do MM2
+    local aliveAttr = player:GetAttribute("Alive")
+    if aliveAttr ~= nil and aliveAttr == false then
+        return false
+    end
+    
+    -- Evita coletar moedas se estiver preso no Lobby
+    if Workspace:FindFirstChild("Lobby") then
+        local distLobby = (c.HumanoidRootPart.Position - Workspace.Lobby:GetPivot().Position).Magnitude
+        if distLobby < 100 then
+            return false
+        end
+    end
+    
+    return true
+end
+
+
 
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
