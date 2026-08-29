@@ -437,3 +437,51 @@ pcall(function()
     end
 
 end)
+
+-- ====================================================
+-- ABAS
+-- ====================================================
+
+local Aba_Murderer = Window:Tab({
+    Title = "Murderer",
+    Icon = "swords"
+})
+
+local Aba_Sheriff = Window:Tab({
+    Title = "Sheriff",
+    Icon = "crosshair",
+})
+
+local Aba_AutoFarm = Window:Tab({
+    Title = "Auto Farm",
+    Icon = "coins",
+})
+
+local Aba_ESP = Window:Tab({
+    Title = "ESP",
+    Icon = "eye",
+})
+
+local Aba_Camera = Window:Tab({
+    Title = "Camera",
+    Icon = "camera",
+})
+
+local Aba_LocalPlayer = Window:Tab({
+    Title = "Local Player",
+    Icon = "user",
+})
+
+local Aba_Tele = Window:Tab({
+    Title = "Teleporte",
+    Icon = "globe",
+})
+
+local Aba_Config = Window:Tab({
+    Title = "Config UI",
+    Icon = "settings",
+})
+
+-- ====================================================
+-- ABA AUTO FARM
+-- ====================================================
