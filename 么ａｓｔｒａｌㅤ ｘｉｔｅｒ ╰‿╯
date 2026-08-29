@@ -560,6 +560,11 @@ local Aba_ESP = Window:Tab({
     Icon = "eye",
 })
 
+local Aba_Camera = Window:Tab({
+    Title = "Camera",
+    Icon = "camera",
+})
+
 local Aba_LocalPlayer = Window:Tab({
     Title = "Local Player",
     Icon = "user",
@@ -3322,7 +3327,6 @@ Sec_Camera:Slider({
 -- ==================================
 -- BOTOES DA ABA TELEPORTE
 -- ==================================
-local Sec_TPPlayer = Aba_Tele:Section({Title = "Teleporta para player"})
 
 local function CriarDropdownJogadores()
     if DropdownJogadores then
@@ -3345,7 +3349,7 @@ Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores(
 -- Criar a lista inicial
 CriarDropdownJogadores()
 
-Sec_TPPlayer:Button({
+Aba_Tele:Button({
     Title = "TP Player",
     Callback = function()
         if JogadorSelecionadoTP then
@@ -3357,23 +3361,28 @@ Sec_TPPlayer:Button({
     end
 })
 
-Sec_TPPlayer:Button({
+Sec_Iele:Button({
     Title = "TP Murderer",
     Callback = function()
         TeleportarPorCargo("Murderer")
     end
 })
 
-Sec_TPPlayer:Button({
+Aba_Tele:Button({
     Title = "TP Xerife",
     Callback = function()
         TeleportarPorCargo("Sheriff")
     end
 })
 
-local Sec_TPMapaLobby = Aba_Tele:Section({Title = "TP Locais"})
 
-Sec_TPMapaLobby:Button({
+Aba_Tele:Section({
+    Title = " TP Locais",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_Tele:Button({
     Title = "TP Mapa",
     Callback = function()
         local posMapa = GetMapSpawn()
@@ -3383,7 +3392,7 @@ Sec_TPMapaLobby:Button({
     end
 })
 
-Sec_TPMapaLobby:Button({
+Aba_Tele:Button({
     Title = "TP Lobby",
     Callback = function()
         local posLobby = GetLobbySpawn()
@@ -3393,23 +3402,19 @@ Sec_TPMapaLobby:Button({
     end
 })
 
-Sec_TPMapaLobby:Button({
-    Title = "TP Safe",
-    Callback = function()
-        TeleportarParaSafe()
-    end
+local Aba_Tele = Window:Tab({
+    Title = "Hop serve",
+    Icon = "camera",
 })
 
-local Sec_ServerHop = Aba_Tele:Section({Title = "Server Hop"})
-
-Sec_ServerHop:Button({
+Aba_Tele:Button({
     Title = "Hop Serve",
     Callback = function()
         ExecutarServerHop()
     end
 })
 
-Sec_ServerHop:Button({
+Aba_Tele:Button({
     Title = "Rejoin Serve",
     Callback = function()
         ExecutarRejoin()
