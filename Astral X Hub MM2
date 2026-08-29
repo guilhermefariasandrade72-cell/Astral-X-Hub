@@ -484,6 +484,145 @@ local Aba_Config = Window:Tab({
 })
 
 -- ====================================================
+-- SISTEMA DA ABA 
+-- ====================================================
+
+-- ====================================================
+-- SISTEMA DA ABA 
+-- ====================================================
+local LockCameraAtivo = false
+local MostrarCirculo = false
+local RaioFOV = 150
+
+-- ==================================
+-- 🎨 CÍRCULO VISUAL DE FOV (Corrigido para Redondo)
+-- ==================================
+local FOVCircle = nil
+
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local CoreGui = game:GetService("CoreGui")
+    local localPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+    
+    local parentGui = localPlayer:WaitForChild("PlayerGui", 5) or CoreGui
+
+    local FOVScreen = Instance.new("ScreenGui")
+    FOVScreen.Name = "FOVCircleGui"
+    FOVScreen.ResetOnSpawn = false
+    FOVScreen.IgnoreGuiInset = true -- Centraliza perfeitamente com a mira
+    FOVScreen.Parent = parentGui
+
+    FOVCircle = Instance.new("Frame")
+    FOVCircle.Name = "Circle"
+    FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+    FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+    FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+    FOVCircle.BackgroundTransparency = 1
+    FOVCircle.Visible = false
+    FOVCircle.Parent = FOVScreen
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Color3.fromRGB(255, 255, 255) -- Cor Branca
+    UIStroke.Thickness = 1.5
+    UIStroke.Parent = FOVCircle
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(1, 0) -- 📌 CORRIGIDO: UDim em vez de UDim2 (Cria o círculo perfeito)
+    UICorner.Parent = FOVCircle
+end)
+
+-- ==================================
+-- 🔍 FUNÇÕES AUXILIARES DE DETECÇÃO
+-- ==================================
+
+local function TemArma()
+    local localPlayer = game:GetService("Players").LocalPlayer
+    if not localPlayer then return false end
+    local char = localPlayer.Character
+    if not char then return false end
+    
+    local armaNoChar = char:FindFirstChild("Gun")
+    if not armaNoChar then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and item.Name:lower():find("gun") then
+                armaNoChar = item
+                break
+            end
+        end
+    end
+    if armaNoChar then return true end
+
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if backpack then
+        local armaNaMochila = backpack:FindFirstChild("Gun")
+        if not armaNaMochila then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item:IsA("Tool") and item.Name:lower():find("gun") then
+                    armaNaMochila = item
+                    break
+                end
+            end
+        end
+        if armaNaMochila then return true end
+    end
+
+    return false
+end
+
+local function ObterMurderer()
+    local localPlayer = game:GetService("Players").LocalPlayer
+    if not localPlayer then return nil end
+    
+    for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
+        if p ~= localPlayer and p.Character then
+            local char = p.Character
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            
+            if hum and hum.Health > 0 and hrp then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = (p:GetAttribute("Role") == "Murderer") or (temFaca ~= nil)
+                
+                if eMurder then
+                    return hrp
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function EstaDentroDoFOV(posicao3D)
+    local camera = workspace.CurrentCamera
+    if not camera then return false end
+    
+    local posTela, visivel = camera:WorldToViewportPoint(posicao3D)
+    if not visivel then return false end
+
+    local centroTela = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local posAlvo2D = Vector2.new(posTela.X, posTela.Y)
+    
+    local distanciaPixels = (posAlvo2D - centroTela).Magnitude
+    return distanciaPixels <= (RaioFOV / 2)
+end
+
+-- ==================================
+-- 🎥 LOOP DE ATUALIZAÇÃO DA CÂMERA
+-- ==================================
+game:GetService("RunService").RenderStepped:Connect(function()
+    if not LockCameraAtivo or not TemArma() then return end
+
+    local hrpMurderer = ObterMurderer()
+    if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
+        local camera = workspace.CurrentCamera
+        if camera then
+            local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
+            camera.CFrame = CFrame.new(camera.CFrame.Position, posAlvo)
+        end
+    end
+end)
+
+-- ====================================================
 -- SISTEMA DA ABA AUTO FARM
 -- ====================================================
 -- Services
