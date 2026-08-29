@@ -542,7 +542,7 @@ local ServidoresVisitados = {}
 
 local Aba_Murderer = Window:Tab({
     Title = "Murderer",
-    Icon = "knife",
+    Icon = "swords"
 })
 
 local Aba_Sheriff = Window:Tab({
@@ -560,7 +560,7 @@ local Aba_ESP = Window:Tab({
     Icon = "eye",
 })
 
-local Aba_Local = Window:Tab({
+local Aba_LocalPlayer = Window:Tab({
     Title = "Local Player",
     Icon = "user",
 })
