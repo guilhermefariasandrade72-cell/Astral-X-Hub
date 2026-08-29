@@ -575,7 +575,7 @@ local Aba_Tele = Window:Tab({
     Icon = "globe",
 })
 
-local Aba_ConfigUI = Window:Tab({
+local Aba_Config = Window:Tab({
     Title = "Config UI",
     Icon = "settings",
 })
