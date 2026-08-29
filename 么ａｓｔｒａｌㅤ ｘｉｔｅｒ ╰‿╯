@@ -2940,7 +2940,7 @@ Aba_AutoFarm:Toggle({
 -- BOTOES DA ABA SHERIFF
 -- ===================================================
 
-Aba_Xerife:Toggle({
+Aba_Sheriff:Toggle({
     Title = "Silent AIM Button",
     Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
     Default = false,
@@ -2954,7 +2954,7 @@ Aba_Xerife:Toggle({
     end
 })
 
-Aba_Xerife:Toggle({
+Aba_Sheriff:Toggle({
     Title = "Instant Shoot",
     Desc = "Adiciona um botão na tela que ao clicar teleporta atras do assassino e atira nele",
     Default = false,
@@ -2963,7 +2963,7 @@ Aba_Xerife:Toggle({
     end
 })
 
-Aba_Xerife:Toggle({
+Aba_Sheriff:Toggle({
     Title = "Grab Gun Button",
     Desc = "Adicionar um botão na tela que ao clicar traz a Gun para seu personagem",
     Default = false,
@@ -2976,7 +2976,7 @@ Aba_Xerife:Toggle({
     end
 })
 
-Aba_Xerife:Toggle({
+Aba_Sheriff:Toggle({
     Title = "Grab Gun",
     Desc = "Verifca se a Gun esta no chão e traz ela pra você",
     Default = false,
@@ -2985,7 +2985,7 @@ Aba_Xerife:Toggle({
     end
 })
 
-Aba_Xerife:Toggle({
+Aba_Sheriff:Toggle({
     Title = "Aimbot",
     Desc = "Centraliza a mira no peito do assassino",
     Default = false,
@@ -2994,7 +2994,7 @@ Aba_Xerife:Toggle({
     end
 })
 
-Aba_Xerife:Slider({
+Aba_Sheriff:Slider({
     Title = "FOV",
     Desc = "Ajuste o Aimbot",
     Value = {Min = 50, Max = 500, Default = 150, Step = 5},
@@ -3006,7 +3006,7 @@ Aba_Xerife:Slider({
     end
 })
 
-Aba_Xerife:Toggle({
+Aba_Sheriff:Toggle({
     Title = "FOV Cicle",
    Desc = "Adiciona o Fov na tela",
     Default = false,
@@ -3021,12 +3021,6 @@ Aba_Xerife:Toggle({
 -- ==================================
 -- 👤 DROPDOWN DE JOGADORES
 -- ==================================
-
-Aba_Murderer:Section({
-    Title = "Murderer",
-    Box = false,
-    TextSize = 18,
-})
 
 local JogadorSelecionado = nil
 
@@ -3223,9 +3217,13 @@ Aba_Murderer:Toggle({
 -- ==================================
 -- BOTOES DA ABA ESP
 -- ==================================
-local Sec_ESP = Aba_ESP:Section({Title = "Funções ESP"})
+Aba_ESP:Section({
+    Title = "ESP",
+    Box = false,
+    TextSize = 18,
+})
 
-Sec_ESP:Toggle({
+Aba_ESP:Toggle({
     Title = "Highlight ESP",
     Default = false,
     Callback = function(Ativo)
@@ -3236,7 +3234,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Aba_ESP:Toggle({
     Title = "Name ESP",
     Default = false,
     Callback = function(Ativo)
@@ -3247,7 +3245,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Aba_ESP:Toggle({
     Title = "Distance ESP",
     Default = false,
     Callback = function(Ativo)
@@ -3258,7 +3256,7 @@ Sec_ESP:Toggle({
     end
 })
 
-Sec_ESP:Toggle({
+Aba_ESP:Toggle({
     Title = "Tracer ESP",
     Default = false,
     Callback = function(Ativo)
