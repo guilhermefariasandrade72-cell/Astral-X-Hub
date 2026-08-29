@@ -3327,101 +3327,211 @@ Aba_Camera:Slider({
 })
 
 -- ==================================
--- BOTOES DA ABA TELEPORTE
+-- 👤 DROPDOWN
 -- ==================================
 
-local function CriarDropdownJogadores()
-    if DropdownJogadores then
-        pcall(function() DropdownJogadores:Destroy() end)
+local DropdownJogadores = Aba_Tele:Dropdown({
+
+    Title = "Select Player",
+
+    Values = PegarListaJogadores(),
+
+    Default = "",
+
+    Callback = function(nome)
+
+        JogadorSelecionadoTP = nome
+
     end
-    DropdownJogadores = Aba_Tele:Dropdown({
-        Title = "Select Player",
-        Values = PegarListaJogadores(),
-        Default = "",
-        Callback = function(nome)
-            JogadorSelecionadoTP = nome
-        end
-    })
+
+})
+
+
+-- ==================================
+-- 🔄 ATUALIZAR SOMENTE OS VALORES
+-- ==================================
+
+local function AtualizarListaJogadores()
+
+    local novaLista = PegarListaJogadores()
+
+    pcall(function()
+
+        DropdownJogadores:Refresh(novaLista)
+
+    end)
+
 end
 
--- Atualiza a lista automaticamente quando alguém entra ou sai
-Players.PlayerAdded:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
-Players.PlayerRemoving:Connect(function() task.wait(0.3) CriarDropdownJogadores() end)
 
--- Criar a lista inicial
-CriarDropdownJogadores()
+-- Atualiza quando alguém entra
+Players.PlayerAdded:Connect(function()
+
+    task.wait(0.3)
+
+    AtualizarListaJogadores()
+
+end)
+
+
+-- Atualiza quando alguém sai
+Players.PlayerRemoving:Connect(function()
+
+    task.wait(0.3)
+
+    AtualizarListaJogadores()
+
+end)
+
+
+-- ==================================
+-- 👤 TP PLAYER
+-- ==================================
 
 Aba_Tele:Button({
+
     Title = "TP Player",
+
     Callback = function()
-        if JogadorSelecionadoTP then
-            local alvo = Players:FindFirstChild(JogadorSelecionadoTP)
-            if alvo then
-                TeleportarParaPlayer(alvo)
-            end
+
+        if not JogadorSelecionadoTP
+            or JogadorSelecionadoTP == "Nenhum Jogador" then
+            return
         end
+
+        local alvo =
+            Players:FindFirstChild(JogadorSelecionadoTP)
+
+        if alvo then
+            TeleportarParaPlayer(alvo)
+        end
+
     end
+
 })
 
+
+-- ==================================
+-- 📍 TP MURDERER
+-- ==================================
+
 Aba_Tele:Button({
+
     Title = "TP Murderer",
+
     Callback = function()
+
         TeleportarPorCargo("Murderer")
+
     end
+
 })
+
+
+-- ==================================
+-- 🔫 TP XERIFE
+-- ==================================
 
 Aba_Tele:Button({
+
     Title = "TP Xerife",
+
     Callback = function()
+
         TeleportarPorCargo("Sheriff")
+
     end
+
 })
 
+
+-- ==================================
+-- 📍 TÍTULO: TP LOCAIS
+-- ==================================
 
 Aba_Tele:Section({
-    Title = " TP Locais",
+
+    Title = "TP Locais",
+
     Box = false,
+
     TextSize = 18,
+
 })
 
+
 Aba_Tele:Button({
+
     Title = "TP Mapa",
+
     Callback = function()
+
         local posMapa = GetMapSpawn()
+
         if posMapa then
             TeleportarPara(posMapa)
         end
+
     end
+
 })
 
+
 Aba_Tele:Button({
+
     Title = "TP Lobby",
+
     Callback = function()
+
         local posLobby = GetLobbySpawn()
+
         if posLobby then
             TeleportarPara(posLobby)
         end
+
     end
+
 })
+
+
+-- ==================================
+-- 🌐 TÍTULO: HOP SERVER
+-- ==================================
 
 Aba_Tele:Section({
-    Title = "Hop Serve",
+
+    Title = "Hop Server",
+
     Box = false,
+
     TextSize = 18,
+
 })
 
+
 Aba_Tele:Button({
-    Title = "Hop Serve",
+
+    Title = "Hop Server",
+
     Callback = function()
+
         ExecutarServerHop()
+
     end
+
 })
 
+
 Aba_Tele:Button({
-    Title = "Rejoin Serve",
+
+    Title = "Rejoin Server",
+
     Callback = function()
+
         ExecutarRejoin()
+
     end
+
 })
 
 -- ==================================
