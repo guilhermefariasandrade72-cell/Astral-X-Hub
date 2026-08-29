@@ -2846,8 +2846,10 @@ end
 -- ==================================
 -- BOTOES DA ABA MAIN
 -- ==================================
-Aba_AutoFarm:Paragraph({
+Aba_AutoFarm:Section({
     Title = "Auto Farm",
+    Box = false,
+    TextSize = 18,
 })
 
 Aba_AutoFarm:Toggle({
@@ -2891,8 +2893,10 @@ Aba_AutoFarm:Button({
     end
 })
 
-Aba_AutoFarm:Paragraph({
-    Title = "Senttings Auto Farm",
+Aba_AutoFarm:Section({
+    Title = "Senttoings Auto Farm",
+    Box = false,
+    TextSize = 18,
 })
 
 Aba_AutoFarm:Toggle({
