@@ -1,1 +1,57 @@
+-- ==================================
+-- 🌐 ASTRAL X HUB V1
+-- 🎨 INTERFACE + TEMA RUBY PADRÃO
+-- ==================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- ==================================
+-- CARREGAR WINDUI
+-- ==================================
+
+local WindUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"
+))()
+
+-- ==================================
+-- 🌈 FUNÇÃO DE GRADIENTE
+-- ==================================
+
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+
+        local r = math.floor(
+            (startColor.R + (endColor.R - startColor.R) * t) * 255
+        )
+
+        local g = math.floor(
+            (startColor.G + (endColor.G - startColor.G) * t) * 255
+        )
+
+        local b = math.floor(
+            (startColor.B + (endColor.B - startColor.B) * t) * 255
+        )
+
+        result = result
+            .. "<font color=\"rgb("
+            .. r .. ", "
+            .. g .. ", "
+            .. b
+            .. ")\">"
+            .. text:sub(i, i)
+            .. "</font>"
+    end
+
+    return result
+end
 
