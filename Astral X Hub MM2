@@ -1696,6 +1696,175 @@ end
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
+Aba_Murderer:Section({
+    Title = "Murderer",
+    Box = false,
+    TextSize = 18,
+})
+
+-- ==================================
+-- 🔪 MURDERER
+-- ==================================
+
+local JogadorSelecionado = nil
+
+-- ==================================
+-- 👤 LISTA DE JOGADORES
+-- ==================================
+
+local function PegarListaJogadores()
+    local lista = {}
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+
+    table.sort(lista)
+
+    if #lista == 0 then
+        table.insert(lista, "Nenhum Jogador")
+    end
+
+    return lista
+end
+
+
+local DropdownJogadores = Aba_Murderer:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador",
+    Values = PegarListaJogadores(),
+
+    Callback = function(Value)
+        JogadorSelecionado = Value
+    end
+})
+
+
+-- ==================================
+-- 🔄 ATUALIZAR LISTA
+-- ==================================
+
+local function AtualizarListaJogadores()
+
+    local lista = PegarListaJogadores()
+
+    pcall(function()
+        DropdownJogadores:Refresh(lista)
+    end)
+
+end
+
+
+Players.PlayerAdded:Connect(function()
+    task.wait(0.3)
+    AtualizarListaJogadores()
+end)
+
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.3)
+    AtualizarListaJogadores()
+end)
+
+
+-- ==================================
+-- 🎯 BOTÃO
+-- ==================================
+
+Aba_Murderer:Button({
+    Title = "Player Selecionado",
+
+    Callback = function()
+
+        if not JogadorSelecionado
+            or JogadorSelecionado == "Nenhum Jogador" then
+            return
+        end
+
+        local alvo =
+            Players:FindFirstChild(JogadorSelecionado)
+
+        if alvo then
+            print("Alvo:", alvo.Name)
+        end
+
+    end
+})
+
+Aba_Murderer:Toggle({
+    Title = "Kill All Button",
+    Desc = "Adiciona um botão na tela que ao clicar mata todo mundo",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+            CreateKillAllButton()
+        else
+            RemoveKillAllButton()
+        end
+
+    end
+})
+
+Aba_Murderer:Toggle({
+    Title = "Kill All",
+    Desc = "Mata todo mundo automaticamente",
+    Default = false,
+
+    Callback = function(Ativo)
+        KillAura = Ativo
+    end
+})
+
+Aba_Murderer:Toggle({
+    Title = "Kill Aura",
+    Desc = "Mata todo mundo em uma distância que você escolher",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        KillAuraAtivo = Ativo
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+Aba_Murderer:Slider({
+    Title = "Distance Kill Aura",
+    Desc = "Ajuste a distância do Kill Aura",
+
+    Value = {
+        Min = 5,
+        Max = 50,
+        Default = 15,
+        Step = 1
+    },
+
+    Callback = function(Valor)
+
+        RaioKillAura = Valor
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+Aba_Murderer:Toggle({
+    Title = "Clicle Aura",
+    Desc = "Consegue ver a distância do kill aura",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        MostrarCirculoAura = Ativo
+
+        AtualizarCirculoAura()
+
+    end
+})
 
 -- ===================================================
 -- BOTOES DA ABA SHERIFF
