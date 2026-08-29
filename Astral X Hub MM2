@@ -443,6 +443,8 @@ end)
 -- ====================================================
 -- VARIÁVEIS DA ABA MURDERER
 -- ====================================================
+local KillAura = false
+local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
 
 
 
