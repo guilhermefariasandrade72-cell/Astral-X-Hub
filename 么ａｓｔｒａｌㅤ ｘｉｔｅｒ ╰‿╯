@@ -601,7 +601,7 @@ local CONFIG_FARM = {
 local AutoFarmAtivo = false
 local BolsaCheia = false
 local collectedCoins = {}
-local moedasIgnoradasInvisivel = {} -- Guarda moedas que foram puladas por estar invisível
+local moedasIgnoradasInvisivel = {}
 
 local cachedCoinContainer = nil
 local ultimoCheckBolsa = 0
@@ -630,7 +630,7 @@ local function ObterMurderer()
 end
 
 -- ==================================
--- 1. RESETS AUTOMÁTICOS DE RODADA
+-- 1. RESETS AUTOMÁTICOS DE RODADA (SOMENTE NA PRÓXIMA PARTIDA)
 -- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
@@ -648,7 +648,7 @@ player:GetAttributeChangedSignal("Alive"):Connect(function()
 end)
 
 -- ==================================
--- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA (25 STUDS DO MURDERER)
+-- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA
 -- ==================================
 task.spawn(function()
     while true do
@@ -677,7 +677,7 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 2. DETECTOR DE BOLSA CHEIA (OTIMIZADO)
+-- 2. DETECTOR DE BOLSA CHEIA
 -- ==================================
 local function VerificarTextoBolsaCheia()
     local agora = os.clock()
@@ -726,22 +726,32 @@ task.spawn(function()
 end)
 
 -- ==================================
--- 3. VERIFICAÇÃO DE PARTIDA
+-- 3. VERIFICAÇÃO DE PARTIDA RIGOROSA
 -- ==================================
 local function EmPartida()
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
     if not c:FindFirstChild("HumanoidRootPart") then return false end
     
-    if player:GetAttribute("Alive") ~= nil and player:GetAttribute("Alive") == false then
+    -- Checa se o jogador está realmente vivo no status do MM2
+    local aliveAttr = player:GetAttribute("Alive")
+    if aliveAttr ~= nil and aliveAttr == false then
         return false
+    end
+    
+    -- Evita coletar moedas se estiver preso no Lobby
+    if Workspace:FindFirstChild("Lobby") then
+        local distLobby = (c.HumanoidRootPart.Position - Workspace.Lobby:GetPivot().Position).Magnitude
+        if distLobby < 100 then
+            return false
+        end
     end
     
     return true
 end
 
 -- ==================================
--- 4. BUSCA DE MOEDA MAIS PRÓXIMA (COM FILTROS DE INVISIBILIDADE E MURDERER)
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA
 -- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
@@ -762,7 +772,7 @@ local function getNearestCoin(minhaPos)
         and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
 
-            -- 1. FILTRO: Ignora moedas a menos de 25 studs do Murderer
+            -- 1. FILTRO: Ignora moedas a menos de 30 studs do Murderer
             if hrpMurderer then
                 local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
                 if distMurder <= CONFIG_FARM.raio_perigo_murder then
@@ -770,9 +780,8 @@ local function getNearestCoin(minhaPos)
                 end
             end
 
-            -- 2. FILTRO: Ignora moedas marcadas temporariamente por falha no toque (invisível)
+            -- 2. FILTRO: Ignora moedas marcadas por invisibilidade
             if moedasIgnoradasInvisivel[moeda] then
-                -- Se a invisibilidade já desligou, libera a moeda para ser coletada!
                 if not InvisivelAtivo then
                     moedasIgnoradasInvisivel[moeda] = nil
                 else
@@ -799,16 +808,16 @@ task.spawn(function()
             local c = player.Character
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
+            -- Se não está em partida, apenas espera sem resetar a bolsa
             if not EmPartida() or not hrp then
-                ResetarEstadoFarm()
-                task.wait(0.2)
+                task.wait(0.5)
                 continue
             end
 
-            -- Aguarda se a bolsa encher
+            -- Aguarda se a bolsa estiver cheia
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
-                task.wait(0.3)
+                task.wait(0.5)
                 continue
             end
 
@@ -824,7 +833,6 @@ task.spawn(function()
                     
                     local minhaPosAtual = hrp.Position
                     
-                    -- Se surgir uma moeda MAIS PERTO do seu caminho, ele troca de alvo
                     local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
                     if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
                         alvo = moedaMaisPertoAgora
@@ -839,19 +847,16 @@ task.spawn(function()
                     local direcao = (posAlvo - minhaPosAtual)
                     local distancia = direcao.Magnitude
 
-                    -- Chega exatamente no centro da moeda (0.8 studs)
                     if distancia <= 0.8 then
-                        -- 🚨 SE ESTIVER INVISÍVEL: O toque não registra! Marca como ignorada temporariamente
                         if InvisivelAtivo then
                             moedasIgnoradasInvisivel[alvo] = true
-                            break -- Abandona esta moeda e busca outra
+                            break
                         else
                             collectedCoins[alvo] = true
                             break
                         end
                     end
 
-                    -- Movimentação suave via CFrame contínuo (Sem teleporte)
                     local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
                     local dt = RunService.Heartbeat:Wait()
                     local passo = math.min(velAtual * dt, distancia)
@@ -860,7 +865,6 @@ task.spawn(function()
                     hrp.CFrame = CFrame.new(novaPos)
                     hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
 
-                    -- Trava de segurança: Se ficar mais de 1.5s travado na mesma moeda por estar invisível
                     tempoPassadoNaMoeda = tempoPassadoNaMoeda + dt
                     if tempoPassadoNaMoeda > 1.5 and InvisivelAtivo then
                         moedasIgnoradasInvisivel[alvo] = true
@@ -868,15 +872,15 @@ task.spawn(function()
                     end
                 end
             else
-                table.clear(collectedCoins)
-                task.wait(0.1)
+                task.wait(0.2)
             end
         else
-            ResetarEstadoFarm()
+            -- Quando desliga o botão, apenas aguarda sem limpar a bolsa
             task.wait(0.5)
         end
     end
 end)
+
 
 -- ==================================
 -- 📌 CONFIGURAÇÕES E VARIÁVEIS
