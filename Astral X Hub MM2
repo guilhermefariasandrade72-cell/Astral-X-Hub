@@ -259,3 +259,114 @@ local CoresAstral = {
         Icon = "#8B4513",
     },
 }
+
+-- ==================================
+-- 🎨 REGISTRAR TEMAS
+-- ==================================
+
+for Nome, Cor in pairs(CoresAstral) do
+
+    WindUI:AddTheme({
+        Name = "Astral_" .. Nome,
+
+        Background = "#18181B",
+
+        Accent = Cor.Accent,
+        Button = Cor.Button,
+        Icon = Cor.Icon,
+
+        Text = "#FFFFFF",
+        Placeholder = "#888888",
+        Outline = "#303036",
+    })
+
+end
+
+-- ==================================
+-- ❤️ RUBY SERÁ A COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Ruby"
+
+-- ==================================
+-- 🪟 CRIAR JANELA
+-- ==================================
+
+local Window = WindUI:CreateWindow({
+
+    Title = gradient(
+        "Astral X Hub         V 136",
+        Color3.fromHex("#FFFFFF"),
+        Color3.fromHex("#CCCCCC")
+    ),
+
+    Icon = "star",
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1BF2B2"),
+        Color3.fromHex("#1BCBF2")
+    ),
+
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+
+    Transparent = true,
+    Transparency = WindowTransparency,
+
+    -- ⭐ RUBY APLICADO AO INICIAR
+    Theme = "Astral_Ruby",
+
+    SideBarWidth = 120,
+    HasOutline = true,
+    HideSearchBar = true,
+})
+
+-- ==================================
+-- 🎨 COR DO FUNDO
+-- ==================================
+
+pcall(function()
+
+    if Window.UIElements then
+
+        if Window.UIElements.Main then
+            Window.UIElements.Main.BackgroundColor3 = MainColor
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
+        end
+
+if Window.UIElements.SideBar then
+    Window.UIElements.SideBar.BackgroundColor3 =
+        Color3.fromHex("#141417")
+
+    Window.UIElements.SideBar.BackgroundTransparency =
+        WindowTransparency
+end
+
+-- 👇 COLOQUE AQUI
+pcall(function()
+    if Window.UIElements and Window.UIElements.SideBar then
+        Window.UIElements.SideBar.ClipsDescendants = true
+
+        local Corner = Window.UIElements.SideBar:FindFirstChildOfClass("UICorner")
+
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 18)
+        else
+            Corner = Instance.new("UICorner")
+            Corner.CornerRadius = UDim.new(0, 18)
+            Corner.Parent = Window.UIElements.SideBar
+        end
+    end
+end)
+
+    elseif Window.Frame then
+
+        Window.Frame.BackgroundColor3 = MainColor
+        Window.Frame.BackgroundTransparency =
+            WindowTransparency
+
+    end
+
+end)
