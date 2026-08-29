@@ -2849,7 +2849,7 @@ end
 -- ==================================
 
 Aba_AutoFarm:Section({
-    Title = "AUTO FARM",
+    Title = "AUTO FARM COIN",
     Box = false,
     TextSize = 18,
 })
@@ -2941,6 +2941,12 @@ Aba_AutoFarm:Toggle({
 -- BOTOES DA ABA SHERIFF
 -- ===================================================
 
+Aba_Sheriff:Section({
+    Title = "Sheriff",
+    Box = false,
+    TextSize = 18,
+})
+
 Aba_Sheriff:Toggle({
     Title = "Silent AIM Button",
     Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
@@ -2956,7 +2962,7 @@ Aba_Sheriff:Toggle({
 })
 
 Aba_Sheriff:Toggle({
-    Title = "Instant Shoot",
+    Title = "Instant Shoot Beta!",
     Desc = "Adiciona um botão na tela que ao clicar teleporta atras do assassino e atira nele",
     Default = false,
     Callback = function(State)
@@ -3022,6 +3028,12 @@ Aba_Sheriff:Toggle({
 -- ==================================
 -- 👤 DROPDOWN DE JOGADORES
 -- ==================================
+
+Aba_Murderer:Section({
+    Title = "Murderer",
+    Box = false,
+    TextSize = 18,
+})
 
 Aba_Murderer:Toggle({
     Title = "Kill All Button",
@@ -3153,18 +3165,22 @@ Aba_ESP:Toggle({
 -- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
-local Sec_Extras = Aba_Local:Section({Title = "Extras"})
+Aba_LocalPlayer:Section({
+    Title = "Settings Auto Farm",
+    Box = false,
+    TextSize = 18,
+})
 
-Sec_Extras:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Invisível",
-    Desc = "Move seu personagem pata um lugar distante fazendo parecer que estar invisivel",
+    Desc = "Move seu personagem para um lugar distante fazendo parecer que estar invisivel",
     Default = false,
     Callback = function(Ativo)
         InvisivelAtivo = Ativo
     end
 })
 
-Sec_Extras:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Invisível (botão)",
     Desc = "Adiciona um botão que ao clicar deixa seu personagem invisivel",
     Default = false,
@@ -3177,9 +3193,13 @@ Sec_Extras:Toggle({
     end
 })
 
-local Sec_Movimento = Aba_Local:Section({Title = "Movimento do Player"})
+Aba_LocalPlayer:Section({
+    Title = "Moviment Player",
+    Box = false,
+    TextSize = 18,
+})
 
-Sec_Movimento:Slider({
+Aba_LocalPlayer:Slider({
     Title = "Speed",
     Desc = "Ajuste a valocidade do seu personagem",
     Value = {Min = 16, Max = 30, Default = 16, Step = 1},
@@ -3192,7 +3212,7 @@ Sec_Movimento:Slider({
     end
 })
 
-Sec_Movimento:Slider({
+Aba_LocalPlayer:Slider({
     Title = "Jump",
     Desc = "Ajuste o pulo do seu personagem",
     Value = {Min = 50, Max = 75, Default = 50, Step = 1},
@@ -3206,7 +3226,7 @@ Sec_Movimento:Slider({
     end
 })
 
-Sec_Movimento:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Fly",
     Desc = "Consegue voar pelo mapa",
     Default = false,
@@ -3215,7 +3235,7 @@ Sec_Movimento:Toggle({
     end
 })
 
-Sec_Movimento:Slider({
+Aba_LocalPlayer:Slider({
     Title = "Fly Speed",
     Desc = "Ajuste a velocidade do Voo",
     Value = {Min = 16, Max = 100, Default = 16, Step = 1},
@@ -3224,7 +3244,7 @@ Sec_Movimento:Slider({
     end
 })
 
-Sec_Movimento:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Infinite Jump",
     Desc = "Consegue pular infinitamente ao presionar o botão de pulo",
     Default = false,
@@ -3233,7 +3253,7 @@ Sec_Movimento:Toggle({
     end
 })
 
-Sec_Movimento:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Walk Fling",
     Desc = "Faz seu personagem fica jirando e consegue jogar jogadores pra longe",
     Default = false,
@@ -3242,7 +3262,7 @@ Sec_Movimento:Toggle({
     end
 })
 
-Sec_Movimento:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Anti-Fling",
     Desc = "Impede que outros scripts te jogue pra longe",
     Default = false,
@@ -3251,7 +3271,7 @@ Sec_Movimento:Toggle({
     end
 })
 
-Sec_Movimento:Toggle({
+Aba_LocalPlayer:Toggle({
     Title = "Speed glith",
     Desc = "Aplica velocidade 300 ao pular e volta ao normal quando encostar mo chão",
     Default = false,
