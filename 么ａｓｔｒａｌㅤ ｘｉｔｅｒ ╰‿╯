@@ -575,7 +575,7 @@ local Aba_Tele = Window:Tab({
     Icon = "globe",
 })
 
-local Aba_Config = Window:Tab({
+local Aba_ConfigUI = Window:Tab({
     Title = "Config UI",
     Icon = "settings",
 })
@@ -3465,7 +3465,7 @@ local ListaCores = {
 -- 🎨 DROPDOWN
 -- ==================================
 
-Aba_Config:Dropdown({
+Aba_ConfigUI:Dropdown({
     Title = "Cor da Interface",
     Values = ListaCores,
     Value = CorSelecionada,
@@ -3480,7 +3480,7 @@ Aba_Config:Dropdown({
 -- ✅ BOTÃO APLICAR
 -- ==================================
 
-Aba_Config:Button({
+Aba_ConfigUI:Button({
     Title = "Aplicar Cor",
 
     Callback = function()
@@ -3499,7 +3499,7 @@ Aba_Config:Button({
     end
 })
 
-Aba_Config:Slider({
+Aba_ConfigUI:Slider({
     Title = "Tamanho do Botão Astral",
 
     Value = {
