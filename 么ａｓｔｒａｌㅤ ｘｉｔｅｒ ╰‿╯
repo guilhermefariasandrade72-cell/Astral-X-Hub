@@ -580,6 +580,11 @@ local Aba_Config = Window:Tab({
     Icon = "settings",
 })
 
+local Aba_Botoes = Window:Tab({
+    Title = "Botões",
+    Icon = "square-mouse-pointer"
+})
+
 -- ==================================
 -- 🚶 AUTO FARM — ANDANDO EM PÉ (CORRIGIDO)
 -- ==================================
@@ -3728,7 +3733,93 @@ Aba_Config:Slider({
     end
 })
 
+-- ===========================================
+-- 🎯 KILL AIM
+-- ===========================================
 
+Aba_Botoes:Toggle({
+    Title = "Kill Aim",
+    Desc = "Mostra o botão Kill Aim na tela",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+            CriarBotaoKillAim()
+        else
+            RemoverBotaoKillAim()
+        end
+
+    end
+})
+
+
+-- ===========================================
+-- 🎨 ESTILO DO BOTÃO
+-- ===========================================
+
+Aba_Botoes:Dropdown({
+    Title = "Estilo do Botão",
+
+    Values = {
+        "Quadrado",
+        "Redondo",
+        "Retangular"
+    },
+
+    Value = "Quadrado",
+
+    Callback = function(Valor)
+
+        EstiloBotao = Valor
+
+        if BotaoKillAim then
+            AtualizarEstiloBotao()
+        end
+
+    end
+})
+
+
+-- ===========================================
+-- 👁️ MOSTRAR BOTÃO
+-- ===========================================
+
+Aba_Botoes:Button({
+    Title = "Mostrar Botão",
+    Desc = "Mostra o botão KILL AIM na tela",
+
+    Callback = function()
+        CriarBotaoKillAim()
+    end
+})
+
+
+-- ===========================================
+-- 📐 TAMANHO DO BOTÃO
+-- ===========================================
+
+Aba_Botoes:Slider({
+    Title = "Tamanho do Botão",
+    Desc = "Aumenta ou diminui o botão",
+
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 100,
+        Step = 5
+    },
+
+    Callback = function(Valor)
+
+        TamanhoBotao = Valor
+
+        if BotaoKillAim then
+            AtualizarEstiloBotao()
+        end
+
+    end
+})
 
 
 
