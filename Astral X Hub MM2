@@ -2026,6 +2026,110 @@ local function RemoveAutoFarmButton()
 end
 
 -- ==================================
+-- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
+-- ==================================
+local UltimaChecagemCargo = 0
+
+local function PegarCargos()
+    if tick() - UltimaChecagemCargo < 2 then return end
+    UltimaChecagemCargo = tick()
+
+    task.spawn(function()
+        local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+        if not R then return end
+        local ok, d = pcall(function() return R:InvokeServer() end)
+        if ok and d then DadosCargos = d end
+    end)
+end
+
+-- 🔴 HIGHLIGHT REUTILIZÁVEL
+local function CriarHighlight(Alvo, Cor)
+    if not Alvo then return end
+    local H = Highlights[Alvo]
+    if not H or H.Parent ~= Alvo then
+        H = Instance.new("Highlight")
+        H.Name = "ESP_Highlight"
+        H.Adornee = Alvo
+        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        H.OutlineTransparency = 0
+        H.Parent = Alvo
+        Highlights[Alvo] = H
+    end
+    H.FillColor = Cor
+    H.OutlineColor = Cor
+    H.Enabled = true
+end
+
+-- 🟢 NOME E DISTÂNCIA EM UMA ÚNICA BILLBOARD
+local function CriarTextESP(Jogador, Cor, TextoExibido)
+    local Char = Jogador.Character
+    if not Char or not Char:FindFirstChild("Head") then return end
+    local Head = Char.Head
+
+    local Data = NamesESP[Jogador]
+    if not Data or not Data.Gui or Data.Gui.Parent ~= Head then
+        if Data and Data.Gui then Data.Gui:Destroy() end
+        
+        local BGui = Instance.new("BillboardGui")
+        BGui.Name = "ESP_Text"
+        BGui.Adornee = Head
+        BGui.Size = UDim2.new(0, 200, 0, 40)
+        BGui.StudsOffset = Vector3.new(0, 2.5, 0)
+        BGui.AlwaysOnTop = true
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Name = "Label"
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Font = Enum.Font.SourceSansBold
+        TextLabel.TextSize = 13
+        TextLabel.TextStrokeTransparency = 0
+        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+        TextLabel.Parent = BGui
+
+        BGui.Parent = Head
+        Data = {Gui = BGui, Label = TextLabel}
+        NamesESP[Jogador] = Data
+    end
+
+    Data.Label.Text = TextoExibido
+    Data.Label.TextColor3 = Cor
+    Data.Gui.Enabled = true
+end
+
+-- 🧹 LIMPEZA COMPLETA DE UM JOGADOR
+local function LimparJogadorESP(p)
+    if p and p.Character and Highlights[p.Character] then
+        Highlights[p.Character]:Destroy()
+        Highlights[p.Character] = nil
+    end
+    if p and NamesESP[p] then
+        if NamesESP[p].Gui then NamesESP[p].Gui:Destroy() end
+        NamesESP[p] = nil
+    end
+    if p and TracersESP[p] then
+        TracersESP[p].Visible = false
+        TracersESP[p]:Remove()
+        TracersESP[p] = nil
+    end
+end
+
+-- 🧹 LIMPEZA GERAL
+local function LimparTabela(Tabela)
+    for key, item in pairs(Tabela) do
+        if typeof(item) == "Instance" then
+            item:Destroy()
+        elseif type(item) == "table" and item.Gui then
+            item.Gui:Destroy()
+        elseif type(item) == "userdata" and item.Remove then
+            item.Visible = false
+            item:Remove()
+        end
+    end
+    table.clear(Tabela)
+end
+
+-- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
 
