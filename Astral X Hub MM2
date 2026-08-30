@@ -436,6 +436,97 @@ pcall(function()
 
 end)
 
+-- ==================================
+-- VARIÁVEIS DA ABA MAIN
+-- ==================================
+-- AITO FARM 
+local CONFIG_FARM = {
+    velocidade = 24,
+    limite = 40,
+    alcance_maximo = 999
+}
+local AutoFarmAtivo = false
+local collectedCoins = {}
+local KillAllAoEncher = false
+
+local AutoFarmButtonGui = nil
+local isDraggingFarm = false
+
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
+local Pressionado = false
+
+local GrabGunButtonGui = nil
+local isDraggingGrab = false
+local buttonStartPosGrab, dragStartPosGrab
+
+local KillAura = false
+local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
+
+-- ==================================
+-- VARIÁVEIS DA ABA ESP
+-- ==================================
+local ESPHighlightAtivo = false
+local ESPNomeAtivo = false
+local ESPDistanciaAtiva = false
+local ESPTracerAtivo = false
+
+local Highlights = {}
+local NamesESP = {}
+local DistanceESP = {}
+local TracersESP = {}
+local DadosCargos = {}
+
+-- ==================================
+-- VARIÁVEIS DA ABA LOCAL PLAYER
+-- ==================================
+local InvisivelButtonGui = nil
+local isDraggingInvis = false
+
+local InvisivelAtivo = false
+local PartesCorpo = {}
+local Personagem, Humanoid, Raiz
+
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
+local VelocidadeNoPulo = 300
+local FOV_Padrao = 70
+
+local FlyAtivo = false
+local FlyVelocidade = 16
+
+local bv, bg, con
+local controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+
+local WalkFlingAtivo = false
+local FlingPower = 100000000000
+local FlingConnection = nil
+
+-- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
+_G.PuloInfinito = false
+_G.SpeedNoPulo = false
+_G.CameraInfinita = false
+_G.CameraNoClip = false
+
+-- ==================================
+-- VARIÁVEIS DA ABA TELEPORTE 
+-- ==================================
+local TeleportandoLocais = false
+
+local JogadorSelecionadoTP = nil
+local DropdownJogadores = nil
+
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local EmCooldownHop = false
+local ServidoresVisitados = {}
 
 -- ====================================================
 -- ABAS
