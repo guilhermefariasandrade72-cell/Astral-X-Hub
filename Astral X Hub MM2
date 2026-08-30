@@ -552,43 +552,6 @@ local Aba_ESP = Window:Tab({
     Icon = "eye",
 })
 
--- ===========================================
--- 👁️ ESP EXPANSÍVEL
--- ===========================================
-
-local ESPAberto = false
-
-local ESPSection = Aba_ESP:Section({
-    Title = "👁️ ESP",
-    Box = true,
-    TextSize = 18,
-})
-
-local ESP_Chams = Aba_ESP:Toggle({
-    Title = "Chams",
-    Default = false,
-})
-
-local ESP_Highlight = Aba_ESP:Toggle({
-    Title = "Highlight",
-    Default = false,
-})
-
-local ESP_Name = Aba_ESP:Toggle({
-    Title = "Name",
-    Default = false,
-})
-
-local ESP_Distance = Aba_ESP:Toggle({
-    Title = "Distance",
-    Default = false,
-})
-
-local ESP_Line = Aba_ESP:Toggle({
-    Title = "Line",
-    Default = false,
-})
-
 local Aba_LocalPlayer = Window:Tab({
     Title = "Local Player",
     Icon = "user",
