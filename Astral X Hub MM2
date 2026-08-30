@@ -1934,6 +1934,101 @@ local function RemoveAutoFarmButton()
     AutoFarmAtivo = false
 end
 
+-- ==================================
+-- SISTEMAS DA ABA LOCAL PLAYER
+-- ==================================
+
+-- 🟢 APLICAR VALORES INICIAIS
+local function AplicarValoresBase()
+    local Char = player.Character
+    if Char and Char:FindFirstChild("Humanoid") then
+        Char.Humanoid.WalkSpeed = VelocidadePadrao
+        Char.Humanoid.UseJumpPower = true
+        Char.Humanoid.JumpPower = ForcaPuloPadrao
+    end
+end
+
+task.wait(1)
+AplicarValoresBase()
+
+player.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    AplicarValoresBase()
+    -- ✅ FORÇA ZOOM VOLTAR AO RENASCER
+    task.wait(1)
+    if not _G.CameraInfinita then
+        player.CameraMaxZoomDistance = ZoomMaxOriginal
+        player.CameraMinZoomDistance = ZoomMinOriginal
+    end
+end)
+
+-- 🟢 PULO INFINITO
+UserInputService.JumpRequest:Connect(function()
+    if _G.PuloInfinito then
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+        end
+    end
+end)
+
+-- 🟢 LOOP PRINCIPAL (Velocidade no Pulo + Câmera Sem Bloqueio + FOV)
+RunService.Stepped:Connect(function()
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("Humanoid") then return end
+    local Hum = Char.Humanoid
+
+    -- ✅ Velocidade no Pulo
+    if _G.SpeedNoPulo then
+        if Hum.FloorMaterial == Enum.Material.Air then
+            Hum.WalkSpeed = VelocidadeNoPulo
+        else
+            Hum.WalkSpeed = VelocidadePadrao
+        end
+    end
+end)
+
+-- ✅ CÂMERA SEM BLOQUEIO E FOV (sem mexer no zoom!)
+RunService.RenderStepped:Connect(function()
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    -- 👁️ Câmera Sem Bloqueio
+    if _G.CameraNoClip then
+        player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
+    else
+        player.DevCameraOcclusionMode = BloqueioOriginal
+    end
+
+    -- 🔧 Campo de Visão
+    Cam.FieldOfView = FOV_Padrao
+end)
+
+-- =====================================
+-- Sistema de Anti-Fling separadinho
+-- =====================================
+task.spawn(function()
+    while true do
+        if getgenv().AntiFling then
+            pcall(function()
+                for _, OtherPlayer in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if OtherPlayer ~= game:GetService("Players").LocalPlayer and OtherPlayer.Character then
+                        for _, Part in ipairs(OtherPlayer.Character:GetChildren()) do
+                            if Part:IsA("BasePart") then
+                                Part.CanCollide = false
+                                Part.AssemblyLinearVelocity = Vector3.zero
+                                Part.AssemblyAngularVelocity = Vector3.zero
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        game:GetService("RunService").Stepped:Wait()
+    end
+end)
+
+
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
