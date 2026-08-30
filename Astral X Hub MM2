@@ -3018,6 +3018,59 @@ Aba_AutoFarm:Toggle({
 })
 
 -- ==================================
+-- BOTOES DA ABA ESP
+-- ==================================
+Aba_ESP:Section({
+    Title = "ESP",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_ESP:Toggle({
+    Title = "Highlight ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPHighlightAtivo = Ativo
+        if not Ativo then
+            for _, h in pairs(Highlights) do h.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Name ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPNomeAtivo = Ativo
+        if not Ativo then
+            for _, n in pairs(NamesESP) do n.Gui.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Distance ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPDistanciaAtiva = Ativo
+        if not Ativo then
+            for _, d in pairs(DistanceESP) do d.Gui.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Tracer ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPTracerAtivo = Ativo
+        if not Ativo then
+            for _, t in pairs(TracersESP) do t.Visible = false end
+        end
+    end
+})
+
+-- ==================================
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
 Aba_LocalPlayer:Section({
