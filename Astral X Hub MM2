@@ -619,6 +619,116 @@ local function RemoveKillAllButton()
     end
 end
 
+-- ==================================
+-- 🔴 SISTEMA DE KILL AURA + CÍRCULO DINÂMICO
+-- =================================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local KillAuraAtivo = false
+local RaioKillAura = 15
+local MostrarCirculoAura = false
+
+local CirculoAdornment = nil
+
+-- 📏 CRIAR / ATUALIZAR O CÍRCULO VERMELHO VISUAL
+local function AtualizarCirculoAura()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    -- Removido o 'KillAuraAtivo' daqui para dependente apenas do 'MostrarCirculoAura'
+    if not MostrarCirculoAura or not hrp then
+        if CirculoAdornment then
+            CirculoAdornment:Destroy()
+            CirculoAdornment = nil
+        end
+        return
+    end
+
+    if not CirculoAdornment or not CirculoAdornment.Parent then
+        CirculoAdornment = Instance.new("CylinderHandleAdornment")
+        CirculoAdornment.Name = "KillAuraRangeVisual"
+        CirculoAdornment.Color3 = Color3.fromRGB(255, 0, 0)
+        CirculoAdornment.Transparency = 0.6
+        CirculoAdornment.AlwaysOnTop = true
+        CirculoAdornment.ZIndex = 5
+        CirculoAdornment.CFrame = CFrame.Angles(math.rad(90), 0, 0)
+    end
+
+    CirculoAdornment.Adornee = hrp
+    CirculoAdornment.Parent = hrp
+    CirculoAdornment.Height = 0.2
+    CirculoAdornment.Radius = RaioKillAura
+end
+
+-- ⚔️ EXECUTAR ATAQUE DE FACA
+local function ExecutarAtaque(Alvo)
+    local Char = player.Character
+    if not Char then return end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
+    if not Faca then return end
+    
+    if Faca.Parent ~= Char then 
+        Faca.Parent = Char 
+        task.wait(0.02) 
+    end
+    
+    local Eventos = Faca:FindFirstChild("Events")
+    if not Eventos then return end
+
+    if Alvo and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+        pcall(function()
+            Eventos.KnifeStabbed:FireServer()
+            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+        end)
+    end
+end
+
+-- 🔴 LOOP DE ATUALIZAÇÃO DO CÍRCULO (Roda de forma independente do Kill Aura)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        AtualizarCirculoAura()
+    end
+end)
+
+-- ⚔️ LOOP DO KILL AURA (Roda apenas a lógica de ataque)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+
+        if KillAuraAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+            if hrp and hum and hum.Health > 0 then
+                for _, Alvo in ipairs(Players:GetPlayers()) do
+                    if not KillAuraAtivo then break end
+                    
+                    if Alvo ~= player and Alvo.Character then
+                        local alvoHrp = Alvo.Character:FindFirstChild("HumanoidRootPart")
+                        local alvoHum = Alvo.Character:FindFirstChildOfClass("Humanoid")
+                        
+                        if alvoHrp and alvoHum and alvoHum.Health > 0 then
+                            local distancia = (hrp.Position - alvoHrp.Position).Magnitude
+                            
+                            if distancia <= RaioKillAura then
+                                ExecutarAtaque(Alvo)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    AtualizarCirculoAura()
+end)
 
 -- ====================================================
 -- SISTEMA DA ABA SHERIFF
