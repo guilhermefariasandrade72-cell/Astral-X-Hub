@@ -552,14 +552,14 @@ local Aba_ESP = Window:Tab({
     Icon = "eye",
 })
 
-local Aba_Camera = Window:Tab({
-    Title = "Camera",
-    Icon = "camera",
-})
-
 local Aba_LocalPlayer = Window:Tab({
     Title = "Local Player",
     Icon = "user",
+})
+
+local Aba_Camera = Window:Tab({
+    Title = "Camera",
+    Icon = "camera",
 })
 
 local Aba_Tele = Window:Tab({
@@ -3185,5 +3185,46 @@ Aba_LocalPlayer:Toggle({
     Default = false,
     Callback = function(Ativo)
         _G.SpeedNoPulo = Ativo
+    end
+})
+
+-- =========================================
+-- ABA CAMERA 
+-- =========================================
+
+-- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
+Aba_Camera:Toggle({
+    Title = "Infinite Zoom",
+    Desc = "Consegue dar zoom para uma distância de 99999",
+    Default = false,
+    Callback = function(Ativo)
+        _G.CameraInfinita = Ativo
+        if Ativo then
+            -- ✅ LIGADO → ZOOM GRANDE
+            player.CameraMaxZoomDistance = 1000000
+        else
+            -- ❌ DESLIGADO → VOLTA EXATAMENTE AO ORIGINAL
+            player.CameraMaxZoomDistance = ZoomMaxOriginal
+            player.CameraMinZoomDistance = ZoomMinOriginal
+        end
+    end
+})
+
+Aba_Camera:Toggle({
+    Title = "Noclip camera",
+    Desc = "Impede que sua camera encoste em paredes",
+    Default = false,
+    Callback = function(Ativo)
+        _G.CameraNoClip = Ativo
+    end
+})
+
+Aba_Camera:Slider({
+    Title = "Fov",
+    Desc = "Ajuste o Fov de sua camera",
+    Value = {Min = 70, Max = 130, Default = 70, Step = 1},
+    Callback = function(Valor)
+        FOV_Padrao = Valor
+        workspace.CurrentCamera.FieldOfView = Valor
     end
 })
