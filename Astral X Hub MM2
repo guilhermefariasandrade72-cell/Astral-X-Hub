@@ -2702,7 +2702,7 @@ end)
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
 Aba_Murderer:Section({
-    Title = "Murderer",
+    Title = "MURDERER",
     Box = false,
     TextSize = 18,
 })
@@ -3261,6 +3261,170 @@ Aba_Camera:Slider({
     Callback = function(Valor)
         FOV_Padrao = Valor
         workspace.CurrentCamera.FieldOfView = Valor
+    end
+})
+
+-- ==================================
+-- 👤 DROPDOWN
+-- ==================================
+
+local DropdownJogadores = Aba_Tele:Dropdown({
+
+    Title = "Select Player",
+
+    Values = PegarListaJogadores(),
+
+    Default = "",
+
+    Callback = function(nome)
+
+        JogadorSelecionadoTP = nome
+
+    end
+
+})
+
+
+-- ==================================
+-- 🔄 ATUALIZAR SOMENTE OS VALORES
+-- ==================================
+
+local function AtualizarListaJogadores()
+
+    local novaLista = PegarListaJogadores()
+
+    pcall(function()
+
+        DropdownJogadores:Refresh(novaLista)
+
+    end)
+
+end
+
+
+-- Atualiza quando alguém entra
+Players.PlayerAdded:Connect(function()
+
+    task.wait(0.3)
+
+    AtualizarListaJogadores()
+
+end)
+
+
+-- Atualiza quando alguém sai
+Players.PlayerRemoving:Connect(function()
+
+    task.wait(0.3)
+
+    AtualizarListaJogadores()
+
+end)
+
+
+-- ==================================
+-- 👤 TP PLAYER
+-- ==================================
+
+Aba_Tele:Button({
+
+    Title = "TP Player",
+
+    Callback = function()
+
+        if not JogadorSelecionadoTP
+            or JogadorSelecionadoTP == "Nenhum Jogador" then
+            return
+        end
+
+        local alvo =
+            Players:FindFirstChild(JogadorSelecionadoTP)
+
+        if alvo then
+            TeleportarParaPlayer(alvo)
+        end
+
+    end
+
+})
+
+Aba_Tele:Button({
+
+    Title = "TP Murderer",
+
+    Callback = function()
+
+        TeleportarPorCargo("Murderer")
+
+    end
+
+})
+
+Aba_Tele:Button({
+
+    Title = "TP Xerife",
+
+    Callback = function()
+
+        TeleportarPorCargo("Sheriff")
+
+    end
+
+})
+
+
+-- ==================================
+-- 📍 TÍTULO: TP LOCAIS
+-- ==================================
+
+Aba_Tele:Section({
+
+    Title = "TP Locais",
+
+    Box = false,
+
+    TextSize = 18,
+
+})
+
+
+Aba_Tele:Button({
+
+    Title = "TP Mapa",
+
+    Callback = function()
+
+        local posMapa = GetMapSpawn()
+
+        if posMapa then
+            TeleportarPara(posMapa)
+        end
+
+    end
+
+})
+
+
+Aba_Tele:Button({
+
+    Title = "TP Lobby",
+
+    Callback = function()
+
+        local posLobby = GetLobbySpawn()
+
+        if posLobby then
+            TeleportarPara(posLobby)
+        end
+
+    end
+
+})
+
+Aba_Tele:Button({
+    Title = "TP Safe",
+    Callback = function()
+        TeleportarParaSafe()
     end
 })
 
