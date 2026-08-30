@@ -2856,7 +2856,193 @@ end
 -- ==================================
 
 
+-- ===========================================
+-- 🔘 SISTEMA DO BOTÃO KILL AIM
+-- ===========================================
 
+local EstiloBotao = "Quadrado"
+local TamanhoBotao = 100
+local BotaoGui = nil
+local BotaoKillAim = nil
+
+local function AtualizarEstiloBotao()
+    if not BotaoKillAim then return end
+
+    local Corner = BotaoKillAim:FindFirstChildOfClass("UICorner")
+    if not Corner then return end
+
+    if EstiloBotao == "Quadrado" then
+        Corner.CornerRadius = UDim.new(0, 8)
+
+        BotaoKillAim.Size = UDim2.fromOffset(
+            TamanhoBotao,
+            TamanhoBotao
+        )
+
+    elseif EstiloBotao == "Redondo" then
+        Corner.CornerRadius = UDim.new(1, 0)
+
+        BotaoKillAim.Size = UDim2.fromOffset(
+            TamanhoBotao,
+            TamanhoBotao
+        )
+
+    elseif EstiloBotao == "Retangular" then
+        Corner.CornerRadius = UDim.new(0, 8)
+
+        BotaoKillAim.Size = UDim2.fromOffset(
+            TamanhoBotao * 1.7,
+            TamanhoBotao
+        )
+    end
+end
+
+
+local function CriarBotaoKillAim()
+
+    if BotaoGui then
+        BotaoGui:Destroy()
+    end
+
+    BotaoGui = Instance.new("ScreenGui")
+    BotaoGui.Name = "AstralX_KillAimButton"
+    BotaoGui.ResetOnSpawn = false
+    BotaoGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    BotaoGui.Parent = game:GetService("CoreGui")
+
+    local Botao = Instance.new("TextButton")
+    Botao.Name = "KillAimButton"
+
+    Botao.Size = UDim2.fromOffset(
+        TamanhoBotao,
+        TamanhoBotao
+    )
+
+    Botao.Position = UDim2.new(
+        0.5,
+        -TamanhoBotao / 2,
+        0.7,
+        -TamanhoBotao / 2
+    )
+
+    Botao.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+    Botao.BackgroundTransparency = 0.35
+
+    Botao.BorderSizePixel = 0
+
+    Botao.Text = "KILL AIM"
+    Botao.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Botao.TextSize = 14
+    Botao.Font = Enum.Font.GothamBold
+
+    Botao.AutoButtonColor = false
+    Botao.Parent = BotaoGui
+
+    -- 🖤 BORDA PRETA
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(0, 0, 0)
+    Borda.Thickness = 3
+    Borda.Parent = Botao
+
+    -- 🔲 CANTO
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 8)
+    Corner.Parent = Botao
+
+    BotaoKillAim = Botao
+
+    AtualizarEstiloBotao()
+
+
+    -- ===========================================
+    -- 📱 ARRASTAR NO CELULAR / PC
+    -- ===========================================
+
+    local UserInputService =
+        game:GetService("UserInputService")
+
+    local Arrastando = false
+    local PosicaoInicial
+    local ToqueInicial
+
+    Botao.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+            Arrastando = true
+
+            PosicaoInicial = Botao.Position
+            ToqueInicial = Input.Position
+
+            Input.Changed:Connect(function()
+
+                if Input.UserInputState == Enum.UserInputState.End then
+                    Arrastando = false
+                end
+
+            end)
+        end
+    end)
+
+
+    Botao.InputChanged:Connect(function(Input)
+
+        if not Arrastando then return end
+
+        if Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseMovement then
+
+            local Delta =
+                Input.Position - ToqueInicial
+
+            Botao.Position =
+                PosicaoInicial +
+                UDim2.fromOffset(
+                    Delta.X,
+                    Delta.Y
+                )
+        end
+
+    end)
+
+
+    -- ===========================================
+    -- ✨ ANIMAÇÃO AO CLICAR
+    -- ===========================================
+
+    Botao.MouseButton1Click:Connect(function()
+
+        local TamanhoAtual = Botao.Size
+
+        local Fator = 0.82
+
+        Botao:TweenSize(
+            UDim2.fromOffset(
+                TamanhoAtual.X.Offset * Fator,
+                TamanhoAtual.Y.Offset * Fator
+            ),
+            Enum.EasingDirection.Out,
+            Enum.EasingStyle.Quad,
+            0.08,
+            true
+        )
+
+        task.wait(0.08)
+
+        AtualizarEstiloBotao()
+    end)
+end
+
+
+local function RemoverBotaoKillAim()
+
+    if BotaoGui then
+        BotaoGui:Destroy()
+        BotaoGui = nil
+        BotaoKillAim = nil
+    end
+end
 
 -- ==================================
 -- BOTOES DA ABA AUTO FARM
