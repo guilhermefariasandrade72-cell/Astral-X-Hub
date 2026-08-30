@@ -3008,41 +3008,59 @@ local function CriarBotaoKillAim()
 
 
     -- ===========================================
-    -- ✨ ANIMAÇÃO AO CLICAR
-    -- ===========================================
+-- ===========================================
+-- ✨ ANIMAÇÃO PEQUENA AO CLICAR
+-- ===========================================
 
-    Botao.MouseButton1Click:Connect(function()
+Botao.MouseButton1Click:Connect(function()
 
-        local TamanhoAtual = Botao.Size
+    local TamanhoOriginal = Botao.Size
+    local PosicaoOriginal = Botao.Position
 
-        local Fator = 0.82
+    -- Diminui somente 8%
+    local Fator = 0.92
 
-        Botao:TweenSize(
-            UDim2.fromOffset(
-                TamanhoAtual.X.Offset * Fator,
-                TamanhoAtual.Y.Offset * Fator
-            ),
-            Enum.EasingDirection.Out,
-            Enum.EasingStyle.Quad,
-            0.08,
-            true
+    local NovoTamanho = UDim2.fromOffset(
+        TamanhoOriginal.X.Offset * Fator,
+        TamanhoOriginal.Y.Offset * Fator
+    )
+
+    -- Mantém o centro exatamente no mesmo lugar
+    local DiferencaX =
+        (TamanhoOriginal.X.Offset - NovoTamanho.X.Offset) / 2
+
+    local DiferencaY =
+        (TamanhoOriginal.Y.Offset - NovoTamanho.Y.Offset) / 2
+
+    local NovaPosicao =
+        PosicaoOriginal +
+        UDim2.fromOffset(
+            DiferencaX,
+            DiferencaY
         )
 
-        task.wait(0.08)
+    -- ⬇️ Diminui um pouquinho para o centro
+    Botao:TweenSizeAndPosition(
+        NovoTamanho,
+        NovaPosicao,
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.08,
+        true
+    )
 
-        AtualizarEstiloBotao()
-    end)
-end
+    task.wait(0.08)
 
-
-local function RemoverBotaoKillAim()
-
-    if BotaoGui then
-        BotaoGui:Destroy()
-        BotaoGui = nil
-        BotaoKillAim = nil
-    end
-end
+    -- ⬆️ Volta ao tamanho normal
+    Botao:TweenSizeAndPosition(
+        TamanhoOriginal,
+        PosicaoOriginal,
+        Enum.EasingDirection.Out,
+        Enum.EasingStyle.Quad,
+        0.10,
+        true
+    )
+end)
 
 -- ==================================
 -- BOTOES DA ABA AUTO FARM
