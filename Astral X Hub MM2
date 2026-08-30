@@ -1,6 +1,5 @@
 -- ==================================
--- 🌐 ASTRAL X HUB V1
--- 🎨 INTERFACE + TEMA RUBY PADRÃO
+-- ASTRAL X HUB V1
 -- ==================================
 
 local Players = game:GetService("Players")
@@ -20,7 +19,7 @@ local WindUI = loadstring(game:HttpGet(
 ))()
 
 -- ==================================
--- 🌈 FUNÇÃO DE GRADIENTE
+-- FUNÇÃO DE GRADIENTE
 -- ==================================
 
 local function gradient(text, startColor, endColor)
@@ -56,7 +55,7 @@ local function gradient(text, startColor, endColor)
 end
 
 -- ==================================
--- 🎨 CONFIGURAÇÃO VISUAL
+-- CONFIGURAÇÃO VISUAL
 -- ==================================
 
 local WindowTransparency = 0.15
@@ -64,7 +63,7 @@ local WindowTransparency = 0.15
 local MainColor = Color3.fromHex("#000000")
 
 -- ==================================
--- 🎨 TEMAS DO ASTRAL
+-- TEMAS DO ASTRAL
 -- ==================================
 
 local CoresAstral = {
@@ -261,7 +260,7 @@ local CoresAstral = {
 }
 
 -- ==================================
--- 🎨 REGISTRAR TEMAS
+-- REGISTRAR TEMAS
 -- ==================================
 
 for Nome, Cor in pairs(CoresAstral) do
@@ -283,13 +282,13 @@ for Nome, Cor in pairs(CoresAstral) do
 end
 
 -- ==================================
--- ❤️ RUBY SERÁ A COR INICIAL
+-- RUBY SERÁ A COR INICIAL
 -- ==================================
 
 local CorSelecionada = "Ruby"
 
 -- ==================================
--- 🪟 CRIAR JANELA
+-- CRIAR JANELA
 -- ==================================
 
 local Window = WindUI:CreateWindow({
@@ -314,7 +313,7 @@ local Window = WindUI:CreateWindow({
     Transparent = true,
     Transparency = WindowTransparency,
 
-    -- ⭐ RUBY APLICADO AO INICIAR
+    -- RUBY APLICADO AO INICIAR
     Theme = "Astral_Ruby",
 
     SideBarWidth = 120,
@@ -323,7 +322,7 @@ local Window = WindUI:CreateWindow({
 })
 
 -- ==================================
--- 🎨 COR DO FUNDO
+-- COR DO FUNDO
 -- ==================================
 
 pcall(function()
@@ -344,7 +343,7 @@ if Window.UIElements.SideBar then
         WindowTransparency
 end
 
--- 👇 COLOQUE AQUI
+-- COLOQUE AQUI
 pcall(function()
     if Window.UIElements and Window.UIElements.SideBar then
         Window.UIElements.SideBar.ClipsDescendants = true
@@ -372,8 +371,7 @@ end)
 end)
 
 -- ==================================
--- ❤️ BOTÃO FLUTUANTE
--- Ruby: vermelho escuro → vermelho claro
+-- BOTÃO FLUTUANTE
 -- ==================================
 local OpenButton = Window:EditOpenButton({
     Title = "Astral",
@@ -392,7 +390,7 @@ local OpenButton = Window:EditOpenButton({
 
 
 -- ==========================================
--- 🔴 TAMANHO DO BOTÃO ASTRAL
+-- TAMANHO DO BOTÃO ASTRAL
 -- ==========================================
 
 local EscalaBotaoAstral = nil
@@ -2287,5 +2285,123 @@ Aba_AutoFarm:Toggle({
     Default = false,
     Callback = function(estado)
         TPSafeAoEncher = estado
+    end
+})
+
+-- ==================================
+-- BOTÕES DA ABA LOCAL PLAYER 
+-- ==================================
+Aba_LocalPlayer:Section({
+    Title = "Settings Auto Farm",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Invisível",
+    Desc = "Move seu personagem para um lugar distante fazendo parecer que estar invisivel",
+    Default = false,
+    Callback = function(Ativo)
+        InvisivelAtivo = Ativo
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Invisível (botão)",
+    Desc = "Adiciona um botão que ao clicar deixa seu personagem invisivel",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateInvisivelButton()
+        else
+            RemoveInvisivelButton()
+        end
+    end
+})
+
+Aba_LocalPlayer:Section({
+    Title = "Moviment Player",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_LocalPlayer:Slider({
+    Title = "Speed",
+    Desc = "Ajuste a valocidade do seu personagem",
+    Value = {Min = 16, Max = 30, Default = 16, Step = 1},
+    Callback = function(Valor)
+        VelocidadePadrao = Valor
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.WalkSpeed = Valor
+        end
+    end
+})
+
+Aba_LocalPlayer:Slider({
+    Title = "Jump",
+    Desc = "Ajuste o pulo do seu personagem",
+    Value = {Min = 50, Max = 75, Default = 50, Step = 1},
+    Callback = function(Valor)
+        ForcaPuloPadrao = Valor
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.UseJumpPower = true
+            Char.Humanoid.JumpPower = Valor
+        end
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Fly",
+    Desc = "Consegue voar pelo mapa",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleFly(Ativo)
+    end
+})
+
+Aba_LocalPlayer:Slider({
+    Title = "Fly Speed",
+    Desc = "Ajuste a velocidade do Voo",
+    Value = {Min = 16, Max = 100, Default = 16, Step = 1},
+    Callback = function(Valor)
+        FlyVelocidade = Valor
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Consegue pular infinitamente ao presionar o botão de pulo",
+    Default = false,
+    Callback = function(Ativo)
+        _G.PuloInfinito = Ativo
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Walk Fling",
+    Desc = "Faz seu personagem fica jirando e consegue jogar jogadores pra longe",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleWalkFling(Ativo)
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Anti-Fling",
+    Desc = "Impede que outros scripts te jogue pra longe",
+    Default = false,
+    Callback = function(Ativo)
+        getgenv().AntiFling = Ativo
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Speed glith",
+    Desc = "Aplica velocidade 300 ao pular e volta ao normal quando encostar mo chão",
+    Default = false,
+    Callback = function(Ativo)
+        _G.SpeedNoPulo = Ativo
     end
 })
