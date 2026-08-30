@@ -3263,3 +3263,98 @@ Aba_Camera:Slider({
         workspace.CurrentCamera.FieldOfView = Valor
     end
 })
+
+-- ==================================
+-- BOTOES DA ABA CONFIG UI
+-- ==================================
+
+local ListaCores = {
+
+    "Ruby",
+    "Ametista",
+
+    "Verde Água",
+    "Azul Gelo",
+    "Roxo Neon",
+    "Rosa Neon",
+    "Laranja Neon",
+    "Amarelo Neon",
+    "Turquesa",
+    "Lavanda",
+    "Coral",
+    "Dourado",
+    "Violeta",
+    "Pink",
+
+    "Verde",
+    "Azul",
+    "Roxo",
+    "Rosa",
+    "Vermelho",
+    "Laranja",
+    "Amarelo",
+    "Ciano",
+    "Prata",
+    "Cinza",
+    "Índigo",
+    "Salmão",
+    "Marrom",
+}
+
+
+-- ==================================
+-- 🎨 DROPDOWN
+-- ==================================
+
+Aba_Config:Dropdown({
+    Title = "Cor da Interface",
+    Values = ListaCores,
+    Value = CorSelecionada,
+
+    Callback = function(Value)
+        CorSelecionada = Value
+    end
+})
+
+
+-- ==================================
+-- ✅ BOTÃO APLICAR
+-- ==================================
+
+Aba_Config:Button({
+    Title = "Aplicar Cor",
+
+    Callback = function()
+
+        local Cor = CoresAstral[CorSelecionada]
+
+        if not Cor then
+            return
+        end
+
+        -- Ativa o tema correspondente
+        pcall(function()
+            WindUI:SetTheme("Astral_" .. CorSelecionada)
+        end)
+
+    end
+})
+
+Aba_Config:Slider({
+    Title = "Tamanho do Botão Astral",
+
+    Value = {
+        Min = 1.0,
+        Max = 1.9,
+        Default = 1.0,
+    },
+
+    Step = 0.1,
+
+    Callback = function(Valor)
+        if EscalaBotaoAstral then
+            EscalaBotaoAstral.Scale = Valor
+        end
+    end
+})
+
