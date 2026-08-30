@@ -2151,6 +2151,184 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- ==============================================================================
+-- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE (CORRIGIDO)
+-- ==============================================================================
+local function ConfigurarPersonagem()
+    Personagem = player.Character or player.CharacterAdded:Wait()
+    Humanoid = Personagem:WaitForChild("Humanoid")
+    Raiz = Personagem:WaitForChild("HumanoidRootPart")
+    
+    PartesCorpo = {}
+    for _, obj in ipairs(Personagem:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            table.insert(PartesCorpo, obj)
+        end
+    end
+end
+
+-- Atualiza referências sempre que um novo personagem for adicionado pelo servidor
+player.CharacterAdded:Connect(function(novoChar)
+    task.wait(0.5)
+    ConfigurarPersonagem()
+end)
+
+-- Loop principal para manter a invisibilidade sem quebrar no TP/Respawn
+RunService.Heartbeat:Connect(function()
+    if not InvisivelAtivo then return end
+    
+    -- Se o personagem mudou ou morreu, tenta reconectar
+    if not Personagem or not Personagem.Parent or not Raiz or not Humanoid or Humanoid.Health <= 0 then
+        ConfigurarPersonagem()
+        return
+    end
+
+    -- Deixa o corpo transparente localmente e oculta o HumanoidRootPart
+    for _, parte in ipairs(PartesCorpo) do
+        if parte and parte.Parent then
+            if parte.Name == "HumanoidRootPart" then
+                parte.Transparency = 1 -- Totalmente invisível
+            else
+                parte.Transparency = 0.5 -- Transparência do corpo
+            end
+        end
+    end
+
+    -- Desloca a CFrame do servidor sem perder o controle da câmera
+    local PosOriginal = Raiz.CFrame
+    local CamOffset = Humanoid.CameraOffset
+    
+    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
+    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
+    
+    RunService.RenderStepped:Wait()
+    
+    if Raiz and Raiz.Parent then
+        Raiz.CFrame = PosOriginal
+        Humanoid.CameraOffset = CamOffset
+    end
+end)
+
+-- Restaura a transparência normal caso desative o toggle
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
+            for _, parte in ipairs(PartesCorpo) do
+                if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
+                    parte.Transparency = 0
+                end
+            end
+        end
+    end
+end)
+
+-- Inicialização
+if player.Character then
+    ConfigurarPersonagem()
+end
+
+-- ===========================================
+-- 👁️ SISTEMA BOTÃO FLUTUANTE INVISÍVEL
+-- ===========================================
+local function CreateInvisivelButton()
+    if InvisivelButtonGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_InvisivelButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.3, -21)
+    
+    -- Estado Inicial (DESLIGADO): Branco semi-transparente
+    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.BackgroundTransparency = 0.3
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 12)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(200, 200, 200) -- Borda suave desligado
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Invisible"
+    Texto.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto preto no fundo branco
+    Texto.TextSize = 14
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    local dragThreshold = 10
+    local dragStartMousePos, buttonStartPosScreen
+
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingInvis = false
+            dragStartMousePos = Input.Position
+            buttonStartPosScreen = Btn.Position
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartMousePos then
+            local delta = Input.Position - dragStartMousePos
+            if delta.Magnitude > dragThreshold then
+                isDraggingInvis = true
+                Btn.Position = buttonStartPosScreen + UDim2.fromOffset(delta.X, delta.Y)
+            end
+        end
+    end)
+
+    Btn.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not isDraggingInvis then
+                InvisivelAtivo = not InvisivelAtivo
+
+                if InvisivelAtivo then
+                    -- LIGADO: Rosa semi-transparente com borda rosa forte
+                    Btn.BackgroundColor3 = Color3.fromRGB(255, 105, 180) -- Rosa
+                    Btn.BackgroundTransparency = 0.3
+                    Borda.Color = Color3.fromRGB(255, 20, 147)          -- Rosa Choque (Borda)
+                    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)    -- Texto Branco
+                else
+                    -- DESLIGADO: Branco semi-transparente
+                    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    Btn.BackgroundTransparency = 0.3
+                    Borda.Color = Color3.fromRGB(200, 200, 200)
+                    Texto.TextColor3 = Color3.fromRGB(0, 0, 0)          -- Texto Preto
+                end
+            end
+            dragStartMousePos = nil
+            isDraggingInvis = false
+        end
+    end)
+
+    InvisivelButtonGui = GuiBtn
+end
+
+local function RemoveInvisivelButton()
+    if InvisivelButtonGui then 
+        InvisivelButtonGui:Destroy() 
+        InvisivelButtonGui = nil 
+    end
+    InvisivelAtivo = false
+end
+
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
