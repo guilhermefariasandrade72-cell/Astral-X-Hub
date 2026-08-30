@@ -2676,6 +2676,195 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- ==================================
+-- SISTEMAS DA ABA TELEPORTE 
+-- ==================================
+local function TeleportarPara(posicaoCFrame)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = posicaoCFrame
+    end
+end
+
+local function GetMapSpawn()
+    -- Procura o container do mapa atual no Workspace
+    local coinContainer = workspace:FindFirstChild("CoinContainer", true)
+    if coinContainer and coinContainer.Parent then
+        local map = coinContainer.Parent
+        local spawns = map:FindFirstChild("Spawns") or map:FindFirstChild("Spawn")
+        
+        if spawns then
+            local partesSpawn = spawns:GetChildren()
+            if #partesSpawn > 0 then
+                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+        
+        -- Caso não ache uma pasta de spawns, usa a posição central do próprio mapa
+        if map:IsA("Model") then
+            local cf, _ = map:GetBoundingBox()
+            return cf + Vector3.new(0, 5, 0)
+        end
+    end
+    return nil
+end
+
+local function GetLobbySpawn()
+    -- 📍 Coordenada fixa gravada (Posiciona 3 studs acima para evitar cair no chão)
+    local posLobby = Vector3.new(-0.32, -67.11, -31.52)
+    
+    -- Se encontrar a pasta ou modelo do Lobby no Workspace, tenta pegar um Spawn oficial
+    local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyMap")
+    if lobby then
+        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn")
+        if spawns then
+            local partesSpawn = spawns:GetChildren()
+            if #partesSpawn > 0 then
+                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+    end
+
+    -- Retorna a coordenada exata enviada
+    return CFrame.new(posLobby + Vector3.new(0, 3, 0))
+end
+
+-- ==================================
+-- 🛡️ SISTEMA DE TELEPORTE SAFE (BOTÃO DE CLIQUE)
+-- ==================================
+local SafePlatform = nil
+local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
+
+local function TeleportarParaSafe()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Cria a plataforma no local se ela ainda não existir
+    if not SafePlatform or not SafePlatform.Parent then
+        SafePlatform = Instance.new("Part")
+        SafePlatform.Name = "AstralX_SafePlatform"
+        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Position = SafePosition
+        SafePlatform.Anchored = true
+        SafePlatform.Color = Color3.fromRGB(0, 0, 0) -- Cor preta
+        SafePlatform.Transparency = 0.5            -- Semi-transparente
+        SafePlatform.Material = Enum.Material.SmoothPlastic
+        SafePlatform.CanCollide = true
+        SafePlatform.Parent = workspace
+    end
+
+    -- Teleporta o jogador para cima da plataforma
+    hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
+end
+
+
+-- ==============================================
+
+local function PegarListaJogadores()
+    local lista = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+    table.sort(lista)
+    return lista
+end
+
+local function TeleportarParaPlayer(alvo)
+    if alvo and alvo.Character and alvo.Character:FindFirstChild("HumanoidRootPart") then
+        local meuChar = player.Character
+        local meuHRP = meuChar and meuChar:FindFirstChild("HumanoidRootPart")
+        if meuHRP then
+            meuHRP.CFrame = alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+end
+
+local function TeleportarPorCargo(cargoBusca)
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return end
+    
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local info = Data[p.Name]
+            if info and not info.Killed and not info.Dead and info.Role == cargoBusca then
+                TeleportarParaPlayer(p)
+                break
+            end
+        end
+    end
+end
+
+
+
+local function ExecutarServerHop()
+    if EmCooldownHop then return end
+    EmCooldownHop = true
+
+    local placeId = game.PlaceId
+    local currentJobId = game.JobId
+    local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Desc&limit=100"
+
+    task.spawn(function()
+        local sucesso, resposta = pcall(function()
+            return game:HttpGet(url)
+        end)
+
+        if sucesso and resposta then
+            local dados = HttpService:JSONDecode(resposta)
+            if dados and dados.data then
+                local servidoresValidos = {}
+
+                for _, server in ipairs(dados.data) do
+                    if type(server) == "table" 
+                    and server.id ~= currentJobId 
+                    and server.playing < server.maxPlayers 
+                    and not ServidoresVisitados[server.id] then
+                        table.insert(servidoresValidos, server.id)
+                    end
+                end
+
+                if #servidoresValidos > 0 then
+                    local servidorEscolhido = servidoresValidos[math.random(1, #servidoresValidos)]
+                    ServidoresVisitados[servidorEscolhido] = true
+                    
+                    TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
+                else
+                    -- Se visitou todos, limpa o histórico e tenta de novo
+                    table.clear(ServidoresVisitados)
+                    TeleportService:Teleport(placeId, player)
+                end
+            end
+        else
+            TeleportService:Teleport(placeId, player)
+        end
+
+        task.wait(3)
+        EmCooldownHop = false
+    end)
+end
+
+local function ExecutarRejoin()
+    if EmCooldownHop then return end
+    EmCooldownHop = true
+
+    task.spawn(function()
+        if #Players:GetPlayers() <= 1 then
+            TeleportService:Teleport(game.PlaceId, player)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end
+
+        task.wait(3)
+        EmCooldownHop = false
+    end)
+end
 
 -- ==================================
 -- 👁️ CÂMERA SEM BLOQUEIO + FOV
