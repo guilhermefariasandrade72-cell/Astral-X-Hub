@@ -2268,13 +2268,13 @@ task.spawn(function()
     end
 end)
 
--- ==================================
--- SISTEMAS DA ABA LOCAL PLAYER
--- ==================================
-
+-- ===================================================
+-- SISTEMA DA ABA LOCAL PLAYER
+-- ===================================================
 -- 🟢 APLICAR VALORES INICIAIS
 local function AplicarValoresBase()
     local Char = player.Character
+
     if Char and Char:FindFirstChild("Humanoid") then
         Char.Humanoid.WalkSpeed = VelocidadePadrao
         Char.Humanoid.UseJumpPower = true
@@ -2288,31 +2288,33 @@ AplicarValoresBase()
 player.CharacterAdded:Connect(function()
     task.wait(0.5)
     AplicarValoresBase()
-    -- ✅ FORÇA ZOOM VOLTAR AO RENASCER
-    task.wait(1)
-    if not _G.CameraInfinita then
-        player.CameraMaxZoomDistance = ZoomMaxOriginal
-        player.CameraMinZoomDistance = ZoomMinOriginal
-    end
 end)
+
 
 -- 🟢 PULO INFINITO
 UserInputService.JumpRequest:Connect(function()
     if _G.PuloInfinito then
         local Char = player.Character
+
         if Char and Char:FindFirstChild("Humanoid") then
-            Char.Humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            Char.Humanoid:ChangeState(
+                Enum.HumanoidStateType.Jumping
+            )
         end
     end
 end)
 
--- 🟢 LOOP PRINCIPAL (Velocidade no Pulo + Câmera Sem Bloqueio + FOV)
+
+-- 🟢 VELOCIDADE NO PULO
 RunService.Stepped:Connect(function()
     local Char = player.Character
-    if not Char or not Char:FindFirstChild("Humanoid") then return end
+
+    if not Char or not Char:FindFirstChild("Humanoid") then
+        return
+    end
+
     local Hum = Char.Humanoid
 
-    -- ✅ Velocidade no Pulo
     if _G.SpeedNoPulo then
         if Hum.FloorMaterial == Enum.Material.Air then
             Hum.WalkSpeed = VelocidadeNoPulo
@@ -2320,22 +2322,6 @@ RunService.Stepped:Connect(function()
             Hum.WalkSpeed = VelocidadePadrao
         end
     end
-end)
-
--- ✅ CÂMERA SEM BLOQUEIO E FOV (sem mexer no zoom!)
-RunService.RenderStepped:Connect(function()
-    local Cam = Workspace.CurrentCamera
-    if not Cam then return end
-
-    -- 👁️ Câmera Sem Bloqueio
-    if _G.CameraNoClip then
-        player.DevCameraOcclusionMode = Enum.DevCameraOcclusionMode.Invisicam
-    else
-        player.DevCameraOcclusionMode = BloqueioOriginal
-    end
-
-    -- 🔧 Campo de Visão
-    Cam.FieldOfView = FOV_Padrao
 end)
 
 -- =====================================
@@ -2662,6 +2648,55 @@ local function RemoveInvisivelButton()
     end
     InvisivelAtivo = false
 end
+
+-- ==================================
+-- SISTEMAS DA ABA CÂMERA 
+-- ==================================
+
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
+local FOV_Padrao = 70
+
+_G.CameraInfinita = false
+_G.CameraNoClip = false
+
+
+-- ==================================
+-- 🔄 RESTAURAR ZOOM AO RENASCER
+-- ==================================
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+
+    if not _G.CameraInfinita then
+        player.CameraMaxZoomDistance = ZoomMaxOriginal
+        player.CameraMinZoomDistance = ZoomMinOriginal
+    end
+end)
+
+
+-- ==================================
+-- 👁️ CÂMERA SEM BLOQUEIO + FOV
+-- ==================================
+
+RunService.RenderStepped:Connect(function()
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    -- 👁️ Câmera sem bloqueio
+    if _G.CameraNoClip then
+        player.DevCameraOcclusionMode =
+            Enum.DevCameraOcclusionMode.Invisicam
+    else
+        player.DevCameraOcclusionMode =
+            BloqueioOriginal
+    end
+
+    -- 🔭 Campo de visão
+    Cam.FieldOfView = FOV_Padrao
+end)
 
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
