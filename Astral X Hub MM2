@@ -2129,6 +2129,145 @@ local function LimparTabela(Tabela)
     table.clear(Tabela)
 end
 
+-- 📌 EVENTOS DE REMOÇÃO INSTANTÂNEA (Sem esperar o loop)
+Players.PlayerRemoving:Connect(function(p)
+    LimparJogadorESP(p)
+end)
+
+-- 🟡 LOOP EXCLUSIVO PARA LINHAS/TRACERS (Roda todo quadro sem lag visual)
+RunService.RenderStepped:Connect(function()
+    if not ESPTracerAtivo then
+        for p, line in pairs(TracersESP) do
+            if line then line.Visible = false end
+        end
+        return
+    end
+
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local Char = p.Character
+            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
+            local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+            if Char and HRP and Humanoid and Humanoid.Health > 0 then
+                local Vector, OnScreen = Cam:WorldToViewportPoint(HRP.Position)
+
+                local Line = TracersESP[p]
+                if not Line then
+                    Line = Drawing.new("Line")
+                    Line.Thickness = 1.5
+                    Line.Transparency = 0.8
+                    TracersESP[p] = Line
+                end
+
+                if OnScreen then
+                    -- Obtém a cor definida na tabela de cargos (se existir)
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(255, 255, 255)
+                    if Info and not Info.Killed and not Info.Dead then
+                        if Info.Role == "Murderer" then Cor = Color3.fromRGB(220, 50, 50)
+                        elseif Info.Role == "Sheriff" then Cor = Color3.fromRGB(0, 85, 255)
+                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0)
+                        elseif Info.Role == "Innocent" then Cor = Color3.fromRGB(60, 200, 80) end
+                    end
+
+                    Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+                    Line.To = Vector2.new(Vector.X, Vector.Y)
+                    Line.Color = Cor
+                    Line.Visible = true
+                else
+                    Line.Visible = false
+                end
+            else
+                if TracersESP[p] then
+                    TracersESP[p].Visible = false
+                end
+            end
+        end
+    end
+end)
+
+-- 📌 LOOP DE ATUALIZAÇÃO LEVE (Cargos, Highlights e Nomes)
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+
+        if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
+            PegarCargos()
+            local MeuChar = player.Character
+            local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
+
+            -- Limpa quem saiu do servidor
+            for p, _ in pairs(NamesESP) do
+                if not Players:FindFirstChild(p.Name) then
+                    LimparJogadorESP(p)
+                end
+            end
+
+            for _, p in ipairs(Players:GetPlayers()) do
+                local Char = p.Character
+                local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
+                local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+                if p == player or not Char or not HRP or not Humanoid or Humanoid.Health <= 0 then
+                    LimparJogadorESP(p)
+                else
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(255, 255, 255)
+                    local CargoNome = "Lobby"
+
+                    if Info and not Info.Killed and not Info.Dead then
+                        if Info.Role == "Murderer" then 
+                            Cor = Color3.fromRGB(220, 50, 50)
+                            CargoNome = "Assassino"
+                        elseif Info.Role == "Sheriff" then 
+                            Cor = Color3.fromRGB(0, 85, 255)
+                            CargoNome = "Xerife"
+                        elseif Info.Role == "Hero" then 
+                            Cor = Color3.fromRGB(255, 215, 0)
+                            CargoNome = "Herói"
+                        elseif Info.Role == "Innocent" then
+                            Cor = Color3.fromRGB(60, 200, 80)
+                            CargoNome = "Inocente"
+                        end
+                    end
+
+                    local Distancia = math.floor((MinhaPos - HRP.Position).Magnitude)
+
+                    -- 1. Highlight
+                    if ESPHighlightAtivo then
+                        CriarHighlight(Char, Cor)
+                    elseif Highlights[Char] then
+                        Highlights[Char].Enabled = false
+                    end
+
+                    -- 2 e 3. Nome e Distância
+                    if ESPNomeAtivo or ESPDistanciaAtiva then
+                        local TextoFinal = ""
+                        if ESPNomeAtivo and ESPDistanciaAtiva then
+                            TextoFinal = p.Name .. " [" .. CargoNome .. "]\n" .. Distancia .. "m"
+                        elseif ESPNomeAtivo then
+                            TextoFinal = p.Name .. " [" .. CargoNome .. "]"
+                        else
+                            TextoFinal = Distancia .. "m"
+                        end
+                        CriarTextESP(p, Cor, TextoFinal)
+                    elseif NamesESP[p] and NamesESP[p].Gui then
+                        NamesESP[p].Gui.Enabled = false
+                    end
+                end
+            end
+        else
+            if next(Highlights) then LimparTabela(Highlights) end
+            if next(NamesESP) then LimparTabela(NamesESP) end
+            if next(TracersESP) then LimparTabela(TracersESP) end
+        end
+    end
+end)
+
 -- ==================================
 -- SISTEMAS DA ABA LOCAL PLAYER
 -- ==================================
