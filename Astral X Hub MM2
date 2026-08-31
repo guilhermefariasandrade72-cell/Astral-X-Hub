@@ -3418,41 +3418,42 @@ Aba_Murderer:Toggle({
     end
 })
 
--- ==================================
--- 🎯 BOTÃO DE ATAQUE SINGLE TARGET
--- ==================================
-Aba_Murderer:AddDropdown({
-    Name = "Formato do botão",
+-- ====================================================
+-- 🔘 BOTÃO FLUTUANTE KILL AIM
+-- ====================================================
 
-    Options = {
+Aba_Murderer:Dropdown({
+    Title = "Formato do botão",
+    Desc = "Escolha o formato do botão",
+
+    Values = {
         "Quadrado",
         "Círculo",
         "Retângulo"
     },
 
-    Default = "Quadrado",
-
     Callback = function(Value)
 
         KillAimButtonStyle = Value
 
-        AtualizarKillAimButton()
+        if AtualizarKillAimButton then
+            AtualizarKillAimButton()
+        end
 
     end
 })
 
 
--- 2️⃣ TOGGLE — MOSTRAR BOTÃO FLUTUANTE
-
-Aba_Murderer:AddToggle({
-    Name = "Mostrar botão Kill Aim",
+Aba_Murderer:Toggle({
+    Title = "Mostrar botão Kill Aim",
+    Desc = "Mostra ou esconde o botão flutuante",
     Default = false,
 
-    Callback = function(Value)
+    Callback = function(Ativo)
 
-        KillAimButtonVisible = Value
+        KillAimButtonVisible = Ativo
 
-        if Value then
+        if Ativo then
             CriarKillAimButton()
         else
             RemoverKillAimButton()
@@ -3462,23 +3463,24 @@ Aba_Murderer:AddToggle({
 })
 
 
--- 3️⃣ SLIDER — TAMANHO
+Aba_Murderer:Slider({
+    Title = "Tamanho do botão",
+    Desc = "Escolha o tamanho do botão flutuante",
 
-Aba_Murderer:AddSlider({
-    Name = "Tamanho do botão",
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 100,
+        Step = 1
+    },
 
-    Min = 40,
-    Max = 200,
+    Callback = function(Valor)
 
-    Default = 100,
+        KillAimButtonSize = Valor
 
-    Increment = 1,
-
-    Callback = function(Value)
-
-        KillAimButtonSize = Value
-
-        AtualizarKillAimButton()
+        if AtualizarKillAimButton then
+            AtualizarKillAimButton()
+        end
 
     end
 })
