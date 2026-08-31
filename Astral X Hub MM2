@@ -822,6 +822,50 @@ end)
 -- ====================================================
 -- SISTEMA DA ABA SHERIFF
 -- ====================================================
+
+-- =========================================================
+-- 📦 VARIÁVEIS GLOBAIS
+-- =========================================================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+local JogadorSelecionado = nil
+
+-- =========================================================
+-- 🧲 FUNÇÃO GRAB PLAYER (TRAZER PARA A FRENTE DA FACA)
+-- =========================================================
+
+local function KillJogadorSelecionado()
+    if not JogadorSelecionado or JogadorSelecionado == "Nenhum Jogador" then return end
+
+    local targetPlayer = Players:FindFirstChild(JogadorSelecionado)
+    if not targetPlayer then return end
+
+    local character = player.Character
+    local targetChar = targetPlayer.Character
+
+    if not character or not targetChar then return end
+
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+    local targetHumanoid = targetChar:FindFirstChildOfClass("Humanoid")
+
+    if not myHRP or not targetHRP or not targetHumanoid or targetHumanoid.Health <= 0 then return end
+
+    -- 1. Equipa a Faca automaticamente
+    local knife = character:FindFirstChildOfClass("Tool") or (player.Backpack and player.Backpack:FindFirstChildOfClass("Tool"))
+    if knife and knife.Parent ~= character then
+        knife.Parent = character
+    end
+
+    -- 2. Posição: Coloca o jogador 2.5 studs diretamente na sua frente (ao alcance do golpe)
+    local posicaoFrente = myHRP.CFrame * CFrame.new(0, 0, -2.5) * CFrame.Angles(0, math.rad(180), 0)
+    
+    -- Teleporta o alvo para a sua frente e zera a velocidade dele
+    targetHRP.CFrame = posicaoFrente
+    targetHRP.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+    targetHRP.Velocity = Vector3.new(0, 0, 0)
+end
+
 -- FOV CICLE
 local LockCameraAtivo = false
 local MostrarCirculo = false
@@ -2921,7 +2965,7 @@ end
 
 local DropdownJogadores = Aba_Murderer:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para eliminar",
+    Desc = "Escolha um jogador para puxar",
     Values = PegarListaJogadores(),
     Callback = function(Value)
         if typeof(Value) == "table" then
@@ -2960,11 +3004,9 @@ Players.PlayerRemoving:Connect(function()
     AtualizarListaJogadores()
 end)
 
-
-
 Aba_Murderer:Button({
-    Title = "Kill Jogador Selecionado",
-    Desc = "Elimina apenas o jogador escolhido no dropdown",
+    Title = "Puxar Jogador Selecionado",
+    Desc = "Traz o jogador para a frente da sua faca",
     Callback = function()
         KillJogadorSelecionado()
     end
