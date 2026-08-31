@@ -3272,69 +3272,6 @@ Aba_Murderer:Section({
 })
 
 -- ==================================
--- 👤 LISTA DE JOGADORES (DROPDOWN)
--- ==================================
-
-local function PegarListaJogadores()
-    local lista = {}
-
-    for _, p in ipairs(Players:GetPlayers()) do
-        if p ~= player then
-            table.insert(lista, p.Name)
-        end
-    end
-
-    table.sort(lista)
-
-    if #lista == 0 then
-        table.insert(lista, "Nenhum Jogador")
-    end
-
-    return lista
-end
-
-local DropdownJogadores = Aba_Murderer:Dropdown({
-    Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para eliminar",
-    Values = PegarListaJogadores(),
-    Callback = function(Value)
-        if typeof(Value) == "table" then
-            JogadorSelecionado = Value[1]
-        else
-            JogadorSelecionado = Value
-        end
-    end
-})
-
--- ==================================
--- 🔄 ATUALIZAR LISTA AUTOMÁTICA
--- ==================================
-
-local function AtualizarListaJogadores()
-    local lista = PegarListaJogadores()
-
-    pcall(function()
-        if DropdownJogadores.Refresh then
-            DropdownJogadores:Refresh(lista)
-        elseif DropdownJogadores.SetValues then
-            DropdownJogadores:SetValues(lista)
-        elseif DropdownJogadores.Set then
-            DropdownJogadores:Set(lista)
-        end
-    end)
-end
-
-Players.PlayerAdded:Connect(function()
-    task.wait(0.3)
-    AtualizarListaJogadores()
-end)
-
-Players.PlayerRemoving:Connect(function()
-    task.wait(0.3)
-    AtualizarListaJogadores()
-end)
-
--- ==================================
 -- 🎯 BOTÃO DE ATAQUE SINGLE TARGET
 -- ==================================
 Aba_Murderer:AddDropdown({
@@ -3398,6 +3335,71 @@ Aba_Murderer:AddSlider({
 
     end
 })
+
+-- ==================================
+-- 👤 LISTA DE JOGADORES (DROPDOWN)
+-- ==================================
+
+local function PegarListaJogadores()
+    local lista = {}
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+
+    table.sort(lista)
+
+    if #lista == 0 then
+        table.insert(lista, "Nenhum Jogador")
+    end
+
+    return lista
+end
+
+local DropdownJogadores = Aba_Murderer:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para eliminar",
+    Values = PegarListaJogadores(),
+    Callback = function(Value)
+        if typeof(Value) == "table" then
+            JogadorSelecionado = Value[1]
+        else
+            JogadorSelecionado = Value
+        end
+    end
+})
+
+-- ==================================
+-- 🔄 ATUALIZAR LISTA AUTOMÁTICA
+-- ==================================
+
+local function AtualizarListaJogadores()
+    local lista = PegarListaJogadores()
+
+    pcall(function()
+        if DropdownJogadores.Refresh then
+            DropdownJogadores:Refresh(lista)
+        elseif DropdownJogadores.SetValues then
+            DropdownJogadores:SetValues(lista)
+        elseif DropdownJogadores.Set then
+            DropdownJogadores:Set(lista)
+        end
+    end)
+end
+
+Players.PlayerAdded:Connect(function()
+    task.wait(0.3)
+    AtualizarListaJogadores()
+end)
+
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.3)
+    AtualizarListaJogadores()
+end)
+
+
 
 Aba_Murderer:Button({
     Title = "Kill Jogador Selecionado",
