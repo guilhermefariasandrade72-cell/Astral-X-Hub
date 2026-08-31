@@ -3272,71 +3272,6 @@ Aba_Murderer:Section({
 })
 
 -- ==================================
--- 🎯 BOTÃO DE ATAQUE SINGLE TARGET
--- ==================================
-Aba_Murderer:AddDropdown({
-    Name = "Formato do botão",
-
-    Options = {
-        "Quadrado",
-        "Círculo",
-        "Retângulo"
-    },
-
-    Default = "Quadrado",
-
-    Callback = function(Value)
-
-        KillAimButtonStyle = Value
-
-        AtualizarKillAimButton()
-
-    end
-})
-
-
--- 2️⃣ TOGGLE — MOSTRAR BOTÃO FLUTUANTE
-
-Aba_Murderer:AddToggle({
-    Name = "Mostrar botão Kill Aim",
-    Default = false,
-
-    Callback = function(Value)
-
-        KillAimButtonVisible = Value
-
-        if Value then
-            CriarKillAimButton()
-        else
-            RemoverKillAimButton()
-        end
-
-    end
-})
-
-
--- 3️⃣ SLIDER — TAMANHO
-
-Aba_Murderer:AddSlider({
-    Name = "Tamanho do botão",
-
-    Min = 40,
-    Max = 200,
-
-    Default = 100,
-
-    Increment = 1,
-
-    Callback = function(Value)
-
-        KillAimButtonSize = Value
-
-        AtualizarKillAimButton()
-
-    end
-})
-
--- ==================================
 -- 👤 LISTA DE JOGADORES (DROPDOWN)
 -- ==================================
 
@@ -3479,6 +3414,71 @@ Aba_Murderer:Toggle({
         MostrarCirculoAura = Ativo
 
         AtualizarCirculoAura()
+
+    end
+})
+
+-- ==================================
+-- 🎯 BOTÃO DE ATAQUE SINGLE TARGET
+-- ==================================
+Aba_Murderer:AddDropdown({
+    Name = "Formato do botão",
+
+    Options = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        KillAimButtonStyle = Value
+
+        AtualizarKillAimButton()
+
+    end
+})
+
+
+-- 2️⃣ TOGGLE — MOSTRAR BOTÃO FLUTUANTE
+
+Aba_Murderer:AddToggle({
+    Name = "Mostrar botão Kill Aim",
+    Default = false,
+
+    Callback = function(Value)
+
+        KillAimButtonVisible = Value
+
+        if Value then
+            CriarKillAimButton()
+        else
+            RemoverKillAimButton()
+        end
+
+    end
+})
+
+
+-- 3️⃣ SLIDER — TAMANHO
+
+Aba_Murderer:AddSlider({
+    Name = "Tamanho do botão",
+
+    Min = 40,
+    Max = 200,
+
+    Default = 100,
+
+    Increment = 1,
+
+    Callback = function(Value)
+
+        KillAimButtonSize = Value
+
+        AtualizarKillAimButton()
 
     end
 })
