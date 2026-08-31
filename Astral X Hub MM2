@@ -1041,6 +1041,266 @@ end)
 -- SISTEMA DA ABA SHERIFF
 -- ====================================================
 
+-- =========================================================
+-- 🔫 SISTEMA DO BOTÃO FLUTUANTE SILENT AIM
+-- =========================================================
+
+local SilentAimButtonGui = nil
+local SilentAimButton = nil
+
+local SilentAimButtonStyle = "Quadrado"
+local SilentAimButtonSize = 75
+
+local CriarSilentAimButton
+local RemoverSilentAimButton
+local AtualizarSilentAimButton
+
+
+-- =========================================================
+-- 🔄 ATUALIZAR FORMATO / TAMANHO
+-- =========================================================
+
+AtualizarSilentAimButton = function()
+
+    if not SilentAimButton or not SilentAimButton.Parent then
+        return
+    end
+
+    local Corner = SilentAimButton:FindFirstChild("Corner")
+
+    if SilentAimButtonStyle == "Quadrado" then
+
+        SilentAimButton.Size = UDim2.fromOffset(
+            SilentAimButtonSize,
+            SilentAimButtonSize
+        )
+
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 10)
+        end
+
+
+    elseif SilentAimButtonStyle == "Círculo" then
+
+        SilentAimButton.Size = UDim2.fromOffset(
+            SilentAimButtonSize,
+            SilentAimButtonSize
+        )
+
+        if Corner then
+            Corner.CornerRadius = UDim.new(1, 0)
+        end
+
+
+    elseif SilentAimButtonStyle == "Retângulo" then
+
+        SilentAimButton.Size = UDim2.fromOffset(
+            SilentAimButtonSize * 1.7,
+            SilentAimButtonSize
+        )
+
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 10)
+        end
+
+    end
+end
+
+
+-- =========================================================
+-- 🔫 CRIAR BOTÃO SILENT AIM
+-- =========================================================
+
+CriarSilentAimButton = function()
+
+    if SilentAimButtonGui then
+        return
+    end
+
+    local PlayerGui = player:WaitForChild("PlayerGui")
+
+    local Gui = Instance.new("ScreenGui")
+    Gui.Name = "AstralX_SilentAimButton"
+    Gui.ResetOnSpawn = false
+    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Gui.Parent = PlayerGui
+
+
+    -- =====================================================
+    -- 🔘 BOTÃO
+    -- =====================================================
+
+    local Botao = Instance.new("TextButton")
+
+    Botao.Name = "SilentAimButton"
+
+    Botao.AnchorPoint = Vector2.new(0.5, 0.5)
+
+    Botao.Position = UDim2.new(
+        0.5,
+        0,
+        0.7,
+        0
+    )
+
+    Botao.Size = UDim2.fromOffset(
+        SilentAimButtonSize,
+        SilentAimButtonSize
+    )
+
+    -- Interior preto semitransparente
+    Botao.BackgroundColor3 =
+        Color3.fromRGB(0, 0, 0)
+
+    Botao.BackgroundTransparency = 0.25
+
+    Botao.BorderSizePixel = 0
+
+    Botao.Text = "SILENT AIM"
+
+    Botao.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Botao.TextSize = 14
+
+    Botao.Font =
+        Enum.Font.GothamBold
+
+    Botao.AutoButtonColor = false
+
+    Botao.Parent = Gui
+
+
+    -- =====================================================
+    -- ⬛ BORDA PRETA
+    -- =====================================================
+
+    local Borda = Instance.new("UIStroke")
+
+    Borda.Name = "Borda"
+
+    Borda.Color =
+        Color3.fromRGB(0, 0, 0)
+
+    Borda.Thickness = 3
+
+    Borda.Transparency = 0
+
+    Borda.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    Borda.Parent = Botao
+
+
+    -- =====================================================
+    -- 🔲 CANTO
+    -- =====================================================
+
+    local Corner = Instance.new("UICorner")
+
+    Corner.Name = "Corner"
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
+    Corner.Parent = Botao
+
+
+    SilentAimButtonGui = Gui
+    SilentAimButton = Botao
+
+    AtualizarSilentAimButton()
+
+
+    -- =====================================================
+    -- 📱 ARRASTAR NO CELULAR / PC
+    -- =====================================================
+
+    local Arrastando = false
+    local PosicaoInicial
+    local InputInicial
+
+    Botao.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or
+
+            Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            Arrastando = true
+
+            PosicaoInicial =
+                Botao.Position
+
+            InputInicial =
+                Input.Position
+        end
+    end)
+
+
+    Botao.InputChanged:Connect(function(Input)
+
+        if not Arrastando then
+            return
+        end
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or
+
+            Input.UserInputType ==
+            Enum.UserInputType.MouseMovement then
+
+            local Delta =
+                Input.Position - InputInicial
+
+            Botao.Position =
+                PosicaoInicial +
+                UDim2.fromOffset(
+                    Delta.X,
+                    Delta.Y
+                )
+        end
+    end)
+
+
+    UserInputService.InputEnded:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or
+
+            Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            Arrastando = false
+        end
+    end)
+
+end
+
+
+-- =========================================================
+-- ❌ REMOVER
+-- =========================================================
+
+RemoverSilentAimButton = function()
+
+    if SilentAimButtonGui then
+        SilentAimButtonGui:Destroy()
+    end
+
+    SilentAimButtonGui = nil
+    SilentAimButton = nil
+
+end
+
+-- FOV CICLE
 local LockCameraAtivo = false
 local MostrarCirculo = false
 local RaioFOV = 150
@@ -3358,34 +3618,36 @@ Aba_Sheriff:Dropdown({
     Default = "Quadrado",
 
     Callback = function(Value)
+
         SilentAimButtonStyle = Value
 
-        if AtualizarShootButton then
-            AtualizarShootButton()
-        end
+        AtualizarSilentAimButton()
+
     end
 })
 
 
 Aba_Sheriff:Toggle({
-    Title = "Mostrar Silent AIM Button",
+    Title = "Mostrar Silent AIM",
     Desc = "Mostra ou esconde o botão flutuante",
 
     Default = false,
 
     Callback = function(Ativo)
+
         if Ativo then
-            CreateShootButton()
+            CriarSilentAimButton()
         else
-            RemoveShootButton()
+            RemoverSilentAimButton()
         end
+
     end
 })
 
 
 Aba_Sheriff:Slider({
     Title = "Tamanho do Silent AIM",
-    Desc = "Aumenta ou diminui o botão",
+    Desc = "Ajusta o tamanho do botão",
 
     Value = {
         Min = 40,
@@ -3396,11 +3658,11 @@ Aba_Sheriff:Slider({
     Step = 1,
 
     Callback = function(Valor)
+
         SilentAimButtonSize = Valor
 
-        if AtualizarShootButton then
-            AtualizarShootButton()
-        end
+        AtualizarSilentAimButton()
+
     end
 })
 
