@@ -1042,27 +1042,27 @@ end)
 -- ====================================================
 
 -- =========================================================
--- 🔫 SISTEMA DO BOTÃO FLUTUANTE SILENT AIM
+-- ⚫ BOTÃO FLUTUANTE VISUAL — SILENT AIM
 -- =========================================================
 
-local SilentAimButtonGui = nil
+local SilentAimGui = nil
 local SilentAimButton = nil
 
-local SilentAimButtonStyle = "Quadrado"
 local SilentAimButtonSize = 75
+local SilentAimButtonStyle = "Quadrado"
 
-local CriarSilentAimButton
-local RemoverSilentAimButton
-local AtualizarSilentAimButton
+local isDraggingSilent = false
+local buttonStartPosSilent = UDim2.new()
+local dragStartPosSilent = Vector3.new()
 
 
 -- =========================================================
--- 🔄 ATUALIZAR FORMATO / TAMANHO
+-- 🔄 ATUALIZAR TAMANHO / FORMATO
 -- =========================================================
 
-AtualizarSilentAimButton = function()
+local function AtualizarSilentAimButton()
 
-    if not SilentAimButton or not SilentAimButton.Parent then
+    if not SilentAimButton then
         return
     end
 
@@ -1079,7 +1079,6 @@ AtualizarSilentAimButton = function()
             Corner.CornerRadius = UDim.new(0, 10)
         end
 
-
     elseif SilentAimButtonStyle == "Círculo" then
 
         SilentAimButton.Size = UDim2.fromOffset(
@@ -1090,7 +1089,6 @@ AtualizarSilentAimButton = function()
         if Corner then
             Corner.CornerRadius = UDim.new(1, 0)
         end
-
 
     elseif SilentAimButtonStyle == "Retângulo" then
 
@@ -1108,67 +1106,58 @@ end
 
 
 -- =========================================================
--- 🔫 CRIAR BOTÃO SILENT AIM
+-- ⚫ CRIAR BOTÃO
 -- =========================================================
 
-CriarSilentAimButton = function()
+local function CriarSilentAimButton()
 
-    if SilentAimButtonGui then
+    if SilentAimGui then
         return
     end
 
     local PlayerGui = player:WaitForChild("PlayerGui")
 
-    local Gui = Instance.new("ScreenGui")
-    Gui.Name = "AstralX_SilentAimButton"
-    Gui.ResetOnSpawn = false
-    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    Gui.Parent = PlayerGui
+    local GuiBtn = Instance.new("ScreenGui")
+
+    GuiBtn.Name = "AstralX_SilentAimButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = PlayerGui
 
 
-    -- =====================================================
-    -- 🔘 BOTÃO
-    -- =====================================================
+    local Btn = Instance.new("TextButton")
 
-    local Botao = Instance.new("TextButton")
+    Btn.Name = "SilentAimButton"
 
-    Botao.Name = "SilentAimButton"
+    Btn.AnchorPoint = Vector2.new(0.5, 0.5)
 
-    Botao.AnchorPoint = Vector2.new(0.5, 0.5)
-
-    Botao.Position = UDim2.new(
+    Btn.Position = UDim2.new(
         0.5,
         0,
         0.7,
         0
     )
 
-    Botao.Size = UDim2.fromOffset(
+    Btn.Size = UDim2.fromOffset(
         SilentAimButtonSize,
         SilentAimButtonSize
     )
 
     -- Interior preto semitransparente
-    Botao.BackgroundColor3 =
-        Color3.fromRGB(0, 0, 0)
+    Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Btn.BackgroundTransparency = 0.25
 
-    Botao.BackgroundTransparency = 0.25
+    Btn.BorderSizePixel = 0
 
-    Botao.BorderSizePixel = 0
+    Btn.Text = "SILENT AIM"
 
-    Botao.Text = "SILENT AIM"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 14
+    Btn.Font = Enum.Font.GothamBold
 
-    Botao.TextColor3 =
-        Color3.fromRGB(255, 255, 255)
+    Btn.AutoButtonColor = false
 
-    Botao.TextSize = 14
-
-    Botao.Font =
-        Enum.Font.GothamBold
-
-    Botao.AutoButtonColor = false
-
-    Botao.Parent = Gui
+    Btn.Parent = GuiBtn
 
 
     -- =====================================================
@@ -1178,127 +1167,96 @@ CriarSilentAimButton = function()
     local Borda = Instance.new("UIStroke")
 
     Borda.Name = "Borda"
-
-    Borda.Color =
-        Color3.fromRGB(0, 0, 0)
-
+    Borda.Color = Color3.fromRGB(0, 0, 0)
     Borda.Thickness = 3
-
-    Borda.Transparency = 0
-
-    Borda.ApplyStrokeMode =
-        Enum.ApplyStrokeMode.Border
-
-    Borda.Parent = Botao
+    Borda.Parent = Btn
 
 
     -- =====================================================
-    -- 🔲 CANTO
+    -- 🔲 CANTOS
     -- =====================================================
 
     local Corner = Instance.new("UICorner")
 
     Corner.Name = "Corner"
+    Corner.CornerRadius = UDim.new(0, 10)
 
-    Corner.CornerRadius =
-        UDim.new(0, 10)
-
-    Corner.Parent = Botao
+    Corner.Parent = Btn
 
 
-    SilentAimButtonGui = Gui
-    SilentAimButton = Botao
+    SilentAimGui = GuiBtn
+    SilentAimButton = Btn
 
     AtualizarSilentAimButton()
 
 
     -- =====================================================
-    -- 📱 ARRASTAR NO CELULAR / PC
+    -- 📱 ARRASTAR
     -- =====================================================
 
-    local Arrastando = false
-    local PosicaoInicial
-    local InputInicial
+    Btn.InputBegan:Connect(function(Input)
 
-    Botao.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseButton1 then
 
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
+            isDraggingSilent = true
 
-            or
+            buttonStartPosSilent = Btn.Position
+            dragStartPosSilent = Input.Position
 
-            Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
+            Input.Changed:Connect(function()
 
-            Arrastando = true
+                if Input.UserInputState == Enum.UserInputState.End then
+                    isDraggingSilent = false
+                end
 
-            PosicaoInicial =
-                Botao.Position
+            end)
 
-            InputInicial =
-                Input.Position
         end
+
     end)
 
 
-    Botao.InputChanged:Connect(function(Input)
+    Btn.InputChanged:Connect(function(Input)
 
-        if not Arrastando then
-            return
-        end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or
-
-            Input.UserInputType ==
-            Enum.UserInputType.MouseMovement then
+        if isDraggingSilent
+        and (
+            Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseMovement
+        ) then
 
             local Delta =
-                Input.Position - InputInicial
+                Input.Position - dragStartPosSilent
 
-            Botao.Position =
-                PosicaoInicial +
-                UDim2.fromOffset(
+            Btn.Position =
+                buttonStartPosSilent
+                + UDim2.fromOffset(
                     Delta.X,
                     Delta.Y
                 )
+
         end
-    end)
 
-
-    UserInputService.InputEnded:Connect(function(Input)
-
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or
-
-            Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
-
-            Arrastando = false
-        end
     end)
 
 end
 
 
 -- =========================================================
--- ❌ REMOVER
+-- ❌ REMOVER BOTÃO
 -- =========================================================
 
-RemoverSilentAimButton = function()
+local function RemoverSilentAimButton()
 
-    if SilentAimButtonGui then
-        SilentAimButtonGui:Destroy()
+    if SilentAimGui then
+        SilentAimGui:Destroy()
     end
 
-    SilentAimButtonGui = nil
+    SilentAimGui = nil
     SilentAimButton = nil
 
 end
+
 
 -- FOV CICLE
 local LockCameraAtivo = false
@@ -3662,6 +3620,84 @@ Aba_Sheriff:Slider({
         SilentAimButtonSize = Valor
 
         AtualizarSilentAimButton()
+
+    end
+})
+
+-- =========================================================
+-- 🔫 CONTROLES VISUAIS — SILENT AIM
+-- =========================================================
+
+local SilentAimButtonSize = 75
+local SilentAimButtonStyle = "Quadrado"
+
+Aba_Sheriff:Dropdown({
+    Title = "Formato do Silent AIM",
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        SilentAimButtonStyle = Value
+
+        if AtualizarSilentAimButton then
+            AtualizarSilentAimButton()
+        end
+
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Mostrar Silent AIM",
+    Desc = "Mostra ou esconde o botão flutuante",
+
+    Default = false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+
+            if CriarSilentAimButton then
+                CriarSilentAimButton()
+            end
+
+        else
+
+            if RemoverSilentAimButton then
+                RemoverSilentAimButton()
+            end
+
+        end
+
+    end
+})
+
+Aba_Sheriff:Slider({
+    Title = "Tamanho do Silent AIM",
+    Desc = "Escolha o tamanho do botão",
+
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75,
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+
+        SilentAimButtonSize = Valor
+
+        if AtualizarSilentAimButton then
+            AtualizarSilentAimButton()
+        end
 
     end
 })
