@@ -595,7 +595,7 @@ local KillAimButtonStyle = "Quadrado"
 local KillAimButtonSize = 100
 local KillAimButtonAnimating = false
 
--- Declaração antecipada das funções
+-- Declaração antecipada
 local CriarKillAimButton
 local RemoverKillAimButton
 local AtualizarKillAimButton
@@ -658,7 +658,7 @@ end
 
 CriarKillAimButton = function()
 
-    -- Evita criar dois
+    -- Se já existe, não cria outro
     if KillAimGui then
         return
     end
@@ -686,14 +686,15 @@ CriarKillAimButton = function()
         KillAimButtonSize
     )
 
+    Btn.AnchorPoint = Vector2.new(0.5, 0.5)
+
     Btn.Position = UDim2.new(
         0.5,
-        -(KillAimButtonSize / 2),
+        0,
         0.7,
-        -(KillAimButtonSize / 2)
+        0
     )
 
-    -- Centro
     Btn.BackgroundColor3 =
         Color3.fromRGB(150, 20, 20)
 
@@ -715,7 +716,7 @@ CriarKillAimButton = function()
 
 
     -- =====================================================
-    -- 🔴 LINHA AO REDOR
+    -- 🔴 BORDA
     -- =====================================================
 
     local Borda = Instance.new("UIStroke")
@@ -751,6 +752,7 @@ CriarKillAimButton = function()
     KillAimButton = Btn
 
 
+    -- Aplica formato/tamanho inicial
     AtualizarKillAimButton()
 
 
@@ -759,8 +761,8 @@ CriarKillAimButton = function()
     -- =====================================================
 
     local Arrastando = false
-    local PosicaoInicial = nil
-    local InputInicial = nil
+    local PosicaoInicial
+    local InputInicial
 
 
     Btn.InputBegan:Connect(function(Input)
@@ -768,9 +770,7 @@ CriarKillAimButton = function()
         if Input.UserInputType ==
             Enum.UserInputType.Touch
 
-            or
-
-            Input.UserInputType ==
+            or Input.UserInputType ==
             Enum.UserInputType.MouseButton1 then
 
             Arrastando = true
@@ -795,9 +795,7 @@ CriarKillAimButton = function()
         if Input.UserInputType ==
             Enum.UserInputType.Touch
 
-            or
-
-            Input.UserInputType ==
+            or Input.UserInputType ==
             Enum.UserInputType.MouseMovement then
 
             local Delta =
@@ -821,9 +819,7 @@ CriarKillAimButton = function()
         if Input.UserInputType ==
             Enum.UserInputType.Touch
 
-            or
-
-            Input.UserInputType ==
+            or Input.UserInputType ==
             Enum.UserInputType.MouseButton1 then
 
             Arrastando = false
@@ -834,7 +830,7 @@ CriarKillAimButton = function()
 
 
     -- =====================================================
-    -- ✨ ANIMAÇÃO AO CLICAR
+    -- ✨ ANIMAÇÃO DO CLIQUE
     -- =====================================================
 
     Btn.MouseButton1Click:Connect(function()
@@ -846,7 +842,6 @@ CriarKillAimButton = function()
         KillAimButtonAnimating = true
 
 
-        -- Tamanho atual
         local Largura =
             Btn.AbsoluteSize.X
 
@@ -857,7 +852,6 @@ CriarKillAimButton = function()
             Btn.Position
 
 
-        -- Diminui somente 8%
         local NovaLargura =
             Largura * 0.92
 
@@ -865,7 +859,6 @@ CriarKillAimButton = function()
             Altura * 0.92
 
 
-        -- Mantém o centro
         local NovaPosicao =
             Posicao +
             UDim2.fromOffset(
@@ -874,7 +867,7 @@ CriarKillAimButton = function()
             )
 
 
-        -- ⬇️ ENCOLHER
+        -- Encolher
 
         local Diminuir =
             TweenService:Create(
@@ -901,7 +894,7 @@ CriarKillAimButton = function()
         Diminuir.Completed:Wait()
 
 
-        -- ⬆️ VOLTAR AO TAMANHO NORMAL
+        -- Voltar
 
         local Voltar =
             TweenService:Create(
@@ -950,7 +943,6 @@ RemoverKillAimButton = function()
     KillAimButtonAnimating = false
 
 end
-
 
 -- ====================================================
 -- SISTEMA DA ABA MURDERER 
@@ -3441,13 +3433,14 @@ Aba_Murderer:Toggle({
     end
 })
 
--- ====================================================
--- 🔘 BOTÃO FLUTUANTE KILL AIM
--- ====================================================
-print("MURDERER 1")
+-- =========================================================
+-- 🔘 CONTROLES NA ABA MURDERER
+-- =========================================================
 
 Aba_Murderer:Dropdown({
+
     Title = "Formato do botão",
+
     Desc = "Escolha o formato do botão",
 
     Values = {
@@ -3457,22 +3450,28 @@ Aba_Murderer:Dropdown({
     },
 
     Callback = function(Value)
+
         KillAimButtonStyle = Value
 
         if AtualizarKillAimButton then
             AtualizarKillAimButton()
         end
+
     end
+
 })
 
-print("MURDERER 2")
 
 Aba_Murderer:Toggle({
+
     Title = "Mostrar botão Kill Aim",
+
     Desc = "Mostra ou esconde o botão flutuante",
+
     Default = false,
 
     Callback = function(Ativo)
+
         KillAimButtonVisible = Ativo
 
         if Ativo then
@@ -3480,13 +3479,16 @@ Aba_Murderer:Toggle({
         else
             RemoverKillAimButton()
         end
+
     end
+
 })
 
-print("MURDERER 3")
 
 Aba_Murderer:Slider({
+
     Title = "Tamanho do botão",
+
     Desc = "Escolha o tamanho do botão flutuante",
 
     Value = {
@@ -3498,15 +3500,16 @@ Aba_Murderer:Slider({
     Step = 1,
 
     Callback = function(Valor)
+
         KillAimButtonSize = Valor
 
         if AtualizarKillAimButton then
             AtualizarKillAimButton()
         end
-    end
-})
 
-print("MURDERER 4")
+    end
+
+})
 
 -- ===================================================
 -- BOTOES DA ABA SHERIFF
