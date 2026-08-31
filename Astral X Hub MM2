@@ -819,10 +819,6 @@ player.CharacterAdded:Connect(function()
     AtualizarCirculoAura()
 end)
 
--- ====================================================
--- SISTEMA DA ABA SHERIFF
--- ====================================================
-
 -- =========================================================
 -- 📦 VARIÁVEIS GLOBAIS
 -- =========================================================
@@ -830,6 +826,7 @@ local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
 
+local JogadorSelecionado = nil
 local ConexaoGrabLocal = nil
 
 -- =========================================================
@@ -878,6 +875,9 @@ local function SoltarJogador()
     end
 end
 
+-- ====================================================
+-- SISTEMA DA ABA SHERIFF
+-- ====================================================
 
 -- FOV CICLE
 local LockCameraAtivo = false
@@ -2953,10 +2953,9 @@ Aba_Murderer:Section({
     Box = false,
     TextSize = 18,
 })
-
--- ==================================
+-- =========================================================
 -- 👤 LISTA DE JOGADORES (DROPDOWN)
--- ==================================
+-- =========================================================
 
 local function PegarListaJogadores()
     local lista = {}
@@ -2978,7 +2977,7 @@ end
 
 local DropdownJogadores = Aba_Murderer:Dropdown({
     Title = "Selecionar Jogador",
-    Desc = "Escolha um jogador para puxar",
+    Desc = "Escolha um jogador para travar na sua frente",
     Values = PegarListaJogadores(),
     Callback = function(Value)
         if typeof(Value) == "table" then
@@ -2989,9 +2988,9 @@ local DropdownJogadores = Aba_Murderer:Dropdown({
     end
 })
 
--- ==================================
+-- =========================================================
 -- 🔄 ATUALIZAR LISTA AUTOMÁTICA
--- ==================================
+-- =========================================================
 
 local function AtualizarListaJogadores()
     local lista = PegarListaJogadores()
@@ -3018,10 +3017,18 @@ Players.PlayerRemoving:Connect(function()
 end)
 
 Aba_Murderer:Button({
-    Title = "Puxar Jogador Selecionado",
-    Desc = "Traz o jogador para a frente da sua faca",
+    Title = "Travar Jogador na Frente",
+    Desc = "Puxa e trava o jogador na sua frente (somente você vê)",
     Callback = function()
-        KillJogadorSelecionado()
+        TrancarJogadorNaFrente()
+    end
+})
+
+Aba_Murderer:Button({
+    Title = "Soltar Jogador",
+    Desc = "Destrava a posição do jogador",
+    Callback = function()
+        SoltarJogador()
     end
 })
 
