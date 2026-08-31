@@ -572,13 +572,18 @@ local Aba_Config = Window:Tab({
     Icon = "settings",
 })
 
+-- ====================================================
+-- SISTEMA DA ABA MURDERER 
+-- ====================================================
+
 -- =========================================================
--- 🔴 SISTEMA DO BOTÃO FLUTUANTE KILL AIM
+-- 🔴 SISTEMA DO BOTÃO FLUTUANTE KILL AIM COM KILL ALL
 -- =========================================================
 
 local Players = game:GetService("Players")
 local TweenService = game:GetService("TweenService")
 local UserInputService = game:GetService("UserInputService")
+local Workspace = game:GetService("Workspace")
 
 local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
@@ -590,171 +595,135 @@ local PlayerGui = player:WaitForChild("PlayerGui")
 local KillAimGui = nil
 local KillAimButton = nil
 
-local KillAimButtonVisible = false
-local KillAimButtonStyle = "Quadrado"
 local KillAimButtonSize = 100
+local KillAimButtonStyle = "Quadrado"
 local KillAimButtonAnimating = false
 
--- Declaração antecipada
-local CriarKillAimButton
-local RemoverKillAimButton
-local AtualizarKillAimButton
+--------------------------------------------------------------------------------
+-- ⚔️ LÓGICA DO KILL ALL INSTANTÂNEO (MM2 / DEDUCTION)
+--------------------------------------------------------------------------------
 
+local function KillAllInstantaneo()
+    local character = player.Character
+    if not character then return end
 
--- =========================================================
--- 🔄 ATUALIZAR FORMATO / TAMANHO
--- =========================================================
-
-AtualizarKillAimButton = function()
-
-    if not KillAimButton then
-        return
+    -- Procura pela arma equipada no personagem ou na Mochila (Backpack)
+    local knife = character:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
+    
+    if not knife then 
+        warn("[KillAim] Nenhuma arma/faca encontrada no inventário!")
+        return 
     end
 
-    local Corner = KillAimButton:FindFirstChild("Corner")
-
-    if not Corner then
-        return
+    -- Equipa a ferramenta caso esteja no inventário
+    if knife.Parent ~= character then
+        knife.Parent = character
     end
 
+    local handle = knife:FindFirstChild("Handle")
+    if not handle then return end
 
-    if KillAimButtonStyle == "Quadrado" then
+    -- Percorre todos os jogadores do servidor
+    for _, targetPlayer in ipairs(Players:GetPlayers()) do
+        if targetPlayer ~= player and targetPlayer.Character then
+            local targetChar = targetPlayer.Character
+            local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+            local targetHumanoid = targetChar:FindFirstChildOfClass("Humanoid")
 
-        KillAimButton.Size = UDim2.fromOffset(
-            KillAimButtonSize,
-            KillAimButtonSize
-        )
+            if targetHRP and targetHumanoid and targetHumanoid.Health > 0 then
+                -- Aciona o evento de dano/ataque da ferramenta se houver RemoteEvent
+                local attackRemote = knife:FindFirstChildOfClass("RemoteEvent")
+                
+                -- Teleporta o toque do cabo da arma até o jogador alvo
+                firetouchinterest(handle, targetHRP, 0)
+                firetouchinterest(handle, targetHRP, 1)
 
-        Corner.CornerRadius = UDim.new(0, 10)
-
-
-    elseif KillAimButtonStyle == "Círculo" then
-
-        KillAimButton.Size = UDim2.fromOffset(
-            KillAimButtonSize,
-            KillAimButtonSize
-        )
-
-        Corner.CornerRadius = UDim.new(1, 0)
-
-
-    elseif KillAimButtonStyle == "Retângulo" then
-
-        KillAimButton.Size = UDim2.fromOffset(
-            KillAimButtonSize * 1.7,
-            KillAimButtonSize
-        )
-
-        Corner.CornerRadius = UDim.new(0, 10)
-
+                if attackRemote then
+                    attackRemote:FireServer(targetHRP)
+                end
+            end
+        end
     end
-
 end
 
+-- =========================================================
+-- 🔄 ATUALIZAR TAMANHO / FORMATO
+-- =========================================================
+
+local function AtualizarKillAimButton()
+    if not KillAimButton then return end
+
+    local Corner = KillAimButton:FindFirstChild("Corner")
+    if not Corner then return end
+
+    if KillAimButtonStyle == "Quadrado" then
+        KillAimButton.Size = UDim2.fromOffset(KillAimButtonSize, KillAimButtonSize)
+        Corner.CornerRadius = UDim.new(0, 10)
+    elseif KillAimButtonStyle == "Círculo" then
+        KillAimButton.Size = UDim2.fromOffset(KillAimButtonSize, KillAimButtonSize)
+        Corner.CornerRadius = UDim.new(1, 0)
+    elseif KillAimButtonStyle == "Retângulo" then
+        KillAimButton.Size = UDim2.fromOffset(KillAimButtonSize * 1.7, KillAimButtonSize)
+        Corner.CornerRadius = UDim.new(0, 10)
+    end
+end
 
 -- =========================================================
 -- 🔴 CRIAR BOTÃO
 -- =========================================================
 
-CriarKillAimButton = function()
-
-    -- Se já existe, não cria outro
-    if KillAimGui then
-        return
-    end
-
+local function CriarKillAimButton()
+    if KillAimGui then return end
 
     local GuiBtn = Instance.new("ScreenGui")
-
     GuiBtn.Name = "AstralX_KillAimButton"
     GuiBtn.ResetOnSpawn = false
     GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-
     GuiBtn.Parent = PlayerGui
-
 
     -- =====================================================
     -- 🔘 BOTÃO
     -- =====================================================
 
     local Btn = Instance.new("TextButton")
-
     Btn.Name = "KillAimButton"
-
-    Btn.Size = UDim2.fromOffset(
-        KillAimButtonSize,
-        KillAimButtonSize
-    )
-
+    Btn.Size = UDim2.fromOffset(KillAimButtonSize, KillAimButtonSize)
     Btn.AnchorPoint = Vector2.new(0.5, 0.5)
-
-    Btn.Position = UDim2.new(
-        0.5,
-        0,
-        0.7,
-        0
-    )
-
-    Btn.BackgroundColor3 =
-        Color3.fromRGB(150, 20, 20)
-
+    Btn.Position = UDim2.new(0.5, 0, 0.7, 0)
+    Btn.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
     Btn.BackgroundTransparency = 0.3
-
     Btn.BorderSizePixel = 0
-
     Btn.Text = "KILL AIM"
-
-    Btn.TextColor3 =
-        Color3.fromRGB(255, 255, 255)
-
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
     Btn.TextSize = 15
     Btn.Font = Enum.Font.GothamBold
-
     Btn.AutoButtonColor = false
-
     Btn.Parent = GuiBtn
-
 
     -- =====================================================
     -- 🔴 BORDA
     -- =====================================================
 
     local Borda = Instance.new("UIStroke")
-
     Borda.Name = "Borda"
-
-    Borda.Color =
-        Color3.fromRGB(255, 50, 50)
-
+    Borda.Color = Color3.fromRGB(255, 50, 50)
     Borda.Thickness = 2
-
-    Borda.ApplyStrokeMode =
-        Enum.ApplyStrokeMode.Border
-
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
     Borda.Parent = Btn
 
-
     -- =====================================================
-    -- 🔲 CANTO / FORMATO
+    -- 🔲 CANTO
     -- =====================================================
 
     local Corner = Instance.new("UICorner")
-
     Corner.Name = "Corner"
-
-    Corner.CornerRadius =
-        UDim.new(0, 10)
-
+    Corner.CornerRadius = UDim.new(0, 10)
     Corner.Parent = Btn
-
 
     KillAimGui = GuiBtn
     KillAimButton = Btn
 
-
-    -- Aplica formato/tamanho inicial
     AtualizarKillAimButton()
-
 
     -- =====================================================
     -- 📱 ARRASTAR
@@ -764,176 +733,89 @@ CriarKillAimButton = function()
     local PosicaoInicial
     local InputInicial
 
-
     Btn.InputBegan:Connect(function(Input)
-
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
-
+        if Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             Arrastando = true
-
-            PosicaoInicial =
-                Btn.Position
-
-            InputInicial =
-                Input.Position
-
+            PosicaoInicial = Btn.Position
+            InputInicial = Input.Position
         end
-
     end)
-
 
     Btn.InputChanged:Connect(function(Input)
+        if not Arrastando then return end
 
-        if not Arrastando then
-            return
+        if Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseMovement then
+            local Delta = Input.Position - InputInicial
+            Btn.Position = PosicaoInicial + UDim2.fromOffset(Delta.X, Delta.Y)
         end
-
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or Input.UserInputType ==
-            Enum.UserInputType.MouseMovement then
-
-            local Delta =
-                Input.Position -
-                InputInicial
-
-            Btn.Position =
-                PosicaoInicial +
-                UDim2.fromOffset(
-                    Delta.X,
-                    Delta.Y
-                )
-
-        end
-
     end)
-
 
     UserInputService.InputEnded:Connect(function(Input)
-
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
-
+        if Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseButton1 then
             Arrastando = false
-
         end
-
     end)
 
-
     -- =====================================================
-    -- ✨ ANIMAÇÃO DO CLIQUE
+    -- ✨ ANIMAÇÃO DO CLIQUE + EXECUÇÃO DO KILL ALL
     -- =====================================================
 
     Btn.MouseButton1Click:Connect(function()
-
-        if KillAimButtonAnimating then
-            return
-        end
+        if KillAimButtonAnimating then return end
 
         KillAimButtonAnimating = true
 
+        local Largura = Btn.AbsoluteSize.X
+        local Altura = Btn.AbsoluteSize.Y
+        local Posicao = Btn.Position
 
-        local Largura =
-            Btn.AbsoluteSize.X
+        local NovaLargura = Largura * 0.92
+        local NovaAltura = Altura * 0.92
 
-        local Altura =
-            Btn.AbsoluteSize.Y
+        local NovaPosicao = Posicao + UDim2.fromOffset(
+            (Largura - NovaLargura) / 2,
+            (Altura - NovaAltura) / 2
+        )
 
-        local Posicao =
-            Btn.Position
-
-
-        local NovaLargura =
-            Largura * 0.92
-
-        local NovaAltura =
-            Altura * 0.92
-
-
-        local NovaPosicao =
-            Posicao +
-            UDim2.fromOffset(
-                (Largura - NovaLargura) / 2,
-                (Altura - NovaAltura) / 2
-            )
-
-
-        -- Encolher
-
-        local Diminuir =
-            TweenService:Create(
-                Btn,
-
-                TweenInfo.new(
-                    0.08,
-                    Enum.EasingStyle.Quad,
-                    Enum.EasingDirection.Out
-                ),
-
-                {
-                    Size = UDim2.fromOffset(
-                        NovaLargura,
-                        NovaAltura
-                    ),
-
-                    Position = NovaPosicao
-                }
-            )
-
+        local Diminuir = TweenService:Create(
+            Btn,
+            TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = UDim2.fromOffset(NovaLargura, NovaAltura),
+                Position = NovaPosicao
+            }
+        )
 
         Diminuir:Play()
         Diminuir.Completed:Wait()
 
-
-        -- Voltar
-
-        local Voltar =
-            TweenService:Create(
-                Btn,
-
-                TweenInfo.new(
-                    0.10,
-                    Enum.EasingStyle.Quad,
-                    Enum.EasingDirection.Out
-                ),
-
-                {
-                    Size = UDim2.fromOffset(
-                        Largura,
-                        Altura
-                    ),
-
-                    Position = Posicao
-                }
-            )
-
+        local Voltar = TweenService:Create(
+            Btn,
+            TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = UDim2.fromOffset(Largura, Altura),
+                Position = Posicao
+            }
+        )
 
         Voltar:Play()
         Voltar.Completed:Wait()
 
-
         KillAimButtonAnimating = false
 
+        -- Executa a função do Kill All assim que o clique/animação termina
+        KillAllInstantaneo()
     end)
-
 end
-
 
 -- =========================================================
 -- ❌ REMOVER BOTÃO
 -- =========================================================
 
-RemoverKillAimButton = function()
-
+local function RemoverKillAimButton()
     if KillAimGui then
         KillAimGui:Destroy()
     end
@@ -941,12 +823,14 @@ RemoverKillAimButton = function()
     KillAimGui = nil
     KillAimButton = nil
     KillAimButtonAnimating = false
-
 end
 
--- ====================================================
--- SISTEMA DA ABA MURDERER 
--- ====================================================
+-- Inicializa a criação do botão na tela
+CriarKillAimButton()
+
+
+
+
 local JogadorSelecionado = nil
 
 -- Função para eliminar APENAS o jogador selecionado
