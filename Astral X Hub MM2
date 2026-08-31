@@ -1037,6 +1037,290 @@ player.CharacterAdded:Connect(function()
     AtualizarCirculoAura()
 end)
 
+-- =========================================================
+-- 🎯 SISTEMA SILENT AIM (SHERIFF)
+-- =========================================================
+
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Stats = game:GetService("Stats")
+local Workspace = game:GetService("Workspace")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- =========================================================
+-- 📦 VARIÁVEIS DE CONTROLE
+-- =========================================================
+
+local SilentAimGui = nil
+local SilentAimButton = nil
+
+SilentAimButtonSize = SilentAimButtonSize or 100
+SilentAimButtonStyle = SilentAimButtonStyle or "Quadrado"
+ShootPredictMultiplier = ShootPredictMultiplier or 1
+
+local SilentAimButtonAnimating = false
+local isDraggingSilent = false
+local buttonStartPosSilent = UDim2.new()
+local dragStartPosSilent = Vector3.new()
+local Pressionado = false
+
+-- =========================================================
+-- 🎯 LÓGICA DO SILENT AIM & WALLBANG
+-- =========================================================
+
+local function GetPing()
+    local ok, value = pcall(function()
+        return Stats.Network.ServerStatsItem["Data Ping"]:GetValue()
+    end)
+    return ok and value or 100
+end
+
+local function GetMurderer()
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return nil end
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return nil end
+
+    for _, Player in ipairs(Players:GetPlayers()) do
+        if Player ~= player and Player.Character and Player.Character:FindFirstChild("HumanoidRootPart") then
+            local Info = Data[Player.Name]
+            if Info and not Info.Killed and not Info.Dead and Info.Role == "Murderer" then
+                return Player
+            end
+        end
+    end
+    return nil
+end
+
+local function ShootMurderer()
+    if Pressionado then return end
+    Pressionado = true
+
+    local Char = player.Character
+    if not Char or not Char:FindFirstChild("HumanoidRootPart") then 
+        Pressionado = false 
+        return 
+    end
+
+    local Gun = Char:FindFirstChild("Gun") or (player.Backpack and player.Backpack:FindFirstChild("Gun"))
+    if not Gun then 
+        Pressionado = false 
+        return 
+    end
+
+    if Gun.Parent ~= Char then
+        Gun.Parent = Char
+        task.wait(0.05)
+    end
+
+    local Murderer = GetMurderer()
+    if not Murderer or not Murderer.Character then 
+        Pressionado = false 
+        return 
+    end
+
+    local TargetHRP = Murderer.Character:FindFirstChild("HumanoidRootPart")
+    local TargetTorso = Murderer.Character:FindFirstChild("Torso") or Murderer.Character:FindFirstChild("UpperTorso")
+    if not TargetHRP or not TargetTorso then 
+        Pressionado = false 
+        return 
+    end
+
+    local Ping = GetPing()
+    local PredictionTime = (Ping / 1000) * (ShootPredictMultiplier or 1)
+    local Velocity = TargetHRP.Velocity
+    local PredictedPos = Velocity.Magnitude < 1 and TargetTorso.Position or TargetTorso.Position + (Velocity * PredictionTime)
+    
+    ------------------------------------------------------------------
+    -- 🧱 LÓGICA DE WALLBANG (ATRAVESSAR PAREDE)
+    ------------------------------------------------------------------
+    local MyPos = Char.HumanoidRootPart.Position
+    local RayDirection = (PredictedPos - MyPos)
+    
+    local RayParams = RaycastParams.new()
+    RayParams.FilterType = Enum.RaycastFilterType.Exclude
+    RayParams.FilterDescendantsInstances = {Char, Murderer.Character}
+    RayParams.IgnoreWater = true
+
+    local RayResult = Workspace:Raycast(MyPos, RayDirection, RayParams)
+    local OriginCFrame
+
+    if RayResult then
+        local SafeOriginPos = RayResult.Position + (RayDirection.Unit * 1.5)
+        OriginCFrame = CFrame.new(SafeOriginPos, PredictedPos)
+    else
+        OriginCFrame = CFrame.new(MyPos, PredictedPos)
+    end
+    ------------------------------------------------------------------
+
+    local ShootEvent = Gun:FindFirstChild("ShootEvent", true) or Gun:FindFirstChild("Shoot", true) or ReplicatedStorage:FindFirstChild("Shoot", true)
+    if ShootEvent then
+        if ShootEvent:IsA("RemoteEvent") then
+            ShootEvent:FireServer(OriginCFrame, CFrame.new(PredictedPos))
+        elseif ShootEvent:IsA("RemoteFunction") then
+            ShootEvent:InvokeServer(OriginCFrame, CFrame.new(PredictedPos))
+        end
+    end
+
+    task.wait(0.3)
+    Pressionado = false
+end
+
+-- =========================================================
+-- 🔄 ATUALIZAR TAMANHO / FORMATO DO BOTÃO
+-- =========================================================
+
+function AtualizarSilentAimButton()
+    if not SilentAimButton then return end
+
+    local Corner = SilentAimButton:FindFirstChild("Corner")
+    if not Corner then return end
+
+    if SilentAimButtonStyle == "Quadrado" then
+        SilentAimButton.Size = UDim2.fromOffset(SilentAimButtonSize, SilentAimButtonSize)
+        Corner.CornerRadius = UDim.new(0, 10)
+    elseif SilentAimButtonStyle == "Círculo" then
+        SilentAimButton.Size = UDim2.fromOffset(SilentAimButtonSize, SilentAimButtonSize)
+        Corner.CornerRadius = UDim.new(1, 0)
+    elseif SilentAimButtonStyle == "Retângulo" then
+        SilentAimButton.Size = UDim2.fromOffset(SilentAimButtonSize * 1.7, SilentAimButtonSize)
+        Corner.CornerRadius = UDim.new(0, 10)
+    end
+end
+
+-- =========================================================
+-- 🔴 CRIAR BOTÃO SILENT AIM (FLUTUANTE COM ANIMAÇÃO)
+-- =========================================================
+
+function CriarSilentAimButton()
+    if SilentAimGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = PlayerGui end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_SilentAimButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("TextButton")
+    Btn.Name = "SilentAimButton"
+    Btn.Size = UDim2.fromOffset(SilentAimButtonSize, SilentAimButtonSize)
+    Btn.AnchorPoint = Vector2.new(0.5, 0.5)
+    Btn.Position = UDim2.new(0.5, 0, 0.6, 0)
+    Btn.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    Btn.BackgroundTransparency = 0.4
+    Btn.BorderSizePixel = 0
+    Btn.Text = "Silent AIM"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 15
+    Btn.Font = Enum.Font.GothamBold
+    Btn.AutoButtonColor = false
+    Btn.Parent = GuiBtn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Name = "Borda"
+    Borda.Color = Color3.fromRGB(0, 0, 0)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Corner = Instance.new("UICorner")
+    Corner.Name = "Corner"
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    SilentAimGui = GuiBtn
+    SilentAimButton = Btn
+
+    AtualizarSilentAimButton()
+
+    -- 📱 ARRASTAR O BOTÃO NA TELA
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingSilent = true
+            buttonStartPosSilent = Btn.Position
+            dragStartPosSilent = Input.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then 
+                    isDraggingSilent = false 
+                end
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if isDraggingSilent and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Btn.Position = buttonStartPosSilent + UDim2.fromOffset(Input.Position.X - dragStartPosSilent.X, Input.Position.Y - dragStartPosSilent.Y)
+        end
+    end)
+
+    -- ✨ CLIQUE, ANIMAÇÃO DE TWEEN E EXECUÇÃO
+    Btn.MouseButton1Click:Connect(function()
+        if isDraggingSilent or SilentAimButtonAnimating then return end
+
+        SilentAimButtonAnimating = true
+
+        -- Dispara o Silent AIM
+        task.spawn(ShootMurderer)
+
+        -- Animação de compressão e retorno do botão
+        local Largura = Btn.AbsoluteSize.X
+        local Altura = Btn.AbsoluteSize.Y
+        local Posicao = Btn.Position
+
+        local NovaLargura = Largura * 0.92
+        local NovaAltura = Altura * 0.92
+
+        local Diminuir = TweenService:Create(
+            Btn,
+            TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = UDim2.fromOffset(NovaLargura, NovaAltura),
+                Position = Posicao + UDim2.fromOffset((Largura - NovaLargura) / 2, (Altura - NovaAltura) / 2)
+            }
+        )
+
+        Diminuir:Play()
+        Diminuir.Completed:Wait()
+
+        local Voltar = TweenService:Create(
+            Btn,
+            TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = UDim2.fromOffset(Largura, Altura),
+                Position = Posicao
+            }
+        )
+
+        Voltar:Play()
+        Voltar.Completed:Wait()
+
+        SilentAimButtonAnimating = false
+    end)
+end
+
+-- =========================================================
+-- ❌ REMOVER BOTÃO
+-- =========================================================
+
+function RemoverSilentAimButton()
+    if SilentAimGui then
+        SilentAimGui:Destroy()
+    end
+
+    SilentAimGui = nil
+    SilentAimButton = nil
+    SilentAimButtonAnimating = false
+end
+
 -- ====================================================
 -- SISTEMA DA ABA SHERIFF
 -- ====================================================
