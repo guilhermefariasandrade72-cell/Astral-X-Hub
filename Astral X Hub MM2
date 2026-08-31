@@ -1045,22 +1045,14 @@ end)
 -- ⚫ SISTEMA DO BOTÃO FLUTUANTE SHERIFF
 -- =========================================================
 
-local Players = game:GetService("Players")
-local UserInputService = game:GetService("UserInputService")
-
-local player = Players.LocalPlayer
 local PlayerGui = player:WaitForChild("PlayerGui")
-
--- =========================================================
--- 📦 VARIÁVEIS
--- =========================================================
 
 local SheriffButtonGui = nil
 local SheriffButton = nil
 
 local SheriffButtonVisible = false
 local SheriffButtonStyle = "Quadrado"
-local SheriffButtonSize = 100
+local SheriffButtonSize = 75
 
 
 -- =========================================================
@@ -1069,7 +1061,7 @@ local SheriffButtonSize = 100
 
 local function AtualizarSheriffButton()
 
-    if not SheriffButton then
+    if not SheriffButton or not SheriffButton.Parent then
         return
     end
 
@@ -1133,10 +1125,6 @@ local function CriarSheriffButton()
     Gui.Parent = PlayerGui
 
 
-    -- =====================================================
-    -- 🔘 BOTÃO
-    -- =====================================================
-
     local Botao = Instance.new("TextButton")
 
     Botao.Name = "SheriffButton"
@@ -1146,7 +1134,7 @@ local function CriarSheriffButton()
         SheriffButtonSize
     )
 
-    -- Cresce a partir do centro
+    -- Cresce/diminui pelo centro
     Botao.AnchorPoint = Vector2.new(0.5, 0.5)
 
     Botao.Position = UDim2.new(
@@ -1213,7 +1201,6 @@ local function CriarSheriffButton()
     SheriffButtonGui = Gui
     SheriffButton = Botao
 
-
     AtualizarSheriffButton()
 
 
@@ -1222,24 +1209,17 @@ local function CriarSheriffButton()
     -- =====================================================
 
     local Arrastando = false
-    local PosicaoInicial
-    local InputInicial
+    local PosicaoInicial = nil
+    local InputInicial = nil
 
     Botao.InputBegan:Connect(function(Input)
 
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseButton1 then
 
             Arrastando = true
-
-            PosicaoInicial =
-                Botao.Position
-
-            InputInicial =
-                Input.Position
+            PosicaoInicial = Botao.Position
+            InputInicial = Input.Position
 
         end
 
@@ -1252,15 +1232,11 @@ local function CriarSheriffButton()
             return
         end
 
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or Input.UserInputType ==
-            Enum.UserInputType.MouseMovement then
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseMovement then
 
             local Delta =
-                Input.Position -
-                InputInicial
+                Input.Position - InputInicial
 
             Botao.Position =
                 PosicaoInicial +
@@ -1276,11 +1252,8 @@ local function CriarSheriffButton()
 
     UserInputService.InputEnded:Connect(function(Input)
 
-        if Input.UserInputType ==
-            Enum.UserInputType.Touch
-
-            or Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseButton1 then
 
             Arrastando = false
 
@@ -1305,8 +1278,6 @@ local function RemoverSheriffButton()
     SheriffButton = nil
 
 end
-
-
 
 
 local LockCameraAtivo = false
@@ -3608,71 +3579,6 @@ Aba_Murderer:Toggle({
 -- BOTOES DA ABA SHERIFF
 -- ===================================================
 
--- =========================================================
--- ⚫ CONTROLES DO BOTÃO SHERIFF
--- =========================================================
-
-Aba_Sheriff:Dropdown({
-    Title = "Formato do botão",
-    Desc = "Escolha o formato do botão",
-
-    Values = {
-        "Quadrado",
-        "Círculo",
-        "Retângulo"
-    },
-
-    Default = "Quadrado",
-
-    Callback = function(Value)
-
-        SheriffButtonStyle = Value
-
-        if SheriffButton then
-
-            local Corner = SheriffButton:FindFirstChild("Corner")
-
-            if Value == "Quadrado" then
-
-                SheriffButton.Size = UDim2.fromOffset(
-                    SheriffButtonSize,
-                    SheriffButtonSize
-                )
-
-                if Corner then
-                    Corner.CornerRadius = UDim.new(0, 10)
-                end
-
-            elseif Value == "Círculo" then
-
-                SheriffButton.Size = UDim2.fromOffset(
-                    SheriffButtonSize,
-                    SheriffButtonSize
-                )
-
-                if Corner then
-                    Corner.CornerRadius = UDim.new(1, 0)
-                end
-
-            elseif Value == "Retângulo" then
-
-                SheriffButton.Size = UDim2.fromOffset(
-                    SheriffButtonSize * 1.7,
-                    SheriffButtonSize
-                )
-
-                if Corner then
-                    Corner.CornerRadius = UDim.new(0, 10)
-                end
-
-            end
-
-        end
-
-    end
-})
-
-
 Aba_Sheriff:Toggle({
     Title = "Mostrar botão Sheriff",
     Desc = "Mostra ou esconde o botão flutuante",
@@ -3713,10 +3619,85 @@ Aba_Sheriff:Slider({
     end
 })
 
+
+
+
 Aba_Sheriff:Section({
     Title = "SHERIFF",
     Box = false,
     TextSize = 18,
+})
+
+Aba_Sheriff:Dropdown({
+
+    Title = "Formato do botão",
+
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        SheriffButtonStyle = Value
+
+        AtualizarSheriffButton()
+
+    end
+
+})
+
+
+Aba_Sheriff:Toggle({
+
+    Title = "Mostrar botão Sheriff",
+
+    Desc = "Mostra ou esconde o botão flutuante",
+
+    Default = false,
+
+    Callback = function(Ativo)
+
+        SheriffButtonVisible = Ativo
+
+        if Ativo then
+            CriarSheriffButton()
+        else
+            RemoverSheriffButton()
+        end
+
+    end
+
+})
+
+
+Aba_Sheriff:Slider({
+
+    Title = "Tamanho do botão",
+
+    Desc = "Aumenta ou diminui o botão",
+
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75,
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+
+        SheriffButtonSize = Valor
+
+        AtualizarSheriffButton()
+
+    end
+
 })
 
 Aba_Sheriff:Toggle({
