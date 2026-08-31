@@ -572,6 +572,363 @@ local Aba_Config = Window:Tab({
     Icon = "settings",
 })
 
+-- =========================================================
+-- 🔘 KILL AIM BUTTON — SISTEMA VISUAL
+-- =========================================================
+
+local UserInputService = game:GetService("UserInputService")
+local TweenService = game:GetService("TweenService")
+local Players = game:GetService("Players")
+
+local Player = Players.LocalPlayer
+local PlayerGui = Player:WaitForChild("PlayerGui")
+
+local KillAimButton = nil
+local KillAimGui = nil
+
+local KillAimButtonVisible = false
+local KillAimButtonStyle = "Quadrado"
+local KillAimButtonSize = 100
+
+local KillAimAnimating = false
+
+
+-- =========================================================
+-- 🔄 ATUALIZAR FORMATO E TAMANHO
+-- =========================================================
+
+local function AtualizarKillAimButton()
+
+    if not KillAimButton then
+        return
+    end
+
+    local Corner = KillAimButton:FindFirstChild("Corner")
+
+    if not Corner then
+        return
+    end
+
+
+    if KillAimButtonStyle == "Quadrado" then
+
+        KillAimButton.Size =
+            UDim2.fromOffset(
+                KillAimButtonSize,
+                KillAimButtonSize
+            )
+
+        Corner.CornerRadius =
+            UDim.new(0, 8)
+
+
+    elseif KillAimButtonStyle == "Círculo" then
+
+        KillAimButton.Size =
+            UDim2.fromOffset(
+                KillAimButtonSize,
+                KillAimButtonSize
+            )
+
+        Corner.CornerRadius =
+            UDim.new(1, 0)
+
+
+    elseif KillAimButtonStyle == "Retângulo" then
+
+        KillAimButton.Size =
+            UDim2.fromOffset(
+                KillAimButtonSize * 1.7,
+                KillAimButtonSize
+            )
+
+        Corner.CornerRadius =
+            UDim.new(0, 8)
+
+    end
+end
+
+
+-- =========================================================
+-- 🔴 CRIAR BOTÃO FLUTUANTE
+-- =========================================================
+
+local function CriarKillAimButton()
+
+    if KillAimGui then
+        KillAimGui:Destroy()
+        KillAimGui = nil
+        KillAimButton = nil
+    end
+
+
+    local Gui = Instance.new("ScreenGui")
+
+    Gui.Name = "AstralX_KillAimButton"
+    Gui.ResetOnSpawn = false
+    Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    Gui.Parent = PlayerGui
+
+    KillAimGui = Gui
+
+
+    local Button = Instance.new("TextButton")
+
+    Button.Name = "KillAimButton"
+
+    Button.BackgroundColor3 =
+        Color3.fromRGB(100, 0, 0)
+
+    Button.BackgroundTransparency = 0.35
+
+    Button.BorderSizePixel = 0
+
+    Button.Text = "KILL AIM"
+
+    Button.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Button.TextSize = 14
+    Button.Font = Enum.Font.GothamBold
+
+    Button.AutoButtonColor = false
+
+    Button.Position =
+        UDim2.new(
+            0.5,
+            -50,
+            0.7,
+            -50
+        )
+
+    Button.Parent = Gui
+
+
+    -- =====================================================
+    -- 🔴 BORDA
+    -- =====================================================
+
+    local Borda = Instance.new("UIStroke")
+
+    Borda.Name = "Borda"
+
+    Borda.Color =
+        Color3.fromRGB(90, 0, 0)
+
+    Borda.Thickness = 2
+
+    Borda.Parent = Button
+
+
+    -- =====================================================
+    -- 🔲 CANTOS
+    -- =====================================================
+
+    local Corner = Instance.new("UICorner")
+
+    Corner.Name = "Corner"
+
+    Corner.CornerRadius =
+        UDim.new(0, 8)
+
+    Corner.Parent = Button
+
+
+    KillAimButton = Button
+
+    AtualizarKillAimButton()
+
+
+    -- =====================================================
+    -- 📱 ARRASTAR NO CELULAR / PC
+    -- =====================================================
+
+    local Arrastando = false
+    local PosicaoInicial
+    local InputInicial
+
+
+    Button.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+            or
+            Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            Arrastando = true
+
+            PosicaoInicial =
+                Button.Position
+
+            InputInicial =
+                Input.Position
+
+        end
+
+    end)
+
+
+    Button.InputChanged:Connect(function(Input)
+
+        if not Arrastando then
+            return
+        end
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+            or
+            Input.UserInputType ==
+            Enum.UserInputType.MouseMovement then
+
+            local Delta =
+                Input.Position -
+                InputInicial
+
+            Button.Position =
+                PosicaoInicial +
+                UDim2.fromOffset(
+                    Delta.X,
+                    Delta.Y
+                )
+
+        end
+
+    end)
+
+
+    UserInputService.InputEnded:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+            or
+            Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            Arrastando = false
+
+        end
+
+    end)
+
+
+    -- =====================================================
+    -- ✨ ANIMAÇÃO
+    -- =====================================================
+
+    Button.MouseButton1Click:Connect(function()
+
+        if KillAimButtonAnimating then
+            return
+        end
+
+        KillAimButtonAnimating = true
+
+
+        -- Guarda largura e altura separadamente
+        -- para o retângulo não virar quadrado.
+
+        local LarguraNormal =
+            Button.AbsoluteSize.X
+
+        local AlturaNormal =
+            Button.AbsoluteSize.Y
+
+        local PosicaoNormal =
+            Button.Position
+
+
+        -- Encolhe somente 8%
+
+        local LarguraMenor =
+            LarguraNormal * 0.92
+
+        local AlturaMenor =
+            AlturaNormal * 0.92
+
+
+        -- Mantém o centro
+
+        local PosicaoMenor =
+            PosicaoNormal +
+            UDim2.fromOffset(
+                (LarguraNormal - LarguraMenor) / 2,
+                (AlturaNormal - AlturaMenor) / 2
+            )
+
+
+        local Diminuir =
+            TweenService:Create(
+                Button,
+
+                TweenInfo.new(
+                    0.08,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    Size = UDim2.fromOffset(
+                        LarguraMenor,
+                        AlturaMenor
+                    ),
+
+                    Position = PosicaoMenor
+                }
+            )
+
+
+        Diminuir:Play()
+        Diminuir.Completed:Wait()
+
+
+        local Voltar =
+            TweenService:Create(
+                Button,
+
+                TweenInfo.new(
+                    0.10,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    Size = UDim2.fromOffset(
+                        LarguraNormal,
+                        AlturaNormal
+                    ),
+
+                    Position = PosicaoNormal
+                }
+            )
+
+
+        Voltar:Play()
+        Voltar.Completed:Wait()
+
+
+        KillAimButtonAnimating = false
+
+    end)
+
+end
+
+
+-- =========================================================
+-- ❌ REMOVER
+-- =========================================================
+
+local function RemoverKillAimButton()
+
+    if KillAimGui then
+        KillAimGui:Destroy()
+    end
+
+    KillAimGui = nil
+    KillAimButton = nil
+
+end
+
 -- ====================================================
 -- SISTEMA DA ABA MURDERER 
 -- ====================================================
@@ -2980,6 +3337,67 @@ end)
 -- ==================================
 -- 🎯 BOTÃO DE ATAQUE SINGLE TARGET
 -- ==================================
+Aba_Murderer:AddDropdown({
+    Name = "Formato do botão",
+
+    Options = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        KillAimButtonStyle = Value
+
+        AtualizarKillAimButton()
+
+    end
+})
+
+
+-- 2️⃣ TOGGLE — MOSTRAR BOTÃO FLUTUANTE
+
+Aba_Murderer:AddToggle({
+    Name = "Mostrar botão Kill Aim",
+    Default = false,
+
+    Callback = function(Value)
+
+        KillAimButtonVisible = Value
+
+        if Value then
+            CriarKillAimButton()
+        else
+            RemoverKillAimButton()
+        end
+
+    end
+})
+
+
+-- 3️⃣ SLIDER — TAMANHO
+
+Aba_Murderer:AddSlider({
+    Name = "Tamanho do botão",
+
+    Min = 40,
+    Max = 200,
+
+    Default = 100,
+
+    Increment = 1,
+
+    Callback = function(Value)
+
+        KillAimButtonSize = Value
+
+        AtualizarKillAimButton()
+
+    end
+})
 
 Aba_Murderer:Button({
     Title = "Kill Jogador Selecionado",
