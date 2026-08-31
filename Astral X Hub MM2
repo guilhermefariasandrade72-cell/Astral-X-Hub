@@ -3339,6 +3339,64 @@ Aba_Murderer:Toggle({
 -- ===================================================
 -- BOTOES DA ABA SHERIFF
 -- ===================================================
+Aba_Murderer:Dropdown({
+    Title = "Formato do botão",
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    Callback = function(Value)
+        KillAimButtonStyle = Value
+
+        if AtualizarKillAimButton then
+            AtualizarKillAimButton()
+        end
+    end
+})
+
+
+Aba_Murderer:Toggle({
+    Title = "Mostrar botão Kill Aim",
+    Desc = "Mostra ou esconde o botão flutuante",
+    Default = false,
+
+    Callback = function(Ativo)
+        KillAimButtonVisible = Ativo
+
+        if Ativo then
+            CriarKillAimButton()
+        else
+            RemoverKillAimButton()
+        end
+    end
+})
+
+
+Aba_Murderer:Slider({
+    Title = "Tamanho do botão",
+    Desc = "Escolha o tamanho do botão flutuante",
+
+    Value = {
+        Min = 60,
+        Max = 85,
+        Default = 75,
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+        KillAimButtonSize = Valor
+
+        if AtualizarKillAimButton then
+            AtualizarKillAimButton()
+        end
+    end
+})
+
 Aba_Sheriff:Section({
     Title = "SHERIFF",
     Box = false,
