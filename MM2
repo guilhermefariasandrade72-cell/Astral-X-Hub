@@ -1,0 +1,800 @@
+-- ==================================
+-- ASTRAL X HUB V1
+-- ==================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+-- ==================================
+-- CARREGAR WINDUI
+-- ==================================
+
+local WindUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"
+))()
+
+-- ==================================
+-- FUNÃ‡ÃƒO DE GRADIENTE
+-- ==================================
+
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+
+        local r = math.floor(
+            (startColor.R + (endColor.R - startColor.R) * t) * 255
+        )
+
+        local g = math.floor(
+            (startColor.G + (endColor.G - startColor.G) * t) * 255
+        )
+
+        local b = math.floor(
+            (startColor.B + (endColor.B - startColor.B) * t) * 255
+        )
+
+        result = result
+            .. "<font color=\"rgb("
+            .. r .. ", "
+            .. g .. ", "
+            .. b
+            .. ")\">"
+            .. text:sub(i, i)
+            .. "</font>"
+    end
+
+    return result
+end
+
+-- ==================================
+-- CONFIGURAÃ‡ÃƒO VISUAL
+-- ==================================
+
+local WindowTransparency = 0.15
+
+local MainColor = Color3.fromHex("#000000")
+
+-- ==================================
+-- TEMAS DO ASTRAL
+-- ==================================
+
+local CoresAstral = {
+
+    -- ORIGINAL
+    ["Dark"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    -- RUBY
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
+
+    -- AMETISTA
+    ["Ametista"] = {
+        Accent = "#B026FF",
+        Button = "#B026FF",
+        Icon = "#B026FF",
+    },
+
+    -- VERDE ÃGUA
+    ["Verde Ãgua"] = {
+        Accent = "#2EE6A6",
+        Button = "#2EE6A6",
+        Icon = "#2EE6A6",
+    },
+
+    -- AZUL GELO
+    ["Azul Gelo"] = {
+        Accent = "#A5F2F3",
+        Button = "#A5F2F3",
+        Icon = "#A5F2F3",
+    },
+
+    -- ROXO NEON
+    ["Roxo Neon"] = {
+        Accent = "#BF00FF",
+        Button = "#BF00FF",
+        Icon = "#BF00FF",
+    },
+
+    -- ROSA NEON
+    ["Rosa Neon"] = {
+        Accent = "#FF1493",
+        Button = "#FF1493",
+        Icon = "#FF1493",
+    },
+
+    -- LARANJA NEON
+    ["Laranja Neon"] = {
+        Accent = "#FF5F00",
+        Button = "#FF5F00",
+        Icon = "#FF5F00",
+    },
+
+    -- AMARELO NEON
+    ["Amarelo Neon"] = {
+        Accent = "#FFFF00",
+        Button = "#FFFF00",
+        Icon = "#FFFF00",
+    },
+
+    -- TURQUESA
+    ["Turquesa"] = {
+        Accent = "#40E0D0",
+        Button = "#40E0D0",
+        Icon = "#40E0D0",
+    },
+
+    -- LAVANDA
+    ["Lavanda"] = {
+        Accent = "#B57EDC",
+        Button = "#B57EDC",
+        Icon = "#B57EDC",
+    },
+
+    -- CORAL
+    ["Coral"] = {
+        Accent = "#FF7F50",
+        Button = "#FF7F50",
+        Icon = "#FF7F50",
+    },
+
+    -- DOURADO
+    ["Dourado"] = {
+        Accent = "#FFD700",
+        Button = "#FFD700",
+        Icon = "#FFD700",
+    },
+
+    -- VIOLETA
+    ["Violeta"] = {
+        Accent = "#7F00FF",
+        Button = "#7F00FF",
+        Icon = "#7F00FF",
+    },
+
+    -- PINK
+    ["Pink"] = {
+        Accent = "#FF69B4",
+        Button = "#FF69B4",
+        Icon = "#FF69B4",
+    },
+
+    -- CORES COMUNS
+    ["Verde"] = {
+        Accent = "#1BF2B2",
+        Button = "#1BF2B2",
+        Icon = "#1BF2B2",
+    },
+
+    ["Azul"] = {
+        Accent = "#1B9CF2",
+        Button = "#1B9CF2",
+        Icon = "#1B9CF2",
+    },
+
+    ["Roxo"] = {
+        Accent = "#9B5CFF",
+        Button = "#9B5CFF",
+        Icon = "#9B5CFF",
+    },
+
+    ["Rosa"] = {
+        Accent = "#FF4FA3",
+        Button = "#FF4FA3",
+        Icon = "#FF4FA3",
+    },
+
+    ["Vermelho"] = {
+        Accent = "#FF4545",
+        Button = "#FF4545",
+        Icon = "#FF4545",
+    },
+
+    ["Laranja"] = {
+        Accent = "#FF8A00",
+        Button = "#FF8A00",
+        Icon = "#FF8A00",
+    },
+
+    ["Amarelo"] = {
+        Accent = "#FFD21F",
+        Button = "#FFD21F",
+        Icon = "#FFD21F",
+    },
+
+    ["Ciano"] = {
+        Accent = "#00D9FF",
+        Button = "#00D9FF",
+        Icon = "#00D9FF",
+    },
+
+    ["Prata"] = {
+        Accent = "#C0C0C0",
+        Button = "#C0C0C0",
+        Icon = "#C0C0C0",
+    },
+
+    ["Branco"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    ["Cinza"] = {
+        Accent = "#808080",
+        Button = "#808080",
+        Icon = "#808080",
+    },
+
+    ["Ãndigo"] = {
+        Accent = "#4B0082",
+        Button = "#4B0082",
+        Icon = "#4B0082",
+    },
+
+    ["SalmÃ£o"] = {
+        Accent = "#FA8072",
+        Button = "#FA8072",
+        Icon = "#FA8072",
+    },
+
+    ["Marrom"] = {
+        Accent = "#8B4513",
+        Button = "#8B4513",
+        Icon = "#8B4513",
+    },
+}
+
+-- ==================================
+-- REGISTRAR TEMAS
+-- ==================================
+
+for Nome, Cor in pairs(CoresAstral) do
+
+    WindUI:AddTheme({
+        Name = "Astral_" .. Nome,
+
+        Background = "#18181B",
+
+        Accent = Cor.Accent,
+        Button = Cor.Button,
+        Icon = Cor.Icon,
+
+        Text = "#FFFFFF",
+        Placeholder = "#888888",
+        Outline = "#303036",
+    })
+
+end
+
+-- ==================================
+-- RUBY SERÃ A COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Ruby"
+
+-- ==================================
+-- CRIAR JANELA
+-- ==================================
+
+local Window = WindUI:CreateWindow({
+
+    Title = gradient(
+        "Forlan X Hub         V 136",
+        Color3.fromHex("#FFFFFF"),
+        Color3.fromHex("#CCCCCC")
+    ),
+
+    Icon = "star",
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1BF2B2"),
+        Color3.fromHex("#1BCBF2")
+    ),
+
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+
+    Transparent = true,
+    Transparency = WindowTransparency,
+
+    -- RUBY APLICADO AO INICIAR
+    Theme = "Astral_Ruby",
+
+    SideBarWidth = 120,
+    HasOutline = true,
+    HideSearchBar = true,
+})
+
+-- ==================================
+-- COR DO FUNDO
+-- ==================================
+
+pcall(function()
+
+    if Window.UIElements then
+
+        if Window.UIElements.Main then
+            Window.UIElements.Main.BackgroundColor3 = MainColor
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
+        end
+
+if Window.UIElements.SideBar then
+    Window.UIElements.SideBar.BackgroundColor3 =
+        Color3.fromHex("#141417")
+
+    Window.UIElements.SideBar.BackgroundTransparency =
+        WindowTransparency
+end
+
+-- COLOQUE AQUI
+pcall(function()
+    if Window.UIElements and Window.UIElements.SideBar then
+        Window.UIElements.SideBar.ClipsDescendants = true
+
+        local Corner = Window.UIElements.SideBar:FindFirstChildOfClass("UICorner")
+
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 18)
+        else
+            Corner = Instance.new("UICorner")
+            Corner.CornerRadius = UDim.new(0, 18)
+            Corner.Parent = Window.UIElements.SideBar
+        end
+    end
+end)
+
+    elseif Window.Frame then
+
+        Window.Frame.BackgroundColor3 = MainColor
+        Window.Frame.BackgroundTransparency =
+            WindowTransparency
+
+    end
+
+end)
+
+-- ==================================
+-- BOTÃƒO FLUTUANTE
+-- ==================================
+local OpenButton = Window:EditOpenButton({
+    Title = "Astral",
+    Icon = "star",
+
+    CornerRadius = UDim.new(0, 12),
+    StrokeThickness = 2,
+
+    Color = ColorSequence.new(
+        Color3.fromHex("#9B111E"),
+        Color3.fromHex("#FF4D5A")
+    ),
+
+    Draggable = true,
+})
+
+
+-- ==========================================
+-- TAMANHO DO BOTÃƒO ASTRAL
+-- ==========================================
+
+local EscalaBotaoAstral = nil
+
+task.wait(1)
+
+pcall(function()
+
+    local CoreGui = game:GetService("CoreGui")
+
+    for _, Obj in ipairs(CoreGui:GetDescendants()) do
+
+        if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
+
+            local TextButton = Obj.Parent
+
+            if TextButton and TextButton:IsA("TextButton") then
+
+                -- O Frame que contÃ©m o botÃ£o
+                local Container = TextButton.Parent
+
+                if Container then
+
+                    EscalaBotaoAstral =
+                        Container:FindFirstChildOfClass("UIScale")
+
+                    if not EscalaBotaoAstral then
+                        EscalaBotaoAstral = Instance.new("UIScale")
+                        EscalaBotaoAstral.Parent = Container
+                    end
+
+                    EscalaBotaoAstral.Scale = 1
+
+                    print("âœ… Escala do botÃ£o Astral encontrada!")
+                    print("ðŸ“¦ Container:", Container:GetFullName())
+
+                end
+
+                break
+            end
+        end
+    end
+
+end)
+
+-- ==================================
+-- VARIÃVEIS DA ABA MAIN
+-- ==================================
+-- AITO FARM 
+local CONFIG_FARM = {
+    velocidade = 24,
+    limite = 40,
+    alcance_maximo = 999
+}
+local AutoFarmAtivo = false
+local collectedCoins = {}
+local KillAllAoEncher = false
+
+local AutoFarmButtonGui = nil
+local isDraggingFarm = false
+
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
+local Pressionado = false
+
+local GrabGunButtonGui = nil
+local isDraggingGrab = false
+local buttonStartPosGrab, dragStartPosGrab
+
+local KillAura = false
+local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
+
+-- ==================================
+-- VARIÃVEIS DA ABA ESP
+-- ==================================
+local ESPHighlightAtivo = false
+local ESPNomeAtivo = false
+local ESPDistanciaAtiva = false
+local ESPTracerAtivo = false
+
+local Highlights = {}
+local NamesESP = {}
+local DistanceESP = {}
+local TracersESP = {}
+local DadosCargos = {}
+
+-- ==================================
+-- VARIÃVEIS DA ABA LOCAL PLAYER
+-- ==================================
+local InvisivelButtonGui = nil
+local isDraggingInvis = false
+
+local InvisivelAtivo = false
+local PartesCorpo = {}
+local Personagem, Humanoid, Raiz
+
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
+local VelocidadeNoPulo = 300
+local FOV_Padrao = 70
+
+local FlyAtivo = false
+local FlyVelocidade = 16
+
+local bv, bg, con
+local controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+
+local WalkFlingAtivo = false
+local FlingPower = 100000000000
+local FlingConnection = nil
+
+-- âœ… SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
+_G.PuloInfinito = false
+_G.SpeedNoPulo = false
+_G.CameraInfinita = false
+_G.CameraNoClip = false
+
+-- ==================================
+-- VARIÃVEIS DA ABA TELEPORTE 
+-- ==================================
+local TeleportandoLocais = false
+
+local JogadorSelecionadoTP = nil
+local DropdownJogadores = nil
+
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local EmCooldownHop = false
+local ServidoresVisitados = {}
+
+-- ====================================================
+-- ABAS
+-- ====================================================
+
+local Aba_Murderer = Window:Tab({
+    Title = "Murderer",
+    Icon = "swords"
+})
+
+local Aba_Sheriff = Window:Tab({
+    Title = "Sheriff",
+    Icon = "crosshair",
+})
+
+local Aba_AutoFarm = Window:Tab({
+    Title = "Auto Farm",
+    Icon = "coins",
+})
+
+local Aba_ESP = Window:Tab({
+    Title = "ESP",
+    Icon = "eye",
+})
+
+local Aba_LocalPlayer = Window:Tab({
+    Title = "Local Player",
+    Icon = "user",
+})
+
+local Aba_Camera = Window:Tab({
+    Title = "Camera",
+    Icon = "camera",
+})
+
+local Aba_Tele = Window:Tab({
+    Title = "Teleporte",
+    Icon = "globe",
+})
+
+local Aba_Config = Window:Tab({
+    Title = "Config UI",
+    Icon = "settings",
+})
+
+-- ====================================================
+-- SISTEMA DA ABA MURDERER 
+-- ====================================================
+local function ExecutarAtaque(Alvo)
+    local Char = player.Character
+    if not Char then return end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    if not Faca then return end
+    
+    if Faca.Parent ~= Char then 
+        Faca.Parent = Char 
+        task.wait(0.02) 
+    end
+    
+    local Eventos = Faca:FindFirstChild("Events")
+    if not Eventos then return end
+
+    if Alvo and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+        pcall(function()
+            Eventos.KnifeStabbed:FireServer()
+            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+        end)
+    end
+end
+
+-- FunÃ§Ã£o para o BotÃ£o de Clique InstantÃ¢neo
+local function KillAllInstantaneo()
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            ExecutarAtaque(Alvo)
+        end
+    end
+end
+
+-- FunÃ§Ã£o para o Toggle (Mata 1 por 1 com pequeno intervalo)
+local function KillAuraLoop()
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if not KillAura then break end
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            ExecutarAtaque(Alvo)
+            task.wait(0.15)
+        end
+    end
+end
+
+-- Loop de execuÃ§Ã£o do Toggle
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        if KillAura then
+            KillAuraLoop()
+        end
+    end
+end)
+
+-- =========================================================
+-- ðŸ”´ SISTEMA DO BOTÃƒO FLUTUANTE KILL AIM
+-- =========================================================
+
+local Players = game:GetService("Players")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local player = Players.LocalPlayer
+local PlayerGui = player:WaitForChild("PlayerGui")
+
+-- =========================================================
+-- ðŸ“¦ VARIÃVEIS
+-- =========================================================
+
+local KillAimGui = nil
+local KillAimButton = nil
+
+local KillAimButtonSize = 75
+local KillAimButtonStyle = "Quadrado"
+
+-- VariÃ¡veis do sistema de arraste
+local isDraggingKill = false
+local buttonStartPosKill = UDim2.new()
+local dragStartPosKill = Vector3.new()
+
+-- =========================================================
+-- âš”ï¸ FUNÃ‡ÃƒO KILL ALL INSTANTÃ‚NEO (SEM ESPERA)
+-- =========================================================
+
+local function KillAllInstantaneo()
+    if not player then return end
+
+    local character = player.Character
+    if not character or not character.Parent then return end
+
+    -- Busca a faca na mÃ£o do personagem ou na mochila (Backpack)
+    local knife = character:FindFirstChild("Knife")
+    if not knife then
+        knife = player.Backpack:FindFirstChild("Knife")
+        if knife then
+            knife.Parent = character
+        else
+            warn("VocÃª precisa ser o Murderer (possuir a faca) para usar esta funÃ§Ã£o!")
+            return
+        end
+    end
+
+    -- Dispara o evento para TODOS os jogadores ao mesmo tempo sem o task.wait
+    for _, targetPlayer in ipairs(Players:GetPlayers()) do
+        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
+            task.spawn(function()
+                pcall(function()
+                    knife.Events.KnifeStabbed:FireServer()
+                    knife.Events.HandleTouched:FireServer(targetPlayer.Character.Head)
+                end)
+            end)
+        end
+    end
+end
+
+-- =========================================================
+-- ðŸ”„ ATUALIZAR TAMANHO / FORMATO
+-- =========================================================
+
+local function AtualizarKillAimButton()
+    if not KillAimButton then return end
+
+    local Corner = KillAimButton:FindFirstChild("Corner")
+    if not Corner then return end
+
+    if KillAimButtonStyle == "Quadrado" then
+        KillAimButton.Size = UDim2.fromOffset(KillAimButtonSize, KillAimButtonSize)
+        Corner.CornerRadius = UDim.new(0, 10)
+    elseif KillAimButtonStyle == "CÃ­rculo" then
+        KillAimButton.Size = UDim2.fromOffset(KillAimButtonSize, KillAimButtonSize)
+        Corner.CornerRadius = UDim.new(1, 0)
+    elseif KillAimButtonStyle == "RetÃ¢ngulo" then
+        KillAimButton.Size = UDim2.fromOffset(KillAimButtonSize * 1.7, KillAimButtonSize)
+        Corner.CornerRadius = UDim.new(0, 10)
+    end
+end
+
+-- =========================================================
+-- ðŸ”´ CRIAR BOTÃƒO (CHAMAR APENAS AO LIGAR O TOGGLE)
+-- =========================================================
+
+local function CriarKillAimButton()
+    if KillAimGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = PlayerGui end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_KillAimButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("TextButton")
+    Btn.Name = "KillAimButton"
+    Btn.Size = UDim2.fromOffset(KillAimButtonSize, KillAimButtonSize)
+    Btn.AnchorPoint = Vector2.new(0.5, 0.5)
+    Btn.Position = UDim2.new(0.5, 0, 0.7, 0)
+    Btn.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
+    Btn.BackgroundTransparency = 0.3
+    Btn.BorderSizePixel = 0
+    Btn.Text = "KILL AIM"
+    Btn.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.TextSize = 15
+    Btn.Font = Enum.Font.GothamBold
+    Btn.AutoButtonColor = false
+    Btn.Parent = GuiBtn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Name = "Borda"
+    Borda.Color = Color3.fromRGB(255, 50, 50)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Corner = Instance.new("UICorner")
+    Corner.Name = "Corner"
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    KillAimGui = GuiBtn
+    KillAimButton = Btn
+
+    AtualizarKillAimButton()
+
+    -- ðŸ“± ARRASTAR O BOTÃƒO NA TELA
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingKill = true
+            buttonStartPosKill = Btn.Position
+            dragStartPosKill = Input.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then 
+                    isDraggingKill = false 
+                end
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if isDraggingKill and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Btn.Position = buttonStartPosKill + UDim2.fromOffset(Input.Position.X - dragStartPosKill.X, Input.Position.Y - dragStartPosKill.Y)
+        end
+    end)
+
+    -- âœ¨ CLIQUE E EXECUÃ‡ÃƒO INSTANTÃ‚NEA
+    Btn.MouseButton1Click:Connect(function()
+        if isDraggingKill then return end
+
+        -- Executa o Kill All do script original
+        KillAllInstantaneo()
+
+        -- AnimaÃ§Ã£o visual rodando em segundo plano sem travar o clique
+        task.spawn(function()
+            local Largura = Btn.AbsoluteSize.X
+            local Altura = Btn.AbsoluteSize.Y
+            local Posicao = Btn.Position
+
+            local NovaLargura = Largura * 0.92
+            local NovaAltura = Altura * 0.92
+
+          
