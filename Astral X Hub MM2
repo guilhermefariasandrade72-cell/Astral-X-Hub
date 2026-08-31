@@ -1037,6 +1037,10 @@ player.CharacterAdded:Connect(function()
     AtualizarCirculoAura()
 end)
 
+-- ====================================================
+-- SISTEMA DA ABA SHERIFF
+-- ====================================================
+
 -- =========================================================
 -- 🎯 SISTEMA SILENT AIM (SHERIFF)
 -- =========================================================
@@ -1058,7 +1062,7 @@ local PlayerGui = player:WaitForChild("PlayerGui")
 local SilentAimGui = nil
 local SilentAimButton = nil
 
-SilentAimButtonSize = SilentAimButtonSize or 100
+SilentAimButtonSize = SilentAimButtonSize or 75
 SilentAimButtonStyle = SilentAimButtonStyle or "Quadrado"
 ShootPredictMultiplier = ShootPredictMultiplier or 1
 
@@ -1320,10 +1324,6 @@ function RemoverSilentAimButton()
     SilentAimButton = nil
     SilentAimButtonAnimating = false
 end
-
--- ====================================================
--- SISTEMA DA ABA SHERIFF
--- ====================================================
 
 -- FOV CICLE
 local LockCameraAtivo = false
