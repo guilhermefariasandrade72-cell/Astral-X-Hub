@@ -655,38 +655,35 @@ local buttonStartPosKill = UDim2.new()
 local dragStartPosKill = Vector3.new()
 
 -- =========================================================
--- ⚔️ FUNÇÃO KILL ALL INSTANTÂNEO
+-- ⚔️ FUNÇÃO KILL ALL (EXTRAÍDA DO SCRIPT ORIGINAL)
 -- =========================================================
 
 local function KillAllInstantaneo()
+    if not player then return end
+
     local character = player.Character
-    if not character then return end
+    if not character or not character.Parent then return end
 
-    local knife = character:FindFirstChildOfClass("Tool") or player.Backpack:FindFirstChildOfClass("Tool")
-    if not knife then return end
-
-    if knife.Parent ~= character then
-        knife.Parent = character
+    -- Busca a faca na mão do personagem ou na mochila (Backpack)
+    local knife = character:FindFirstChild("Knife")
+    if not knife then
+        knife = player.Backpack:FindFirstChild("Knife")
+        if knife then
+            knife.Parent = character
+        else
+            warn("Você precisa ser o Murderer (possuir a faca) para usar esta função!")
+            return
+        end
     end
 
-    local handle = knife:FindFirstChild("Handle")
-    if not handle then return end
-
+    -- Itera sobre os jogadores e envia os eventos da faca diretamente para a cabeça
     for _, targetPlayer in ipairs(Players:GetPlayers()) do
-        if targetPlayer ~= player and targetPlayer.Character then
-            local targetChar = targetPlayer.Character
-            local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
-            local targetHumanoid = targetChar:FindFirstChildOfClass("Humanoid")
-
-            if targetHRP and targetHumanoid and targetHumanoid.Health > 0 then
-                firetouchinterest(handle, targetHRP, 0)
-                firetouchinterest(handle, targetHRP, 1)
-
-                local attackRemote = knife:FindFirstChildOfClass("RemoteEvent")
-                if attackRemote then
-                    attackRemote:FireServer(targetHRP)
-                end
-            end
+        if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
+            pcall(function()
+                knife.Events.KnifeStabbed:FireServer()
+                knife.Events.HandleTouched:FireServer(targetPlayer.Character.Head)
+            end)
+            task.wait(0.05)
         end
     end
 end
@@ -787,7 +784,7 @@ local function CriarKillAimButton()
     Btn.MouseButton1Click:Connect(function()
         if isDraggingKill then return end
 
-        -- Executa o Kill All imediatamente no primeiro clique
+        -- Executa o Kill All do script original
         KillAllInstantaneo()
 
         -- Animação visual rodando em segundo plano sem travar o clique
@@ -840,7 +837,6 @@ end
 -- 🔘 EXEMPLO DE LÓGICA DO TOGGLE DA SUA UI
 -- =========================================================
 
--- Conecte esta função ao evento do seu Toggle na interface principal:
 local function OnToggleKillAim(estadoDoToggle)
     if estadoDoToggle then
         CriarKillAimButton()
@@ -848,7 +844,6 @@ local function OnToggleKillAim(estadoDoToggle)
         RemoverKillAimButton()
     end
 end
-
 
 -- ===========================================
 -- 🗡️ SISTEMA BOTÃO FLUTUANTE KILL ALL
