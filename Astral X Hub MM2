@@ -646,7 +646,7 @@ local PlayerGui = player:WaitForChild("PlayerGui")
 local KillAimGui = nil
 local KillAimButton = nil
 
-local KillAimButtonSize = 100
+local KillAimButtonSize = 75
 local KillAimButtonStyle = "Quadrado"
 
 -- Variáveis do sistema de arraste
@@ -655,7 +655,7 @@ local buttonStartPosKill = UDim2.new()
 local dragStartPosKill = Vector3.new()
 
 -- =========================================================
--- ⚔️ FUNÇÃO KILL ALL (EXTRAÍDA DO SCRIPT ORIGINAL)
+-- ⚔️ FUNÇÃO KILL ALL INSTANTÂNEO (SEM ESPERA)
 -- =========================================================
 
 local function KillAllInstantaneo()
@@ -676,14 +676,15 @@ local function KillAllInstantaneo()
         end
     end
 
-    -- Itera sobre os jogadores e envia os eventos da faca diretamente para a cabeça
+    -- Dispara o evento para TODOS os jogadores ao mesmo tempo sem o task.wait
     for _, targetPlayer in ipairs(Players:GetPlayers()) do
         if targetPlayer ~= player and targetPlayer.Character and targetPlayer.Character:FindFirstChild("Head") then
-            pcall(function()
-                knife.Events.KnifeStabbed:FireServer()
-                knife.Events.HandleTouched:FireServer(targetPlayer.Character.Head)
+            task.spawn(function()
+                pcall(function()
+                    knife.Events.KnifeStabbed:FireServer()
+                    knife.Events.HandleTouched:FireServer(targetPlayer.Character.Head)
+                end)
             end)
-            task.wait(0.05)
         end
     end
 end
