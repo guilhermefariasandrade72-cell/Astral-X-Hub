@@ -3421,6 +3421,7 @@ Aba_Murderer:Toggle({
 -- ====================================================
 -- 🔘 BOTÃO FLUTUANTE KILL AIM
 -- ====================================================
+print("MURDERER 1")
 
 Aba_Murderer:Dropdown({
     Title = "Formato do botão",
@@ -3433,16 +3434,15 @@ Aba_Murderer:Dropdown({
     },
 
     Callback = function(Value)
-
         KillAimButtonStyle = Value
 
         if AtualizarKillAimButton then
             AtualizarKillAimButton()
         end
-
     end
 })
 
+print("MURDERER 2")
 
 Aba_Murderer:Toggle({
     Title = "Mostrar botão Kill Aim",
@@ -3450,7 +3450,6 @@ Aba_Murderer:Toggle({
     Default = false,
 
     Callback = function(Ativo)
-
         KillAimButtonVisible = Ativo
 
         if Ativo then
@@ -3458,10 +3457,10 @@ Aba_Murderer:Toggle({
         else
             RemoverKillAimButton()
         end
-
     end
 })
 
+print("MURDERER 3")
 
 Aba_Murderer:Slider({
     Title = "Tamanho do botão",
@@ -3471,19 +3470,20 @@ Aba_Murderer:Slider({
         Min = 40,
         Max = 200,
         Default = 100,
-        Step = 1
     },
 
-    Callback = function(Valor)
+    Step = 1,
 
+    Callback = function(Valor)
         KillAimButtonSize = Valor
 
         if AtualizarKillAimButton then
             AtualizarKillAimButton()
         end
-
     end
 })
+
+print("MURDERER 4")
 
 -- ===================================================
 -- BOTOES DA ABA SHERIFF
