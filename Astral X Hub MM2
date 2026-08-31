@@ -827,14 +827,21 @@ end)
 -- 📦 VARIÁVEIS GLOBAIS
 -- =========================================================
 local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
 local player = Players.LocalPlayer
-local JogadorSelecionado = nil
+
+local ConexaoGrabLocal = nil
 
 -- =========================================================
--- 🧲 FUNÇÃO GRAB PLAYER (TRAZER PARA A FRENTE DA FACA)
+-- 🧲 FUNÇÃO VISUAL GRAB PLAYER (LOCAL/CLIENTE)
 -- =========================================================
 
-local function KillJogadorSelecionado()
+local function TrancarJogadorNaFrente()
+    if ConexaoGrabLocal then
+        ConexaoGrabLocal:Disconnect()
+        ConexaoGrabLocal = nil
+    end
+
     if not JogadorSelecionado or JogadorSelecionado == "Nenhum Jogador" then return end
 
     local targetPlayer = Players:FindFirstChild(JogadorSelecionado)
@@ -847,24 +854,30 @@ local function KillJogadorSelecionado()
 
     local myHRP = character:FindFirstChild("HumanoidRootPart")
     local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
-    local targetHumanoid = targetChar:FindFirstChildOfClass("Humanoid")
 
-    if not myHRP or not targetHRP or not targetHumanoid or targetHumanoid.Health <= 0 then return end
+    if not myHRP or not targetHRP then return end
 
-    -- 1. Equipa a Faca automaticamente
-    local knife = character:FindFirstChildOfClass("Tool") or (player.Backpack and player.Backpack:FindFirstChildOfClass("Tool"))
-    if knife and knife.Parent ~= character then
-        knife.Parent = character
-    end
-
-    -- 2. Posição: Coloca o jogador 2.5 studs diretamente na sua frente (ao alcance do golpe)
-    local posicaoFrente = myHRP.CFrame * CFrame.new(0, 0, -2.5) * CFrame.Angles(0, math.rad(180), 0)
-    
-    -- Teleporta o alvo para a sua frente e zera a velocidade dele
-    targetHRP.CFrame = posicaoFrente
-    targetHRP.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
-    targetHRP.Velocity = Vector3.new(0, 0, 0)
+    ConexaoGrabLocal = RunService.RenderStepped:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") and targetChar and targetChar:FindFirstChild("HumanoidRootPart") then
+            -- Fixa 2.5 studs na sua frente, virado para você
+            local posicaoFrente = myHRP.CFrame * CFrame.new(0, 0, -2.5) * CFrame.Angles(0, math.rad(180), 0)
+            targetHRP.CFrame = posicaoFrente
+        else
+            if ConexaoGrabLocal then
+                ConexaoGrabLocal:Disconnect()
+                ConexaoGrabLocal = nil
+            end
+        end
+    end)
 end
+
+local function SoltarJogador()
+    if ConexaoGrabLocal then
+        ConexaoGrabLocal:Disconnect()
+        ConexaoGrabLocal = nil
+    end
+end
+
 
 -- FOV CICLE
 local LockCameraAtivo = false
