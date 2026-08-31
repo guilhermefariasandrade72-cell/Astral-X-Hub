@@ -575,6 +575,58 @@ local Aba_Config = Window:Tab({
 -- ====================================================
 -- SISTEMA DA ABA MURDERER 
 -- ====================================================
+local function ExecutarAtaque(Alvo)
+    local Char = player.Character
+    if not Char then return end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    if not Faca then return end
+    
+    if Faca.Parent ~= Char then 
+        Faca.Parent = Char 
+        task.wait(0.02) 
+    end
+    
+    local Eventos = Faca:FindFirstChild("Events")
+    if not Eventos then return end
+
+    if Alvo and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+        pcall(function()
+            Eventos.KnifeStabbed:FireServer()
+            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+        end)
+    end
+end
+
+-- Função para o Botão de Clique Instantâneo
+local function KillAllInstantaneo()
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            ExecutarAtaque(Alvo)
+        end
+    end
+end
+
+-- Função para o Toggle (Mata 1 por 1 com pequeno intervalo)
+local function KillAuraLoop()
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if not KillAura then break end
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            ExecutarAtaque(Alvo)
+            task.wait(0.15)
+        end
+    end
+end
+
+-- Loop de execução do Toggle
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        if KillAura then
+            KillAuraLoop()
+        end
+    end
+end)
 
 -- =========================================================
 -- 🔴 SISTEMA DO BOTÃO FLUTUANTE KILL AIM
