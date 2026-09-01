@@ -75,12 +75,7 @@ local CoresAstral = {
         Icon = "#FFFFFF",
     },
 
-    -- RUBY
-    ["Ruby"] = {
-        Accent = "#E53935",
-        Button = "#E53935",
-        Icon = "#E53935",
-    },
+
 
     -- AMETISTA
     ["Ametista"] = {
