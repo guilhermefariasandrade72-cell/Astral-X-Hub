@@ -260,7 +260,7 @@ local CoresAstral = {
 }
 
 -- ==================================
--- REGISTRAR TEMAS
+-- 🎨 REGISTRAR TEMAS
 -- ==================================
 
 for Nome, Cor in pairs(CoresAstral) do
@@ -282,19 +282,19 @@ for Nome, Cor in pairs(CoresAstral) do
 end
 
 -- ==================================
--- RUBY SERÁ A COR INICIAL
+-- ❤️ RUBY SERÁ A COR INICIAL
 -- ==================================
 
 local CorSelecionada = "Ruby"
 
 -- ==================================
--- CRIAR JANELA
+-- 🪟 CRIAR JANELA
 -- ==================================
 
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub         V 260",
+        "Astral X Hub         V 136",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
@@ -313,7 +313,7 @@ local Window = WindUI:CreateWindow({
     Transparent = true,
     Transparency = WindowTransparency,
 
-    -- RUBY APLICADO AO INICIAR
+    -- ⭐ RUBY APLICADO AO INICIAR
     Theme = "Astral_Ruby",
 
     SideBarWidth = 120,
@@ -322,163 +322,57 @@ local Window = WindUI:CreateWindow({
 })
 
 -- ==================================
--- COR DO FUNDO + IMAGEM (CORRIGIDO)
+-- 🎨 COR DO FUNDO
 -- ==================================
 
 pcall(function()
 
-    if not Window.UIElements then
-        return
-    end
+    if Window.UIElements then
 
-    local Main = Window.UIElements.Main
-
-    if Main then
-
-        -- Remove imagem anterior para não duplicar
-        local ImagemAntiga = Main:FindFirstChild("AstralXBackground")
-        if ImagemAntiga then
-            ImagemAntiga:Destroy()
+        if Window.UIElements.Main then
+            Window.UIElements.Main.BackgroundColor3 = MainColor
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
         end
 
-        -- Deixa o fundo do container TOTALMENTE TRANSPARENTE
-        -- Evita que qualquer cor preta padrão da UI escureça a imagem por baixo
-        Main.BackgroundTransparency = 1
+if Window.UIElements.SideBar then
+    Window.UIElements.SideBar.BackgroundColor3 =
+        Color3.fromHex("#141417")
 
+    Window.UIElements.SideBar.BackgroundTransparency =
+        WindowTransparency
+end
 
-        -- ==================================
-        -- 🖼️ IMAGE LABEL (FUNDO CLARO)
-        -- ==================================
+-- 👇 COLOQUE AQUI
+pcall(function()
+    if Window.UIElements and Window.UIElements.SideBar then
+        Window.UIElements.SideBar.ClipsDescendants = true
 
-        local Background = Instance.new("ImageLabel")
+        local Corner = Window.UIElements.SideBar:FindFirstChildOfClass("UICorner")
 
-        Background.Name = "AstralXBackground"
-        Background.Size = UDim2.new(1, 0, 1, 0)
-        Background.Position = UDim2.new(0, 0, 0, 0)
-
-        -- Deixa o fundo do próprio ImageLabel transparente
-        Background.BackgroundTransparency = 1
-        Background.BorderSizePixel = 0
-
-        -- ID da imagem
-        Background.Image = "rbxassetid://122146454688712"
-
-        -- 0 = Imagem 100% visível e nítida
-        Background.ImageTransparency = 0
-
-        -- Garante que nenhuma tonalidade ou filtro escuro seja aplicado
-        Background.ImageColor3 = Color3.fromRGB(255, 255, 255)
-
-        Background.ScaleType = Enum.ScaleType.Crop
-
-        -- Camada base (atrás dos botões e textos)
-        Background.ZIndex = 1
-
-        Background.Parent = Main
-
-
-        -- ==================================
-        -- 🔲 CANTOS ARREDONDADOS
-        -- ==================================
-
-        local Corner = Instance.new("UICorner")
-        Corner.Name = "AstralXBackgroundCorner"
-        Corner.CornerRadius = UDim.new(0, 18)
-        Corner.Parent = Background
-
-        -- ==================================
-        -- 🔲 CANTOS ARREDONDADOS
-        -- ==================================
-
-        local Corner = Instance.new("UICorner")
-        Corner.Name = "AstralXBackgroundCorner"
-        Corner.CornerRadius = UDim.new(0, 18)
-        Corner.Parent = Background
-
-
-        -- ==================================
-        -- 📌 COLOCAR CONTEÚDO NA FRENTE
-        -- ==================================
-
-        for _, Object in ipairs(Main:GetDescendants()) do
-            if Object:IsA("GuiObject") and Object ~= Background then
-                if Object.ZIndex <= 1 then
-                    Object.ZIndex = 2
-                end
-            end
-        end
-
-    end
-
-    -- ==================================
-    -- SIDEBAR
-    -- ==================================
-
-    if Window.UIElements.SideBar then
-        local SideBar = Window.UIElements.SideBar
-        SideBar.BackgroundColor3 = Color3.fromHex("#141417")
-        SideBar.BackgroundTransparency = WindowTransparency
-        SideBar.ClipsDescendants = true
-
-        local Corner = SideBar:FindFirstChildOfClass("UICorner")
         if Corner then
             Corner.CornerRadius = UDim.new(0, 18)
         else
             Corner = Instance.new("UICorner")
             Corner.CornerRadius = UDim.new(0, 18)
-            Corner.Parent = SideBar
+            Corner.Parent = Window.UIElements.SideBar
         end
     end
-
 end)
 
-        -- ==================================
-        -- 🔲 CANTOS DA SIDEBAR
-        -- ==================================
+    elseif Window.Frame then
 
-        SideBar.ClipsDescendants = true
-
-        local Corner =
-            SideBar:FindFirstChildOfClass("UICorner")
-
-        if Corner then
-
-            Corner.CornerRadius =
-                UDim.new(0, 18)
-
-        else
-
-            Corner = Instance.new("UICorner")
-
-            Corner.CornerRadius =
-                UDim.new(0, 18)
-
-            Corner.Parent = SideBar
-
-        end
-
-    end
-
-
-    -- ==================================
-    -- FALLBACK
-    -- ==================================
-
-    if not Window.UIElements.Main
-    and Window.Frame then
-
-        Window.Frame.BackgroundColor3 =
-            MainColor
-
+        Window.Frame.BackgroundColor3 = MainColor
         Window.Frame.BackgroundTransparency =
-            0.65
+            WindowTransparency
 
     end
 
 end)
 
 -- ==================================
--- BOTÃO FLUTUANTE
+-- ❤️ BOTÃO FLUTUANTE
+-- Ruby: vermelho escuro → vermelho claro
 -- ==================================
 local OpenButton = Window:EditOpenButton({
     Title = "Astral",
@@ -497,7 +391,7 @@ local OpenButton = Window:EditOpenButton({
 
 
 -- ==========================================
--- TAMANHO DO BOTÃO ASTRAL
+-- 🔴 TAMANHO DO BOTÃO ASTRAL
 -- ==========================================
 
 local EscalaBotaoAstral = nil
