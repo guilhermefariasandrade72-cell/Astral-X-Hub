@@ -259,6 +259,289 @@ local CoresAstral = {
     },
 }
 
+-- ==================================
+-- REGISTRAR TEMAS
+-- ==================================
+
+for Nome, Cor in pairs(CoresAstral) do
+
+    WindUI:AddTheme({
+        Name = "Astral_" .. Nome,
+
+        Background = "#18181B",
+
+        Accent = Cor.Accent,
+        Button = Cor.Button,
+        Icon = Cor.Icon,
+
+        Text = "#FFFFFF",
+        Placeholder = "#888888",
+        Outline = "#303036",
+    })
+
+end
+
+-- ==================================
+-- RUBY SERÁ A COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Ruby"
+
+-- ==================================
+-- CRIAR JANELA
+-- ==================================
+
+local Window = WindUI:CreateWindow({
+
+    Title = gradient(
+        "Astral X Hub         V 260",
+        Color3.fromHex("#FFFFFF"),
+        Color3.fromHex("#CCCCCC")
+    ),
+
+    Icon = "star",
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1BF2B2"),
+        Color3.fromHex("#1BCBF2")
+    ),
+
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+
+    Transparent = true,
+    Transparency = WindowTransparency,
+
+    -- RUBY APLICADO AO INICIAR
+    Theme = "Astral_Ruby",
+
+    SideBarWidth = 120,
+    HasOutline = true,
+    HideSearchBar = true,
+})
+
+-- ==================================
+-- COR DO FUNDO + IMAGEM (CORRIGIDO)
+-- ==================================
+
+pcall(function()
+
+    if not Window.UIElements then
+        return
+    end
+
+    local Main = Window.UIElements.Main
+
+    if Main then
+
+        -- Remove imagem anterior para não duplicar
+        local ImagemAntiga = Main:FindFirstChild("AstralXBackground")
+        if ImagemAntiga then
+            ImagemAntiga:Destroy()
+        end
+
+        -- Deixa o fundo do container TOTALMENTE TRANSPARENTE
+        -- Evita que qualquer cor preta padrão da UI escureça a imagem por baixo
+        Main.BackgroundTransparency = 1
+
+
+        -- ==================================
+        -- 🖼️ IMAGE LABEL (FUNDO CLARO)
+        -- ==================================
+
+        local Background = Instance.new("ImageLabel")
+
+        Background.Name = "AstralXBackground"
+        Background.Size = UDim2.new(1, 0, 1, 0)
+        Background.Position = UDim2.new(0, 0, 0, 0)
+
+        -- Deixa o fundo do próprio ImageLabel transparente
+        Background.BackgroundTransparency = 1
+        Background.BorderSizePixel = 0
+
+        -- ID da imagem
+        Background.Image = "rbxassetid://122146454688712"
+
+        -- 0 = Imagem 100% visível e nítida
+        Background.ImageTransparency = 0
+
+        -- Garante que nenhuma tonalidade ou filtro escuro seja aplicado
+        Background.ImageColor3 = Color3.fromRGB(255, 255, 255)
+
+        Background.ScaleType = Enum.ScaleType.Crop
+
+        -- Camada base (atrás dos botões e textos)
+        Background.ZIndex = 1
+
+        Background.Parent = Main
+
+
+        -- ==================================
+        -- 🔲 CANTOS ARREDONDADOS
+        -- ==================================
+
+        local Corner = Instance.new("UICorner")
+        Corner.Name = "AstralXBackgroundCorner"
+        Corner.CornerRadius = UDim.new(0, 18)
+        Corner.Parent = Background
+
+        -- ==================================
+        -- 🔲 CANTOS ARREDONDADOS
+        -- ==================================
+
+        local Corner = Instance.new("UICorner")
+        Corner.Name = "AstralXBackgroundCorner"
+        Corner.CornerRadius = UDim.new(0, 18)
+        Corner.Parent = Background
+
+
+        -- ==================================
+        -- 📌 COLOCAR CONTEÚDO NA FRENTE
+        -- ==================================
+
+        for _, Object in ipairs(Main:GetDescendants()) do
+            if Object:IsA("GuiObject") and Object ~= Background then
+                if Object.ZIndex <= 1 then
+                    Object.ZIndex = 2
+                end
+            end
+        end
+
+    end
+
+    -- ==================================
+    -- SIDEBAR
+    -- ==================================
+
+    if Window.UIElements.SideBar then
+        local SideBar = Window.UIElements.SideBar
+        SideBar.BackgroundColor3 = Color3.fromHex("#141417")
+        SideBar.BackgroundTransparency = WindowTransparency
+        SideBar.ClipsDescendants = true
+
+        local Corner = SideBar:FindFirstChildOfClass("UICorner")
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 18)
+        else
+            Corner = Instance.new("UICorner")
+            Corner.CornerRadius = UDim.new(0, 18)
+            Corner.Parent = SideBar
+        end
+    end
+
+end)
+
+        -- ==================================
+        -- 🔲 CANTOS DA SIDEBAR
+        -- ==================================
+
+        SideBar.ClipsDescendants = true
+
+        local Corner =
+            SideBar:FindFirstChildOfClass("UICorner")
+
+        if Corner then
+
+            Corner.CornerRadius =
+                UDim.new(0, 18)
+
+        else
+
+            Corner = Instance.new("UICorner")
+
+            Corner.CornerRadius =
+                UDim.new(0, 18)
+
+            Corner.Parent = SideBar
+
+        end
+
+    end
+
+
+    -- ==================================
+    -- FALLBACK
+    -- ==================================
+
+    if not Window.UIElements.Main
+    and Window.Frame then
+
+        Window.Frame.BackgroundColor3 =
+            MainColor
+
+        Window.Frame.BackgroundTransparency =
+            0.65
+
+    end
+
+end)
+
+-- ==================================
+-- BOTÃO FLUTUANTE
+-- ==================================
+local OpenButton = Window:EditOpenButton({
+    Title = "Astral",
+    Icon = "star",
+
+    CornerRadius = UDim.new(0, 12),
+    StrokeThickness = 2,
+
+    Color = ColorSequence.new(
+        Color3.fromHex("#9B111E"),
+        Color3.fromHex("#FF4D5A")
+    ),
+
+    Draggable = true,
+})
+
+
+-- ==========================================
+-- TAMANHO DO BOTÃO ASTRAL
+-- ==========================================
+
+local EscalaBotaoAstral = nil
+
+task.wait(1)
+
+pcall(function()
+
+    local CoreGui = game:GetService("CoreGui")
+
+    for _, Obj in ipairs(CoreGui:GetDescendants()) do
+
+        if Obj:IsA("TextLabel") and Obj.Text == "Astral" then
+
+            local TextButton = Obj.Parent
+
+            if TextButton and TextButton:IsA("TextButton") then
+
+                -- O Frame que contém o botão
+                local Container = TextButton.Parent
+
+                if Container then
+
+                    EscalaBotaoAstral =
+                        Container:FindFirstChildOfClass("UIScale")
+
+                    if not EscalaBotaoAstral then
+                        EscalaBotaoAstral = Instance.new("UIScale")
+                        EscalaBotaoAstral.Parent = Container
+                    end
+
+                    EscalaBotaoAstral.Scale = 1
+
+                    print("✅ Escala do botão Astral encontrada!")
+                    print("📦 Container:", Container:GetFullName())
+
+                end
+
+                break
+            end
+        end
+    end
+
+end)
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
