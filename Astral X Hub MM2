@@ -317,6 +317,7 @@ local Window = WindUI:CreateWindow({
 
     Transparency = WindowTransparency,
 
+    -- ⭐ RUBY APLICADO AO INICIAR
     Theme = "Astral_Ruby",
 
     SideBarWidth = 120,
@@ -328,7 +329,7 @@ local Window = WindUI:CreateWindow({
 
 
 -- ==================================
--- 🎨 FUNDO DA INTERFACE
+-- 🎨 COR DO FUNDO
 -- ==================================
 
 pcall(function()
@@ -341,39 +342,70 @@ pcall(function()
 
         if Window.UIElements.Main then
 
-            local Main = Window.UIElements.Main
-
-            Main.BackgroundColor3 =
+            Window.UIElements.Main.BackgroundColor3 =
                 MainColor
 
-            Main.BackgroundTransparency =
+            Window.UIElements.Main.BackgroundTransparency =
                 WindowTransparency
-
-            -- Permite o arredondamento da imagem
-            Main.ClipsDescendants = true
 
         end
 
 
         -- ==================================
-        -- 📂 SIDEBAR / ABAS
+        -- 📂 SIDEBAR
         -- ==================================
 
         if Window.UIElements.SideBar then
 
-            local SideBar =
-                Window.UIElements.SideBar
+            Window.UIElements.SideBar.BackgroundColor3 =
+                Color3.fromHex("#141417")
 
-            -- Mais clara
-            SideBar.BackgroundColor3 =
-                Color3.fromRGB(40, 40, 45)
-
-            SideBar.BackgroundTransparency =
-                0.38
-
-            SideBar.ClipsDescendants = true
+            Window.UIElements.SideBar.BackgroundTransparency =
+                WindowTransparency
 
         end
+
+
+        -- ==================================
+        -- 🔵 ARREDONDAR SIDEBAR
+        -- ==================================
+
+        pcall(function()
+
+            if Window.UIElements
+                and Window.UIElements.SideBar then
+
+                local SideBar =
+                    Window.UIElements.SideBar
+
+                SideBar.ClipsDescendants = true
+
+                local Corner =
+                    SideBar:FindFirstChildOfClass(
+                        "UICorner"
+                    )
+
+                if Corner then
+
+                    Corner.CornerRadius =
+                        UDim.new(0, 18)
+
+                else
+
+                    Corner =
+                        Instance.new("UICorner")
+
+                    Corner.CornerRadius =
+                        UDim.new(0, 18)
+
+                    Corner.Parent =
+                        SideBar
+
+                end
+
+            end
+
+        end)
 
 
     elseif Window.Frame then
@@ -390,87 +422,7 @@ end)
 
 
 -- ==================================
--- 🔵 ARREDONDAR A JANELA INTEIRA
--- ==================================
-
-pcall(function()
-
-    local UI = Window.UIElements
-
-    if not UI then
-        return
-    end
-
-
-    local Main = UI.Main
-    local SideBar = UI.SideBar
-
-    local Container = nil
-
-
-    -- Procura o container que contém
-    -- Main + Sidebar
-    if Main and SideBar then
-
-        local Current = Main.Parent
-
-        while Current do
-
-            if Current:IsA("GuiObject") then
-
-                if SideBar:IsDescendantOf(Current) then
-
-                    Container = Current
-                    break
-
-                end
-
-            end
-
-            Current = Current.Parent
-
-        end
-
-    end
-
-
-    -- Se encontrou a janela externa
-    if Container then
-
-        Container.ClipsDescendants = true
-
-        local Corner =
-            Container:FindFirstChild(
-                "AstralXWindowCorner"
-            )
-
-        if not Corner then
-
-            Corner = Instance.new("UICorner")
-
-            Corner.Name =
-                "AstralXWindowCorner"
-
-            Corner.CornerRadius =
-                UDim.new(0, 18)
-
-            Corner.Parent =
-                Container
-
-        else
-
-            Corner.CornerRadius =
-                UDim.new(0, 18)
-
-        end
-
-    end
-
-end)
-
-
--- ==================================
--- 🖼️ IMAGEM DO ASTRAL X
+-- 🖼️ IMAGEM DE FUNDO DO HUB
 -- ==================================
 
 pcall(function()
@@ -478,7 +430,7 @@ pcall(function()
     local UI =
         Window.UIElements
 
-    if not UI then
+    if not UI or not UI.Main then
         return
     end
 
@@ -486,12 +438,49 @@ pcall(function()
     local Main =
         UI.Main
 
-    if not Main then
-        return
+
+    -- ==================================
+    -- ✂️ CORTA OS CANTOS DO MAIN
+    -- ==================================
+
+    Main.ClipsDescendants = true
+
+
+    -- ==================================
+    -- 🔵 ARREDONDA O MAIN
+    -- ==================================
+
+    local MainCorner =
+        Main:FindFirstChild(
+            "AstralXMainCorner"
+        )
+
+    if not MainCorner then
+
+        MainCorner =
+            Instance.new("UICorner")
+
+        MainCorner.Name =
+            "AstralXMainCorner"
+
+        MainCorner.CornerRadius =
+            UDim.new(0, 18)
+
+        MainCorner.Parent =
+            Main
+
+    else
+
+        MainCorner.CornerRadius =
+            UDim.new(0, 18)
+
     end
 
 
-    -- Remove imagem anterior
+    -- ==================================
+    -- 🗑️ REMOVE IMAGEM ANTERIOR
+    -- ==================================
+
     local Old =
         Main:FindFirstChild(
             "AstralXBackground"
@@ -503,7 +492,7 @@ pcall(function()
 
 
     -- ==================================
-    -- 🖼️ CRIAR IMAGEM
+    -- 🖼️ CRIA A IMAGEM
     -- ==================================
 
     local Background =
@@ -530,6 +519,7 @@ pcall(function()
         0
 
 
+    -- 🖼️ SUA IMAGEM
     Background.Image =
         "rbxassetid://122146454688712"
 
@@ -551,11 +541,35 @@ pcall(function()
 
 
     -- ==================================
+    -- 🔵 ARREDONDAR A IMAGEM
+    -- ==================================
+
+    Background.ClipsDescendants = true
+
+
+    local ImageCorner =
+        Instance.new("UICorner")
+
+
+    ImageCorner.Name =
+        "AstralXImageCorner"
+
+
+    ImageCorner.CornerRadius =
+        UDim.new(0, 18)
+
+
+    ImageCorner.Parent =
+        Background
+
+
+    -- ==================================
     -- ⭐ CAMADA DA IMAGEM
     -- ==================================
-    -- A imagem fica sobre o fundo,
-    -- mas os elementos do WindUI ficam
-    -- por cima dela.
+
+    -- 0 = fundo
+    -- 1 = imagem
+    -- 2+ = elementos da interface
 
     Background.ZIndex = 1
 
@@ -625,6 +639,7 @@ pcall(function()
             if TextButton
                 and TextButton:IsA("TextButton") then
 
+                -- O Frame que contém o botão
                 local Container =
                     TextButton.Parent
 
@@ -655,6 +670,7 @@ pcall(function()
                     print(
                         "✅ Escala do botão Astral encontrada!"
                     )
+
 
                     print(
                         "📦 Container:",
