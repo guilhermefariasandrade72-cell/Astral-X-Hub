@@ -268,7 +268,7 @@ for Nome, Cor in pairs(CoresAstral) do
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
 
-        Background = "#10171B",
+        Background = "#18181B",
 
         Accent = Cor.Accent,
         Button = Cor.Button,
@@ -294,7 +294,7 @@ local CorSelecionada = "Ruby"
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub         V 259",
+        "Astral X Hub         V 260",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
@@ -322,63 +322,79 @@ local Window = WindUI:CreateWindow({
 })
 
 -- ==================================
--- 🖼️ IMAGEM DE FUNDO DO HUB
+-- COR DO FUNDO + IMAGEM
 -- ==================================
 
 pcall(function()
 
-    local UI = Window.UIElements
-    if not UI then
+    if not Window.UIElements then
         return
     end
 
-    local Main = UI.Main
-    if not Main then
-        return
-    end
 
-    -- Fundo do painel transparente
-    Main.BackgroundTransparency = 1
+    -- ==================================
+    -- PAINEL PRINCIPAL
+    -- ==================================
 
-    -- Remove imagem anterior
-    local Old = Main:FindFirstChild("AstralXBackground")
+    if Window.UIElements.Main then
 
-    if Old then
-        Old:Destroy()
-    end
+        local Main = Window.UIElements.Main
 
-    -- Cria imagem
-    local Background = Instance.new("ImageLabel")
+        -- Cor original do Hub
+        Main.BackgroundColor3 = MainColor
 
-    Background.Name = "AstralXBackground"
+        -- Deixa o fundo transparente para a imagem aparecer
+        Main.BackgroundTransparency = 0.95
 
-    Background.Size = UDim2.new(1, 0, 1, 0)
-
-    Background.Position = UDim2.new(0, 0, 0, 0)
-
-    Background.BackgroundTransparency = 1
-
-    Background.BorderSizePixel = 0
-
-    Background.Image = "rbxassetid://122146454688712"
-
-    Background.ImageTransparency = 0
-
-    Background.ImageColor3 = Color3.fromRGB(255, 255, 255)
-
-    Background.ScaleType = Enum.ScaleType.Crop
-
-    Background.ZIndex = 0
-
-    Background.Parent = Main
-
-end)
 
         -- ==================================
-        -- 📌 CAMADA
+        -- 🖼️ IMAGEM DE FUNDO
         -- ==================================
 
-        Background.ZIndex = 1
+        -- Remove uma imagem antiga caso exista
+        local ImagemAntiga =
+            Main:FindFirstChild("AstralXBackground")
+
+        if ImagemAntiga then
+            ImagemAntiga:Destroy()
+        end
+
+
+        local Background = Instance.new("ImageLabel")
+
+        Background.Name = "AstralXBackground"
+
+        Background.Size = UDim2.new(
+            1,
+            0,
+            1,
+            0
+        )
+
+        Background.Position = UDim2.new(
+            0,
+            0,
+            0,
+            0
+        )
+
+        Background.BackgroundTransparency = 2
+
+        Background.BorderSizePixel = 0
+
+        -- 🖼️ SUA IMAGEM
+        Background.Image =
+            "rbxassetid://122146454688712"
+
+        -- 0 = imagem totalmente visível
+        Background.ImageTransparency = 0
+
+        -- Preenche o painel
+        Background.ScaleType =
+            Enum.ScaleType.Crop
+
+        -- Fica atrás dos elementos do Hub
+        Background.ZIndex = 0
 
         Background.Parent = Main
 
@@ -387,11 +403,9 @@ end)
         -- 🔲 CANTOS ARREDONDADOS
         -- ==================================
 
-        local Corner =
-            Instance.new("UICorner")
+        local Corner = Instance.new("UICorner")
 
-        Corner.Name =
-            "AstralXBackgroundCorner"
+        Corner.Name = "AstralXBackgroundCorner"
 
         Corner.CornerRadius =
             UDim.new(0, 18)
@@ -400,7 +414,8 @@ end)
 
 
         -- ==================================
-        -- 📌 CONTEÚDO NA FRENTE
+        -- GARANTIR QUE OS ELEMENTOS FIQUEM
+        -- NA FRENTE DA IMAGEM
         -- ==================================
 
         for _, Object in ipairs(Main:GetDescendants()) do
@@ -408,8 +423,8 @@ end)
             if Object:IsA("GuiObject")
             and Object ~= Background then
 
-                if Object.ZIndex <= 1 then
-                    Object.ZIndex = 2
+                if Object.ZIndex <= 0 then
+                    Object.ZIndex = 1
                 end
 
             end
@@ -434,8 +449,12 @@ end)
         SideBar.BackgroundTransparency =
             WindowTransparency
 
-        SideBar.ClipsDescendants = true
 
+        -- ==================================
+        -- 🔲 CANTOS DA SIDEBAR
+        -- ==================================
+
+        SideBar.ClipsDescendants = true
 
         local Corner =
             SideBar:FindFirstChildOfClass("UICorner")
@@ -447,20 +466,17 @@ end)
 
         else
 
-            Corner =
-                Instance.new("UICorner")
+            Corner = Instance.new("UICorner")
 
             Corner.CornerRadius =
                 UDim.new(0, 18)
 
-            Corner.Parent =
-                SideBar
+            Corner.Parent = SideBar
 
         end
 
     end
 
-end)
 
     -- ==================================
     -- FALLBACK
@@ -473,7 +489,7 @@ end)
             MainColor
 
         Window.Frame.BackgroundTransparency =
-            1
+            0.65
 
     end
 
