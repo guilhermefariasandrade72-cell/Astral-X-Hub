@@ -275,7 +275,7 @@ for Nome, Cor in pairs(CoresAstral) do
         Icon = Cor.Icon,
 
         Text = "#FFFFFF",
-        Placeholder = "#AAAAAA",
+        Placeholder = "#888888",
         Outline = "#303036",
     })
 
@@ -319,98 +319,107 @@ local Window = WindUI:CreateWindow({
 
 
 -- ==================================
--- 🎨 CONFIGURAÇÃO DO PAINEL
+-- 🎨 COR DO FUNDO & TRANSPARÊNCIA
 -- ==================================
 
 pcall(function()
 
-    local UI = Window.UIElements
-
-    if not UI then
-        return
-    end
-
-
-    -- ==================================
-    -- 🪟 MAIN
-    -- ==================================
-
-    local Main = UI.Main
-
-    if Main then
-
-        -- Deixa o fundo transparente
-        Main.BackgroundTransparency = 1
-
-        -- Permite a imagem respeitar as bordas
-        Main.ClipsDescendants = true
-
+    if Window.UIElements then
 
         -- ==================================
-        -- 🔵 BORDAS ARREDONDADAS
+        -- 🪟 MAIN
         -- ==================================
 
-        local MainCorner =
-            Main:FindFirstChild("AstralXCorner")
+        if Window.UIElements.Main then
 
-        if not MainCorner then
+            local Main = Window.UIElements.Main
 
-            MainCorner = Instance.new("UICorner")
+            Main.BackgroundColor3 =
+                MainColor or Color3.fromRGB(255, 255, 255)
 
-            MainCorner.Name = "AstralXCorner"
+            Main.BackgroundTransparency = 1
 
-            MainCorner.CornerRadius =
-                UDim.new(0, 14)
 
-            MainCorner.Parent = Main
+            -- ==================================
+            -- 🔵 BORDAS ARREDONDADAS
+            -- ==================================
 
-        else
+            local Corner =
+                Main:FindFirstChild("AstralXMainCorner")
 
-            MainCorner.CornerRadius =
-                UDim.new(0, 14)
+            if not Corner then
+
+                Corner = Instance.new("UICorner")
+
+                Corner.Name = "AstralXMainCorner"
+
+                Corner.CornerRadius =
+                    UDim.new(0, 14)
+
+                Corner.Parent = Main
+
+            else
+
+                Corner.CornerRadius =
+                    UDim.new(0, 14)
+
+            end
 
         end
 
-    end
+
+        -- ==================================
+        -- 📂 SIDEBAR / ABAS
+        -- ==================================
+
+        if Window.UIElements.SideBar then
+
+            local SideBar =
+                Window.UIElements.SideBar
 
 
-    -- ==================================
-    -- 📂 SIDEBAR
-    -- ==================================
+            -- Deixa a área das abas mais clara
+            SideBar.BackgroundColor3 =
+                Color3.fromRGB(45, 45, 50)
 
-    local SideBar = UI.SideBar
-
-    if SideBar then
-
-        -- Mais transparente
-        SideBar.BackgroundColor3 =
-            Color3.fromRGB(18, 18, 22)
-
-        SideBar.BackgroundTransparency = 0.22
+            SideBar.BackgroundTransparency = 0.95
 
 
-        -- Bordas arredondadas
-        local SideCorner =
-            SideBar:FindFirstChild("AstralXSideCorner")
+            -- ==================================
+            -- 🔵 BORDAS ARREDONDADAS DA SIDEBAR
+            -- ==================================
 
-        if not SideCorner then
+            local SideCorner =
+                SideBar:FindFirstChild("AstralXSideCorner")
 
-            SideCorner = Instance.new("UICorner")
+            if not SideCorner then
 
-            SideCorner.Name =
-                "AstralXSideCorner"
+                SideCorner = Instance.new("UICorner")
 
-            SideCorner.CornerRadius =
-                UDim.new(0, 14)
+                SideCorner.Name =
+                    "AstralXSideCorner"
 
-            SideCorner.Parent = SideBar
+                SideCorner.CornerRadius =
+                    UDim.new(0, 10)
 
-        else
+                SideCorner.Parent = SideBar
 
-            SideCorner.CornerRadius =
-                UDim.new(0, 14)
+            else
+
+                SideCorner.CornerRadius =
+                    UDim.new(0, 10)
+
+            end
 
         end
+
+
+    elseif Window.Frame then
+
+        Window.Frame.BackgroundColor3 =
+            MainColor or Color3.fromRGB(255, 255, 255)
+
+        Window.Frame.BackgroundTransparency = 1
 
     end
 
@@ -418,26 +427,23 @@ end)
 
 
 -- ==================================
--- 🖼️ IMAGEM DE FUNDO
+-- 🖼️ IMAGEM DE FUNDO DO HUB
 -- ==================================
 
 pcall(function()
 
     local UI = Window.UIElements
 
-    if not UI then
+    if not UI or not UI.Main then
         return
     end
+
 
     local Main = UI.Main
 
-    if not Main then
-        return
-    end
-
 
     -- ==================================
-    -- 🗑️ REMOVE IMAGEM ANTIGA
+    -- 🗑️ REMOVE IMAGEM ANTERIOR
     -- ==================================
 
     local Old =
@@ -449,7 +455,7 @@ pcall(function()
 
 
     -- ==================================
-    -- 🖼️ NOVA IMAGEM
+    -- 🖼️ CRIAÇÃO DA IMAGEM
     -- ==================================
 
     local Background =
@@ -468,10 +474,6 @@ pcall(function()
         UDim2.new(0, 0, 0, 0)
 
 
-    Background.AnchorPoint =
-        Vector2.new(0, 0)
-
-
     Background.BackgroundTransparency =
         1
 
@@ -484,12 +486,10 @@ pcall(function()
         "rbxassetid://122146454688712"
 
 
-    -- Imagem totalmente visível
     Background.ImageTransparency =
         0
 
 
-    -- Sem filtro de cor
     Background.ImageColor3 =
         Color3.fromRGB(255, 255, 255)
 
@@ -498,19 +498,11 @@ pcall(function()
         Enum.ScaleType.Crop
 
 
-    -- ==================================
-    -- ⚠️ IMPORTANTE
-    -- ==================================
-    -- A imagem fica ATRÁS dos elementos
-    -- do WindUI.
-    --
-    -- Antes estava ZIndex = 1 e acabava
-    -- ficando por cima dos textos/botões.
-
-    Background.ZIndex = 0
+    Background.ZIndex = 1
 
 
-    Background.Parent = Main
+    Background.Parent =
+        Main
 
 end)
 
@@ -519,34 +511,35 @@ end)
 -- 🔘 BOTÃO FLUTUANTE PARA ABRIR
 -- ==================================
 
-local OpenButton = Window:EditOpenButton({
+local OpenButton =
+    Window:EditOpenButton({
 
-    Title = "Abrir Astral X",
+        Title = "Abrir Astral X",
 
-    Icon = "star",
+        Icon = "star",
 
-    CornerRadius =
-        UDim.new(0, 12),
+        CornerRadius =
+            UDim.new(0, 12),
 
-    StrokeThickness = 1,
+        StrokeThickness = 1,
 
-    Color = ColorSequence.new({
+        Color = ColorSequence.new({
 
-        ColorSequenceKeypoint.new(
-            0,
-            Color3.fromHex("#1BF2B2")
-        ),
+            ColorSequenceKeypoint.new(
+                0,
+                Color3.fromHex("#1BF2B2")
+            ),
 
-        ColorSequenceKeypoint.new(
-            1,
-            Color3.fromHex("#1BCBF2")
-        )
+            ColorSequenceKeypoint.new(
+                1,
+                Color3.fromHex("#1BCBF2")
+            )
 
-    }),
+        }),
 
-    Draggable = true,
+        Draggable = true,
 
-})
+    })
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
