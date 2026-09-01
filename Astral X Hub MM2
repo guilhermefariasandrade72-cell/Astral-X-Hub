@@ -264,122 +264,288 @@ local CoresAstral = {
 -- ==================================
 
 for Nome, Cor in pairs(CoresAstral) do
+
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
+
         Background = "#18181B",
+
         Accent = Cor.Accent,
         Button = Cor.Button,
         Icon = Cor.Icon,
+
         Text = "#FFFFFF",
-        Placeholder = "#888888",
+        Placeholder = "#AAAAAA",
         Outline = "#303036",
     })
+
 end
+
 
 -- ==================================
 -- 🪟 CRIAR JANELA
 -- ==================================
 
 local Window = WindUI:CreateWindow({
+
     Title = gradient(
         "Astral X Hub         V 62",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
+
     Icon = "star",
+
     Author = gradient(
         "Script MM2 Keyless",
         Color3.fromHex("#1BF2B2"),
         Color3.fromHex("#1BCBF2")
     ),
+
     Size = UDim2.fromOffset(480, 340),
+
     MinSize = Vector2.new(420, 300),
+
     Transparent = true,
-    Transparency = 1, -- Define transparência total para não escurecer a imagem de fundo
+
+    Transparency = 1,
+
     SideBarWidth = 120,
+
     HasOutline = true,
+
     HideSearchBar = true,
 })
 
--- ==================================
--- 🎨 COR DO FUNDO & TRANSPARÊNCIA
--- ==================================
-
-pcall(function()
-    if Window.UIElements then
-        -- MAIN
-        if Window.UIElements.Main then
-            Window.UIElements.Main.BackgroundColor3 = MainColor or Color3.fromRGB(255, 255, 255)
-            Window.UIElements.Main.BackgroundTransparency = 1 -- Mantém transparente para revelar a imagem
-        end
-
-        -- SIDEBAR
-        if Window.UIElements.SideBar then
-            Window.UIElements.SideBar.BackgroundColor3 = Color3.fromHex("#141417")
-            Window.UIElements.SideBar.BackgroundTransparency = 0.5 -- Transparência leve na sidebar para não tapar totalmente
-        end
-
-        -- CORNER DA SIDEBAR
-        pcall(function()
-            local SideBar = Window.UIElements.SideBar
-            local Corner = SideBar:FindFirstChildOfClass("UICorner")
-            if Corner then
-                Corner.CornerRadius = UDim.new(0, 8)
-            end
-        end)
-
-    elseif Window.Frame then
-        Window.Frame.BackgroundColor3 = MainColor or Color3.fromRGB(255, 255, 255)
-        Window.Frame.BackgroundTransparency = 1
-    end
-end)
 
 -- ==================================
--- 🖼️ IMAGEM DE FUNDO DO HUB
+-- 🎨 CONFIGURAÇÃO DO PAINEL
 -- ==================================
 
 pcall(function()
+
     local UI = Window.UIElements
-    if not UI or not UI.Main then return end
+
+    if not UI then
+        return
+    end
+
+
+    -- ==================================
+    -- 🪟 MAIN
+    -- ==================================
 
     local Main = UI.Main
 
-    -- Remove imagem anterior para evitar acúmulo
-    local Old = Main:FindFirstChild("AstralXBackground")
+    if Main then
+
+        -- Deixa o fundo transparente
+        Main.BackgroundTransparency = 1
+
+        -- Permite a imagem respeitar as bordas
+        Main.ClipsDescendants = true
+
+
+        -- ==================================
+        -- 🔵 BORDAS ARREDONDADAS
+        -- ==================================
+
+        local MainCorner =
+            Main:FindFirstChild("AstralXCorner")
+
+        if not MainCorner then
+
+            MainCorner = Instance.new("UICorner")
+
+            MainCorner.Name = "AstralXCorner"
+
+            MainCorner.CornerRadius =
+                UDim.new(0, 14)
+
+            MainCorner.Parent = Main
+
+        else
+
+            MainCorner.CornerRadius =
+                UDim.new(0, 14)
+
+        end
+
+    end
+
+
+    -- ==================================
+    -- 📂 SIDEBAR
+    -- ==================================
+
+    local SideBar = UI.SideBar
+
+    if SideBar then
+
+        -- Mais transparente
+        SideBar.BackgroundColor3 =
+            Color3.fromRGB(18, 18, 22)
+
+        SideBar.BackgroundTransparency = 0.22
+
+
+        -- Bordas arredondadas
+        local SideCorner =
+            SideBar:FindFirstChild("AstralXSideCorner")
+
+        if not SideCorner then
+
+            SideCorner = Instance.new("UICorner")
+
+            SideCorner.Name =
+                "AstralXSideCorner"
+
+            SideCorner.CornerRadius =
+                UDim.new(0, 14)
+
+            SideCorner.Parent = SideBar
+
+        else
+
+            SideCorner.CornerRadius =
+                UDim.new(0, 14)
+
+        end
+
+    end
+
+end)
+
+
+-- ==================================
+-- 🖼️ IMAGEM DE FUNDO
+-- ==================================
+
+pcall(function()
+
+    local UI = Window.UIElements
+
+    if not UI then
+        return
+    end
+
+    local Main = UI.Main
+
+    if not Main then
+        return
+    end
+
+
+    -- ==================================
+    -- 🗑️ REMOVE IMAGEM ANTIGA
+    -- ==================================
+
+    local Old =
+        Main:FindFirstChild("AstralXBackground")
+
     if Old then
         Old:Destroy()
     end
 
-    -- Criação da imagem de fundo sem filtros escuros
-    local Background = Instance.new("ImageLabel")
-    Background.Name = "AstralXBackground"
-    Background.Size = UDim2.new(1, 0, 1, 0)
-    Background.Position = UDim2.new(0, 0, 0, 0)
-    Background.BackgroundTransparency = 1
-    Background.BorderSizePixel = 0
-    Background.Image = "rbxassetid://122146454688712"
-    Background.ImageTransparency = 0
-    Background.ImageColor3 = Color3.fromRGB(255, 255, 255) -- Cor pura, sem máscara de cor
-    Background.ScaleType = Enum.ScaleType.Crop
-    Background.ZIndex = 1 -- Coloca a imagem no nível visível correto do container
+
+    -- ==================================
+    -- 🖼️ NOVA IMAGEM
+    -- ==================================
+
+    local Background =
+        Instance.new("ImageLabel")
+
+
+    Background.Name =
+        "AstralXBackground"
+
+
+    Background.Size =
+        UDim2.new(1, 0, 1, 0)
+
+
+    Background.Position =
+        UDim2.new(0, 0, 0, 0)
+
+
+    Background.AnchorPoint =
+        Vector2.new(0, 0)
+
+
+    Background.BackgroundTransparency =
+        1
+
+
+    Background.BorderSizePixel =
+        0
+
+
+    Background.Image =
+        "rbxassetid://122146454688712"
+
+
+    -- Imagem totalmente visível
+    Background.ImageTransparency =
+        0
+
+
+    -- Sem filtro de cor
+    Background.ImageColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+
+    Background.ScaleType =
+        Enum.ScaleType.Crop
+
+
+    -- ==================================
+    -- ⚠️ IMPORTANTE
+    -- ==================================
+    -- A imagem fica ATRÁS dos elementos
+    -- do WindUI.
+    --
+    -- Antes estava ZIndex = 1 e acabava
+    -- ficando por cima dos textos/botões.
+
+    Background.ZIndex = 0
+
 
     Background.Parent = Main
+
 end)
+
 
 -- ==================================
 -- 🔘 BOTÃO FLUTUANTE PARA ABRIR
 -- ==================================
 
 local OpenButton = Window:EditOpenButton({
+
     Title = "Abrir Astral X",
+
     Icon = "star",
-    CornerRadius = UDim.new(0, 12),
+
+    CornerRadius =
+        UDim.new(0, 12),
+
     StrokeThickness = 1,
+
     Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromHex("#1BF2B2")),
-        ColorSequenceKeypoint.new(1, Color3.fromHex("#1BCBF2"))
+
+        ColorSequenceKeypoint.new(
+            0,
+            Color3.fromHex("#1BF2B2")
+        ),
+
+        ColorSequenceKeypoint.new(
+            1,
+            Color3.fromHex("#1BCBF2")
+        )
+
     }),
+
     Draggable = true,
+
 })
 
 -- ==================================
