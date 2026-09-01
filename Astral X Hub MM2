@@ -294,7 +294,7 @@ local CorSelecionada = "Ruby"
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Forlan X Hub         V 136",
+        "Astral X Hub         V 136",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
@@ -344,7 +344,7 @@ pcall(function()
         Main.BackgroundColor3 = MainColor
 
         -- Deixa o fundo transparente para a imagem aparecer
-        Main.BackgroundTransparency = 0.10
+        Main.BackgroundTransparency = 0.0
 
 
         -- ==================================
@@ -378,7 +378,7 @@ pcall(function()
             0
         )
 
-        Background.BackgroundTransparency = 1
+        Background.BackgroundTransparency = 2
 
         Background.BorderSizePixel = 0
 
