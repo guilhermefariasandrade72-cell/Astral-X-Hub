@@ -319,107 +319,138 @@ local Window = WindUI:CreateWindow({
 
 
 -- ==================================
--- 🎨 COR DO FUNDO & TRANSPARÊNCIA
+-- 🎨 FUNDO + BORDAS DA JANELA
 -- ==================================
 
 pcall(function()
 
-    if Window.UIElements then
+    local UI = Window.UIElements
 
-        -- ==================================
-        -- 🪟 MAIN
-        -- ==================================
+    if not UI then
+        return
+    end
 
-        if Window.UIElements.Main then
-
-            local Main = Window.UIElements.Main
-
-            Main.BackgroundColor3 =
-                MainColor or Color3.fromRGB(255, 255, 255)
-
-            Main.BackgroundTransparency = 1
+    local Main = UI.Main
+    local SideBar = UI.SideBar
 
 
-            -- ==================================
-            -- 🔵 BORDAS ARREDONDADAS
-            -- ==================================
+    -- ==================================
+    -- 🪟 MAIN
+    -- ==================================
 
-            local Corner =
-                Main:FindFirstChild("AstralXMainCorner")
+    if Main then
 
-            if not Corner then
-
-                Corner = Instance.new("UICorner")
-
-                Corner.Name = "AstralXMainCorner"
-
-                Corner.CornerRadius =
-                    UDim.new(0, 14)
-
-                Corner.Parent = Main
-
-            else
-
-                Corner.CornerRadius =
-                    UDim.new(0, 14)
-
-            end
-
-        end
-
-
-        -- ==================================
-        -- 📂 SIDEBAR / ABAS
-        -- ==================================
-
-        if Window.UIElements.SideBar then
-
-            local SideBar =
-                Window.UIElements.SideBar
-
-
-            -- Deixa a área das abas mais clara
-            SideBar.BackgroundColor3 =
-                Color3.fromRGB(45, 45, 50)
-
-            SideBar.BackgroundTransparency = 0.95
-
-
-            -- ==================================
-            -- 🔵 BORDAS ARREDONDADAS DA SIDEBAR
-            -- ==================================
-
-            local SideCorner =
-                SideBar:FindFirstChild("AstralXSideCorner")
-
-            if not SideCorner then
-
-                SideCorner = Instance.new("UICorner")
-
-                SideCorner.Name =
-                    "AstralXSideCorner"
-
-                SideCorner.CornerRadius =
-                    UDim.new(0, 10)
-
-                SideCorner.Parent = SideBar
-
-            else
-
-                SideCorner.CornerRadius =
-                    UDim.new(0, 10)
-
-            end
-
-        end
-
-
-    elseif Window.Frame then
-
-        Window.Frame.BackgroundColor3 =
+        Main.BackgroundColor3 =
             MainColor or Color3.fromRGB(255, 255, 255)
 
-        Window.Frame.BackgroundTransparency = 1
+        Main.BackgroundTransparency = 1
+
+    end
+
+
+    -- ==================================
+    -- 📂 SIDEBAR MAIS CLARA
+    -- ==================================
+
+    if SideBar then
+
+        SideBar.BackgroundColor3 =
+            Color3.fromRGB(45, 45, 50)
+
+        SideBar.BackgroundTransparency = 0.95
+
+    end
+
+
+    -- ==================================
+    -- 🔍 ENCONTRAR O CONTAINER DA JANELA
+    -- ==================================
+
+    local WindowContainer = nil
+
+    if Main and SideBar then
+
+        local Current = Main.Parent
+
+        while Current do
+
+            if Current:IsA("GuiObject") then
+
+                if SideBar:IsDescendantOf(Current) then
+
+                    WindowContainer = Current
+                    break
+
+                end
+
+            end
+
+            Current = Current.Parent
+
+        end
+
+    end
+
+
+    -- ==================================
+    -- 🔵 BORDAS REALMENTE ARREDONDADAS
+    -- ==================================
+
+    if WindowContainer then
+
+        WindowContainer.ClipsDescendants = true
+
+        local Corner =
+            WindowContainer:FindFirstChild("AstralXWindowCorner")
+
+        if not Corner then
+
+            Corner = Instance.new("UICorner")
+
+            Corner.Name =
+                "AstralXWindowCorner"
+
+            Corner.CornerRadius =
+                UDim.new(0, 16)
+
+            Corner.Parent =
+                WindowContainer
+
+        else
+
+            Corner.CornerRadius =
+                UDim.new(0, 16)
+
+        end
+
+    end
+
+
+    -- ==================================
+    -- 🔵 ARREDONDAR MAIN TAMBÉM
+    -- ==================================
+
+    if Main then
+
+        Main.ClipsDescendants = true
+
+        local MainCorner =
+            Main:FindFirstChild("AstralXMainCorner")
+
+        if not MainCorner then
+
+            MainCorner = Instance.new("UICorner")
+
+            MainCorner.Name =
+                "AstralXMainCorner"
+
+            MainCorner.CornerRadius =
+                UDim.new(0, 16)
+
+            MainCorner.Parent =
+                Main
+
+        end
 
     end
 
@@ -438,12 +469,11 @@ pcall(function()
         return
     end
 
-
     local Main = UI.Main
 
 
     -- ==================================
-    -- 🗑️ REMOVE IMAGEM ANTERIOR
+    -- 🗑️ REMOVER IMAGEM ANTIGA
     -- ==================================
 
     local Old =
@@ -455,7 +485,7 @@ pcall(function()
 
 
     -- ==================================
-    -- 🖼️ CRIAÇÃO DA IMAGEM
+    -- 🖼️ CRIAR IMAGEM
     -- ==================================
 
     local Background =
