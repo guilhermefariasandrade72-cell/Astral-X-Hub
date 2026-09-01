@@ -370,6 +370,56 @@ end)
 
 end)
 
+-- =========================================================
+-- 🖼️ IMAGEM DE FUNDO DO ASTRAL X
+-- =========================================================
+
+pcall(function()
+
+    local Main = Window.UIElements and Window.UIElements.Main
+
+    if not Main then
+        warn("Astral X: painel principal não encontrado")
+        return
+    end
+
+    -- Evita criar duas imagens
+    local Antiga = Main:FindFirstChild("AstralXBackground")
+
+    if Antiga then
+        Antiga:Destroy()
+    end
+
+    local Background = Instance.new("ImageLabel")
+
+    Background.Name = "AstralXBackground"
+
+    Background.Size = UDim2.new(1, 0, 1, 0)
+
+    Background.Position = UDim2.new(0, 0, 0, 0)
+
+    Background.BackgroundTransparency = 1
+
+    Background.Image = "rbxassetid://126043564744185"
+
+    -- Quanto maior, mais transparente
+    Background.ImageTransparency = 0.35
+
+    Background.ScaleType = Enum.ScaleType.Crop
+
+    Background.ZIndex = 0
+
+    Background.Parent = Main
+
+    -- Arredonda a imagem junto com o painel
+    local Corner = Instance.new("UICorner")
+
+    Corner.CornerRadius = UDim.new(0, 18)
+
+    Corner.Parent = Background
+
+end)
+
 -- ==================================
 -- BOTÃO FLUTUANTE
 -- ==================================
