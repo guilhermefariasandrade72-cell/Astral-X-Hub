@@ -268,7 +268,7 @@ for Nome, Cor in pairs(CoresAstral) do
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
 
-        Background = "#18181B",
+        Background = "#10171B",
 
         Accent = Cor.Accent,
         Button = Cor.Button,
@@ -320,12 +320,6 @@ local Window = WindUI:CreateWindow({
     HasOutline = true,
     HideSearchBar = true,
 })
-
-                end
-            end
-        end
-
-    end
 
 -- ==================================
 -- COR DO FUNDO + IMAGEM (CORRIGIDO)
@@ -445,8 +439,6 @@ end)
     end
 
 end)
-
-
 
 -- ==================================
 -- BOTÃO FLUTUANTE
