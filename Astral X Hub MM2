@@ -294,7 +294,7 @@ local CorSelecionada = "Ruby"
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub         V 256",
+        "Astral X Hub         V 257",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
