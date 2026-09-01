@@ -264,301 +264,123 @@ local CoresAstral = {
 -- ==================================
 
 for Nome, Cor in pairs(CoresAstral) do
-
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
-
         Background = "#18181B",
-
         Accent = Cor.Accent,
         Button = Cor.Button,
         Icon = Cor.Icon,
-
         Text = "#FFFFFF",
         Placeholder = "#888888",
         Outline = "#303036",
     })
-
 end
-
--- ==================================
--- ❤️ RUBY SERÁ A COR INICIAL
--- ==================================
-
-
 
 -- ==================================
 -- 🪟 CRIAR JANELA
 -- ==================================
 
 local Window = WindUI:CreateWindow({
-
     Title = gradient(
         "Astral X Hub         V 62",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
-
     Icon = "star",
-
     Author = gradient(
         "Script MM2 Keyless",
         Color3.fromHex("#1BF2B2"),
         Color3.fromHex("#1BCBF2")
     ),
-
     Size = UDim2.fromOffset(480, 340),
     MinSize = Vector2.new(420, 300),
-
     Transparent = true,
-    Transparency = WindowTransparency,
-
+    Transparency = 1, -- Define transparência total para não escurecer a imagem de fundo
     SideBarWidth = 120,
     HasOutline = true,
     HideSearchBar = true,
 })
 
 -- ==================================
--- 🎨 COR DO FUNDO
+-- 🎨 COR DO FUNDO & TRANSPARÊNCIA
 -- ==================================
 
 pcall(function()
-
     if Window.UIElements then
-
+        -- MAIN
         if Window.UIElements.Main then
-
-            Window.UIElements.Main.BackgroundColor3 =
-                MainColor
-
-            Window.UIElements.Main.BackgroundTransparency =
-                WindowTransparency
-
+            Window.UIElements.Main.BackgroundColor3 = MainColor or Color3.fromRGB(255, 255, 255)
+            Window.UIElements.Main.BackgroundTransparency = 1 -- Mantém transparente para revelar a imagem
         end
 
-
+        -- SIDEBAR
         if Window.UIElements.SideBar then
-
-            Window.UIElements.SideBar.BackgroundColor3 =
-                Color3.fromHex("#141417")
-
-            Window.UIElements.SideBar.BackgroundTransparency =
-                WindowTransparency
-
-            Window.UIElements.SideBar.ClipsDescendants = true
-
-            local Corner =
-                Window.UIElements.SideBar:FindFirstChildOfClass("UICorner")
-
-            if Corner then
-
-                Corner.CornerRadius =
-                    UDim.new(0, 18)
-
-            else
-
-                Corner = Instance.new("UICorner")
-
-                Corner.CornerRadius =
-                    UDim.new(0, 18)
-
-                Corner.Parent =
-                    Window.UIElements.SideBar
-
-            end
-
+            Window.UIElements.SideBar.BackgroundColor3 = Color3.fromHex("#141417")
+            Window.UIElements.SideBar.BackgroundTransparency = 0.5 -- Transparência leve na sidebar para não tapar totalmente
         end
+
+        -- CORNER DA SIDEBAR
+        pcall(function()
+            local SideBar = Window.UIElements.SideBar
+            local Corner = SideBar:FindFirstChildOfClass("UICorner")
+            if Corner then
+                Corner.CornerRadius = UDim.new(0, 8)
+            end
+        end)
 
     elseif Window.Frame then
-
-        Window.Frame.BackgroundColor3 =
-            MainColor
-
-        Window.Frame.BackgroundTransparency =
-            WindowTransparency
-
+        Window.Frame.BackgroundColor3 = MainColor or Color3.fromRGB(255, 255, 255)
+        Window.Frame.BackgroundTransparency = 1
     end
-
 end)
-
 
 -- ==================================
 -- 🖼️ IMAGEM DE FUNDO DO HUB
 -- ==================================
 
 pcall(function()
+    local UI = Window.UIElements
+    if not UI or not UI.Main then return end
 
-    if not Window.UIElements then
-        return
+    local Main = UI.Main
+
+    -- Remove imagem anterior para evitar acúmulo
+    local Old = Main:FindFirstChild("AstralXBackground")
+    if Old then
+        Old:Destroy()
     end
 
-    local Main = Window.UIElements.Main
-
-    if not Main then
-        return
-    end
-
-
-    -- Remove imagem anterior caso exista
-    local Antiga =
-        Main:FindFirstChild("AstralXBackground")
-
-    if Antiga then
-        Antiga:Destroy()
-    end
-
-
-    -- ==================================
-    -- 🖼️ CRIAR IMAGEM
-    -- ==================================
-
-    local Background =
-        Instance.new("ImageLabel")
-
-    Background.Name =
-        "AstralXBackground"
-
-    Background.Size =
-        UDim2.new(1, 0, 1, 0)
-
-    Background.Position =
-        UDim2.new(0, 0, 0, 0)
-
+    -- Criação da imagem de fundo sem filtros escuros
+    local Background = Instance.new("ImageLabel")
+    Background.Name = "AstralXBackground"
+    Background.Size = UDim2.new(1, 0, 1, 0)
+    Background.Position = UDim2.new(0, 0, 0, 0)
     Background.BackgroundTransparency = 1
-
     Background.BorderSizePixel = 0
-
-    -- 🖼️ ID DA IMAGEM
-    Background.Image =
-        "rbxassetid://122146454688712"
-
-    -- Imagem totalmente visível
+    Background.Image = "rbxassetid://122146454688712"
     Background.ImageTransparency = 0
-
-    -- Sem tonalidade escura
-    Background.ImageColor3 =
-        Color3.fromRGB(255, 255, 255)
-
-    Background.ScaleType =
-        Enum.ScaleType.Crop
-
-    -- Atrás do conteúdo
-    Background.ZIndex = 0
+    Background.ImageColor3 = Color3.fromRGB(255, 255, 255) -- Cor pura, sem máscara de cor
+    Background.ScaleType = Enum.ScaleType.Crop
+    Background.ZIndex = 1 -- Coloca a imagem no nível visível correto do container
 
     Background.Parent = Main
-
-
-    -- ==================================
-    -- 🔲 CANTOS ARREDONDADOS
-    -- ==================================
-
-    local Corner =
-        Instance.new("UICorner")
-
-    Corner.Name =
-        "AstralXBackgroundCorner"
-
-    Corner.CornerRadius =
-        UDim.new(0, 18)
-
-    Corner.Parent =
-        Background
-
 end)
 
-
 -- ==================================
--- ❤️ BOTÃO FLUTUANTE
--- Ruby: vermelho escuro → vermelho claro
+-- 🔘 BOTÃO FLUTUANTE PARA ABRIR
 -- ==================================
 
 local OpenButton = Window:EditOpenButton({
-
-    Title = "Astral",
+    Title = "Abrir Astral X",
     Icon = "star",
-
-    CornerRadius =
-        UDim.new(0, 12),
-
-    StrokeThickness = 2,
-
-    Color = ColorSequence.new(
-        Color3.fromHex("#9B111E"),
-        Color3.fromHex("#FF4D5A")
-    ),
-
+    CornerRadius = UDim.new(0, 12),
+    StrokeThickness = 1,
+    Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromHex("#1BF2B2")),
+        ColorSequenceKeypoint.new(1, Color3.fromHex("#1BCBF2"))
+    }),
     Draggable = true,
 })
-
-
--- ==========================================
--- 🔴 TAMANHO DO BOTÃO ASTRAL
--- ==========================================
-
-local EscalaBotaoAstral = nil
-
-task.wait(1)
-
-pcall(function()
-
-    local CoreGui =
-        game:GetService("CoreGui")
-
-    for _, Obj in ipairs(
-        CoreGui:GetDescendants()
-    ) do
-
-        if Obj:IsA("TextLabel")
-        and Obj.Text == "Astral" then
-
-            local TextButton =
-                Obj.Parent
-
-            if TextButton
-            and TextButton:IsA("TextButton") then
-
-                local Container =
-                    TextButton.Parent
-
-                if Container then
-
-                    EscalaBotaoAstral =
-                        Container:FindFirstChildOfClass(
-                            "UIScale"
-                        )
-
-                    if not EscalaBotaoAstral then
-
-                        EscalaBotaoAstral =
-                            Instance.new("UIScale")
-
-                        EscalaBotaoAstral.Parent =
-                            Container
-
-                    end
-
-                    EscalaBotaoAstral.Scale = 1
-
-                    print(
-                        "✅ Escala do botão Astral encontrada!"
-                    )
-
-                    print(
-                        "📦 Container:",
-                        Container:GetFullName()
-                    )
-
-                end
-
-                break
-
-            end
-
-        end
-
-    end
-
-end)
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
