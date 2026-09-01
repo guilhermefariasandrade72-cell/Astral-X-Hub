@@ -475,7 +475,7 @@ end)
 local OpenButton =
     Window:EditOpenButton({
 
-        Title = "Astral",
+        Title = "Walker Nyx",
         Icon = "star",
 
         CornerRadius =
