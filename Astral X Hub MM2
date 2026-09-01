@@ -268,7 +268,7 @@ for Nome, Cor in pairs(CoresAstral) do
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
 
-        Background = "#",
+        Background = "#18181B",
 
         Accent = Cor.Accent,
         Button = Cor.Button,
@@ -294,7 +294,7 @@ local CorSelecionada = "Ruby"
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub         V 136",
+        "Astral X Hub         V 62",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
