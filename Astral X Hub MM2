@@ -283,13 +283,20 @@ end
 
 
 -- ==================================
+-- ❤️ RUBY SERÁ A COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Ruby"
+
+
+-- ==================================
 -- 🪟 CRIAR JANELA
 -- ==================================
 
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub         V 62",
+        "Astral X Hub         V 136",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
@@ -308,7 +315,10 @@ local Window = WindUI:CreateWindow({
 
     Transparent = true,
 
-    Transparency = 1,
+    Transparency = WindowTransparency,
+
+    -- ⭐ RUBY APLICADO AO INICIAR
+    Theme = "Astral_Ruby",
 
     SideBarWidth = 120,
 
@@ -319,138 +329,88 @@ local Window = WindUI:CreateWindow({
 
 
 -- ==================================
--- 🎨 FUNDO + BORDAS DA JANELA
+-- 🎨 COR DO FUNDO
 -- ==================================
 
 pcall(function()
 
-    local UI = Window.UIElements
+    if Window.UIElements then
 
-    if not UI then
-        return
-    end
+        -- ==================================
+        -- 🪟 MAIN
+        -- ==================================
 
-    local Main = UI.Main
-    local SideBar = UI.SideBar
+        if Window.UIElements.Main then
 
+            Window.UIElements.Main.BackgroundColor3 =
+                MainColor
 
-    -- ==================================
-    -- 🪟 MAIN
-    -- ==================================
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
 
-    if Main then
-
-        Main.BackgroundColor3 =
-            MainColor or Color3.fromRGB(255, 255, 255)
-
-        Main.BackgroundTransparency = 1
-
-    end
+        end
 
 
-    -- ==================================
-    -- 📂 SIDEBAR MAIS CLARA
-    -- ==================================
+        -- ==================================
+        -- 📂 SIDEBAR
+        -- ==================================
 
-    if SideBar then
+        if Window.UIElements.SideBar then
 
-        SideBar.BackgroundColor3 =
-            Color3.fromRGB(45, 45, 50)
+            Window.UIElements.SideBar.BackgroundColor3 =
+                Color3.fromHex("#141417")
 
-        SideBar.BackgroundTransparency = 0.95
+            Window.UIElements.SideBar.BackgroundTransparency =
+                WindowTransparency
 
-    end
+        end
 
 
-    -- ==================================
-    -- 🔍 ENCONTRAR O CONTAINER DA JANELA
-    -- ==================================
+        -- ==================================
+        -- 🔵 BORDAS DA SIDEBAR
+        -- ==================================
 
-    local WindowContainer = nil
+        pcall(function()
 
-    if Main and SideBar then
+            if Window.UIElements
+                and Window.UIElements.SideBar then
 
-        local Current = Main.Parent
+                Window.UIElements.SideBar.ClipsDescendants = true
 
-        while Current do
+                local Corner =
+                    Window.UIElements.SideBar:FindFirstChildOfClass(
+                        "UICorner"
+                    )
 
-            if Current:IsA("GuiObject") then
+                if Corner then
 
-                if SideBar:IsDescendantOf(Current) then
+                    Corner.CornerRadius =
+                        UDim.new(0, 18)
 
-                    WindowContainer = Current
-                    break
+                else
+
+                    Corner = Instance.new("UICorner")
+
+                    Corner.CornerRadius =
+                        UDim.new(0, 18)
+
+                    Corner.Parent =
+                        Window.UIElements.SideBar
 
                 end
 
             end
 
-            Current = Current.Parent
-
-        end
-
-    end
+        end)
 
 
-    -- ==================================
-    -- 🔵 BORDAS REALMENTE ARREDONDADAS
-    -- ==================================
+    elseif Window.Frame then
 
-    if WindowContainer then
+        Window.Frame.BackgroundColor3 =
+            MainColor
 
-        WindowContainer.ClipsDescendants = true
-
-        local Corner =
-            WindowContainer:FindFirstChild("AstralXWindowCorner")
-
-        if not Corner then
-
-            Corner = Instance.new("UICorner")
-
-            Corner.Name =
-                "AstralXWindowCorner"
-
-            Corner.CornerRadius =
-                UDim.new(0, 16)
-
-            Corner.Parent =
-                WindowContainer
-
-        else
-
-            Corner.CornerRadius =
-                UDim.new(0, 16)
-
-        end
-
-    end
-
-
-    -- ==================================
-    -- 🔵 ARREDONDAR MAIN TAMBÉM
-    -- ==================================
-
-    if Main then
-
-        Main.ClipsDescendants = true
-
-        local MainCorner =
-            Main:FindFirstChild("AstralXMainCorner")
-
-        if not MainCorner then
-
-            MainCorner = Instance.new("UICorner")
-
-            MainCorner.Name =
-                "AstralXMainCorner"
-
-            MainCorner.CornerRadius =
-                UDim.new(0, 16)
-
-            MainCorner.Parent =
-                Main
-
-        end
+        Window.Frame.BackgroundTransparency =
+            WindowTransparency
 
     end
 
@@ -463,17 +423,20 @@ end)
 
 pcall(function()
 
-    local UI = Window.UIElements
+    local UI =
+        Window.UIElements
 
     if not UI or not UI.Main then
         return
     end
 
-    local Main = UI.Main
+
+    local Main =
+        UI.Main
 
 
     -- ==================================
-    -- 🗑️ REMOVER IMAGEM ANTIGA
+    -- 🗑️ REMOVE IMAGEM ANTERIOR
     -- ==================================
 
     local Old =
@@ -485,7 +448,7 @@ pcall(function()
 
 
     -- ==================================
-    -- 🖼️ CRIAR IMAGEM
+    -- 🖼️ CRIA A IMAGEM
     -- ==================================
 
     local Background =
@@ -512,6 +475,7 @@ pcall(function()
         0
 
 
+    -- 🖼️ SUA IMAGEM
     Background.Image =
         "rbxassetid://122146454688712"
 
@@ -520,6 +484,7 @@ pcall(function()
         0
 
 
+    -- Sem filtro de cor
     Background.ImageColor3 =
         Color3.fromRGB(255, 255, 255)
 
@@ -527,6 +492,13 @@ pcall(function()
     Background.ScaleType =
         Enum.ScaleType.Crop
 
+
+    -- ==================================
+    -- ⭐ CAMADA DA IMAGEM
+    -- ==================================
+    -- 0 = fundo
+    -- 1 = imagem
+    -- 2+ = textos / abas / botões
 
     Background.ZIndex = 1
 
@@ -538,38 +510,113 @@ end)
 
 
 -- ==================================
--- 🔘 BOTÃO FLUTUANTE PARA ABRIR
+-- ❤️ BOTÃO FLUTUANTE
+-- Ruby: vermelho escuro → vermelho claro
 -- ==================================
 
 local OpenButton =
     Window:EditOpenButton({
 
-        Title = "Abrir Astral X",
+        Title = "Astral",
 
         Icon = "star",
 
         CornerRadius =
             UDim.new(0, 12),
 
-        StrokeThickness = 1,
+        StrokeThickness = 2,
 
-        Color = ColorSequence.new({
+        Color = ColorSequence.new(
 
-            ColorSequenceKeypoint.new(
-                0,
-                Color3.fromHex("#1BF2B2")
-            ),
+            Color3.fromHex("#9B111E"),
 
-            ColorSequenceKeypoint.new(
-                1,
-                Color3.fromHex("#1BCBF2")
-            )
+            Color3.fromHex("#FF4D5A")
 
-        }),
+        ),
 
         Draggable = true,
 
     })
+
+
+-- ==========================================
+-- 🔴 TAMANHO DO BOTÃO ASTRAL
+-- ==========================================
+
+local EscalaBotaoAstral = nil
+
+
+task.wait(1)
+
+
+pcall(function()
+
+    local CoreGui =
+        game:GetService("CoreGui")
+
+
+    for _, Obj in ipairs(
+        CoreGui:GetDescendants()
+    ) do
+
+        if Obj:IsA("TextLabel")
+            and Obj.Text == "Astral" then
+
+            local TextButton =
+                Obj.Parent
+
+
+            if TextButton
+                and TextButton:IsA("TextButton") then
+
+                -- O Frame que contém o botão
+                local Container =
+                    TextButton.Parent
+
+
+                if Container then
+
+                    EscalaBotaoAstral =
+                        Container:FindFirstChildOfClass(
+                            "UIScale"
+                        )
+
+
+                    if not EscalaBotaoAstral then
+
+                        EscalaBotaoAstral =
+                            Instance.new("UIScale")
+
+                        EscalaBotaoAstral.Parent =
+                            Container
+
+                    end
+
+
+                    EscalaBotaoAstral.Scale =
+                        1
+
+
+                    print(
+                        "✅ Escala do botão Astral encontrada!"
+                    )
+
+                    print(
+                        "📦 Container:",
+                        Container:GetFullName()
+                    )
+
+                end
+
+                break
+
+            end
+
+        end
+
+    end
+
+end)
 
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
