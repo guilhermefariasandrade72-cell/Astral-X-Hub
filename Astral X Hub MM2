@@ -58,7 +58,7 @@ end
 -- CONFIGURAÇÃO VISUAL
 -- ==================================
 
-local WindowTransparency = 0.15
+local WindowTransparency = 0.95
 
 local MainColor = Color3.fromHex("#000000")
 
