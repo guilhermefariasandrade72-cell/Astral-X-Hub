@@ -75,7 +75,12 @@ local CoresAstral = {
         Icon = "#FFFFFF",
     },
 
-
+    -- RUBY
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
 
     -- AMETISTA
     ["Ametista"] = {
@@ -280,7 +285,7 @@ end
 -- ❤️ RUBY SERÁ A COR INICIAL
 -- ==================================
 
-local CorSelecionada = "Ruby"
+
 
 -- ==================================
 -- 🪟 CRIAR JANELA
@@ -307,8 +312,6 @@ local Window = WindUI:CreateWindow({
 
     Transparent = true,
     Transparency = WindowTransparency,
-
-    Theme = "Astral_Ruby",
 
     SideBarWidth = 120,
     HasOutline = true,
