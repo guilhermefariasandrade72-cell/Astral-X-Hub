@@ -294,7 +294,7 @@ local CorSelecionada = "Ruby"
 local Window = WindUI:CreateWindow({
 
     Title = gradient(
-        "Astral X Hub         V 136",
+        "Walker Nyx Project",
         Color3.fromHex("#FFFFFF"),
         Color3.fromHex("#CCCCCC")
     ),
@@ -434,7 +434,7 @@ pcall(function()
 
     -- 🖼️ IMAGEM
     Background.Image =
-        "rbxassetid://90954436201266"
+        "rbxassetid://91907308013711"
 
     Background.ImageTransparency =
         0
