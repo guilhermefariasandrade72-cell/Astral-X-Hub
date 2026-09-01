@@ -322,7 +322,7 @@ local Window = WindUI:CreateWindow({
 })
 
 -- ==================================
--- COR DO FUNDO + IMAGEM
+-- COR DO FUNDO + IMAGEM (CORRIGIDO)
 -- ==================================
 
 pcall(function()
@@ -331,70 +331,48 @@ pcall(function()
         return
     end
 
+    local Main = Window.UIElements.Main
 
-    -- ==================================
-    -- PAINEL PRINCIPAL
-    -- ==================================
+    if Main then
 
-    if Window.UIElements.Main then
-
-        local Main = Window.UIElements.Main
-
-        -- Cor original do Hub
-        Main.BackgroundColor3 = MainColor
-
-        -- Deixa o fundo transparente para a imagem aparecer
-        Main.BackgroundTransparency = 1.95
-
-
-        -- ==================================
-        -- 🖼️ IMAGEM DE FUNDO
-        -- ==================================
-
-        -- Remove uma imagem antiga caso exista
-        local ImagemAntiga =
-            Main:FindFirstChild("AstralXBackground")
-
+        -- Remove imagem anterior para não duplicar
+        local ImagemAntiga = Main:FindFirstChild("AstralXBackground")
         if ImagemAntiga then
             ImagemAntiga:Destroy()
         end
 
+        -- Deixa o fundo do container TOTALMENTE TRANSPARENTE
+        -- Evita que qualquer cor preta padrão da UI escureça a imagem por baixo
+        Main.BackgroundTransparency = 1
+
+
+        -- ==================================
+        -- 🖼️ IMAGE LABEL (FUNDO CLARO)
+        -- ==================================
 
         local Background = Instance.new("ImageLabel")
 
         Background.Name = "AstralXBackground"
+        Background.Size = UDim2.new(1, 0, 1, 0)
+        Background.Position = UDim2.new(0, 0, 0, 0)
 
-        Background.Size = UDim2.new(
-            1,
-            0,
-            1,
-            0
-        )
-
-        Background.Position = UDim2.new(
-            0,
-            0,
-            0,
-            0
-        )
-
-        Background.BackgroundTransparency = 2
-
+        -- Deixa o fundo do próprio ImageLabel transparente
+        Background.BackgroundTransparency = 1
         Background.BorderSizePixel = 0
 
-        -- 🖼️ SUA IMAGEM
-        Background.Image =
-            "rbxassetid://122146454688712"
+        -- ID da imagem
+        Background.Image = "rbxassetid://122146454688712"
 
-        -- 0 = imagem totalmente visível
+        -- 0 = Imagem 100% visível e nítida
         Background.ImageTransparency = 0
 
-        -- Preenche o painel
-        Background.ScaleType =
-            Enum.ScaleType.Crop
+        -- Garante que nenhuma tonalidade ou filtro escuro seja aplicado
+        Background.ImageColor3 = Color3.fromRGB(255, 255, 255)
 
-        -- Fica atrás dos elementos do Hub
-        Background.ZIndex = 0
+        Background.ScaleType = Enum.ScaleType.Crop
+
+        -- Camada base (atrás dos botões e textos)
+        Background.ZIndex = 1
 
         Background.Parent = Main
 
@@ -404,51 +382,46 @@ pcall(function()
         -- ==================================
 
         local Corner = Instance.new("UICorner")
-
         Corner.Name = "AstralXBackgroundCorner"
-
-        Corner.CornerRadius =
-            UDim.new(0, 18)
-
+        Corner.CornerRadius = UDim.new(0, 18)
         Corner.Parent = Background
 
 
         -- ==================================
-        -- GARANTIR QUE OS ELEMENTOS FIQUEM
-        -- NA FRENTE DA IMAGEM
+        -- 📌 COLOCAR CONTEÚDO NA FRENTE
         -- ==================================
 
         for _, Object in ipairs(Main:GetDescendants()) do
-
-            if Object:IsA("GuiObject")
-            and Object ~= Background then
-
-                if Object.ZIndex <= 0 then
-                    Object.ZIndex = 1
+            if Object:IsA("GuiObject") and Object ~= Background then
+                if Object.ZIndex <= 1 then
+                    Object.ZIndex = 2
                 end
-
             end
-
         end
 
     end
-
 
     -- ==================================
     -- SIDEBAR
     -- ==================================
 
     if Window.UIElements.SideBar then
+        local SideBar = Window.UIElements.SideBar
+        SideBar.BackgroundColor3 = Color3.fromHex("#141417")
+        SideBar.BackgroundTransparency = WindowTransparency
+        SideBar.ClipsDescendants = true
 
-        local SideBar =
-            Window.UIElements.SideBar
+        local Corner = SideBar:FindFirstChildOfClass("UICorner")
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 18)
+        else
+            Corner = Instance.new("UICorner")
+            Corner.CornerRadius = UDim.new(0, 18)
+            Corner.Parent = SideBar
+        end
+    end
 
-        SideBar.BackgroundColor3 =
-            Color3.fromHex("#141417")
-
-        SideBar.BackgroundTransparency =
-            WindowTransparency
-
+end)
 
         -- ==================================
         -- 🔲 CANTOS DA SIDEBAR
