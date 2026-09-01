@@ -434,7 +434,7 @@ pcall(function()
 
     -- 🖼️ IMAGEM
     Background.Image =
-        "rbxassetid://99065325361653"
+        "rbxassetid://116027894688817"
 
     Background.ImageTransparency =
         0
