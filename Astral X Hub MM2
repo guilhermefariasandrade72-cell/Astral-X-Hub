@@ -344,7 +344,7 @@ pcall(function()
         Main.BackgroundColor3 = MainColor
 
         -- Deixa o fundo transparente para a imagem aparecer
-        Main.BackgroundTransparency = 0.0
+        Main.BackgroundTransparency = 0.95
 
 
         -- ==================================
