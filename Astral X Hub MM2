@@ -268,7 +268,7 @@ for Nome, Cor in pairs(CoresAstral) do
     WindUI:AddTheme({
         Name = "Astral_" .. Nome,
 
-        Background = "#10171B",
+        Background = "#18181B",
 
         Accent = Cor.Accent,
         Button = Cor.Button,
