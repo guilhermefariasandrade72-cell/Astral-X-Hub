@@ -331,27 +331,15 @@ pcall(function()
         return
     end
 
+    local Main = Window.UIElements.Main
 
-    -- ==================================
-    -- PAINEL PRINCIPAL
-    -- ==================================
-
-    if Window.UIElements.Main then
-
-        local Main = Window.UIElements.Main
-
-        -- Cor original do Hub
-        Main.BackgroundColor3 = MainColor
-
-        -- Deixa o fundo transparente para a imagem aparecer
-        Main.BackgroundTransparency = 0.95
-
+    if Main then
 
         -- ==================================
-        -- 🖼️ IMAGEM DE FUNDO
+        -- 🖼️ FUNDO DO HUB
         -- ==================================
 
-        -- Remove uma imagem antiga caso exista
+        -- Remove imagem anterior
         local ImagemAntiga =
             Main:FindFirstChild("AstralXBackground")
 
@@ -359,6 +347,21 @@ pcall(function()
             ImagemAntiga:Destroy()
         end
 
+
+        -- Deixa o fundo original totalmente transparente
+        -- para NÃO escurecer a imagem
+        Main.BackgroundColor3 = Color3.fromRGB(
+            0,
+            0,
+            0
+        )
+
+        Main.BackgroundTransparency = 1
+
+
+        -- ==================================
+        -- 🖼️ IMAGE LABEL
+        -- ==================================
 
         local Background = Instance.new("ImageLabel")
 
@@ -378,23 +381,28 @@ pcall(function()
             0
         )
 
-        Background.BackgroundTransparency = 2
+        Background.BackgroundTransparency = 1
 
         Background.BorderSizePixel = 0
 
-        -- 🖼️ SUA IMAGEM
         Background.Image =
             "rbxassetid://122146454688712"
 
         -- 0 = imagem totalmente visível
         Background.ImageTransparency = 0
 
-        -- Preenche o painel
+        -- Não aplica tonalidade escura
+        Background.ImageColor3 = Color3.fromRGB(
+            255,
+            255,
+            255
+        )
+
         Background.ScaleType =
             Enum.ScaleType.Crop
 
-        -- Fica atrás dos elementos do Hub
-        Background.ZIndex = 0
+        -- A imagem fica acima do fundo
+        Background.ZIndex = 1
 
         Background.Parent = Main
 
@@ -405,7 +413,8 @@ pcall(function()
 
         local Corner = Instance.new("UICorner")
 
-        Corner.Name = "AstralXBackgroundCorner"
+        Corner.Name =
+            "AstralXBackgroundCorner"
 
         Corner.CornerRadius =
             UDim.new(0, 18)
@@ -414,8 +423,7 @@ pcall(function()
 
 
         -- ==================================
-        -- GARANTIR QUE OS ELEMENTOS FIQUEM
-        -- NA FRENTE DA IMAGEM
+        -- 📌 COLOCAR CONTEÚDO NA FRENTE
         -- ==================================
 
         for _, Object in ipairs(Main:GetDescendants()) do
@@ -423,8 +431,8 @@ pcall(function()
             if Object:IsA("GuiObject")
             and Object ~= Background then
 
-                if Object.ZIndex <= 0 then
-                    Object.ZIndex = 1
+                if Object.ZIndex <= 1 then
+                    Object.ZIndex = 2
                 end
 
             end
@@ -449,12 +457,8 @@ pcall(function()
         SideBar.BackgroundTransparency =
             WindowTransparency
 
-
-        -- ==================================
-        -- 🔲 CANTOS DA SIDEBAR
-        -- ==================================
-
         SideBar.ClipsDescendants = true
+
 
         local Corner =
             SideBar:FindFirstChildOfClass("UICorner")
@@ -489,7 +493,7 @@ pcall(function()
             MainColor
 
         Window.Frame.BackgroundTransparency =
-            0.65
+            1
 
     end
 
