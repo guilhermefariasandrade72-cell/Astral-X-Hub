@@ -280,7 +280,7 @@ end
 -- ❤️ RUBY SERÁ A COR INICIAL
 -- ==================================
 
-local CorSelecionada = "Ruby"
+local CorSelecionada = ""
 
 -- ==================================
 -- 🪟 CRIAR JANELA
