@@ -356,7 +356,7 @@ pcall(function()
             0
         )
 
-        Main.BackgroundTransparency = 1
+        Main.BackgroundTransparency = 0
 
 
         -- ==================================
