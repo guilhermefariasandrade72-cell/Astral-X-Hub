@@ -336,43 +336,66 @@ pcall(function()
     if Main then
 
         -- Remove imagem anterior para não duplicar
-        local ImagemAntiga = Main:FindFirstChild("AstralXBackground")
+        local ImagemAntiga =
+            Main:FindFirstChild("AstralXBackground")
+
         if ImagemAntiga then
             ImagemAntiga:Destroy()
         end
 
-        -- Deixa o fundo do container TOTALMENTE TRANSPARENTE
-        -- Evita que qualquer cor preta padrão da UI escureça a imagem por baixo
+
+        -- ==================================
+        -- 🖼️ FUNDO PRINCIPAL
+        -- ==================================
+
+        -- Fundo do painel totalmente transparente
         Main.BackgroundTransparency = 1
 
 
         -- ==================================
-        -- 🖼️ IMAGE LABEL (FUNDO CLARO)
+        -- 🖼️ IMAGE LABEL
         -- ==================================
 
         local Background = Instance.new("ImageLabel")
 
         Background.Name = "AstralXBackground"
-        Background.Size = UDim2.new(1, 0, 1, 0)
-        Background.Position = UDim2.new(0, 0, 0, 0)
 
-        -- Deixa o fundo do próprio ImageLabel transparente
+        Background.Size =
+            UDim2.new(1, 0, 1, 0)
+
+        Background.Position =
+            UDim2.new(0, 0, 0, 0)
+
+        -- IMPORTANTE:
+        -- BackgroundTransparency aceita somente 0 até 1
         Background.BackgroundTransparency = 1
+
         Background.BorderSizePixel = 0
 
-        -- ID da imagem
-        Background.Image = "rbxassetid://122146454688712"
 
-        -- 0 = Imagem 100% visível e nítida
-        Background.ImageTransparency = 0
+        -- ==================================
+        -- 🖼️ SUA IMAGEM
+        -- ==================================
 
-        -- Garante que nenhuma tonalidade ou filtro escuro seja aplicado
-        Background.ImageColor3 = Color3.fromRGB(255, 255, 255)
+        Background.Image =
+            "rbxassetid://122146454688712"
 
-        Background.ScaleType = Enum.ScaleType.Crop
+        -- 0 = imagem totalmente visível
+        Background.ImageTransparency = 1
 
-        -- Camada base (atrás dos botões e textos)
-        Background.ZIndex = 1
+        -- Branco puro = sem tonalidade escura
+        Background.ImageColor3 =
+            Color3.fromRGB(255, 255, 255)
+
+        Background.ScaleType =
+            Enum.ScaleType.Crop
+
+
+        -- ==================================
+        -- 📌 CAMADA
+        -- ==================================
+
+        Background.ZIndex = 0
 
         Background.Parent = Main
 
@@ -381,44 +404,77 @@ pcall(function()
         -- 🔲 CANTOS ARREDONDADOS
         -- ==================================
 
-        local Corner = Instance.new("UICorner")
-        Corner.Name = "AstralXBackgroundCorner"
-        Corner.CornerRadius = UDim.new(0, 18)
+        local Corner =
+            Instance.new("UICorner")
+
+        Corner.Name =
+            "AstralXBackgroundCorner"
+
+        Corner.CornerRadius =
+            UDim.new(0, 18)
+
         Corner.Parent = Background
 
 
         -- ==================================
-        -- 📌 COLOCAR CONTEÚDO NA FRENTE
+        -- 📌 CONTEÚDO NA FRENTE
         -- ==================================
 
         for _, Object in ipairs(Main:GetDescendants()) do
-            if Object:IsA("GuiObject") and Object ~= Background then
+
+            if Object:IsA("GuiObject")
+            and Object ~= Background then
+
                 if Object.ZIndex <= 1 then
                     Object.ZIndex = 2
                 end
+
             end
+
         end
 
     end
+
 
     -- ==================================
     -- SIDEBAR
     -- ==================================
 
     if Window.UIElements.SideBar then
-        local SideBar = Window.UIElements.SideBar
-        SideBar.BackgroundColor3 = Color3.fromHex("#141417")
-        SideBar.BackgroundTransparency = WindowTransparency
+
+        local SideBar =
+            Window.UIElements.SideBar
+
+        SideBar.BackgroundColor3 =
+            Color3.fromHex("#141417")
+
+        SideBar.BackgroundTransparency =
+            WindowTransparency
+
         SideBar.ClipsDescendants = true
 
-        local Corner = SideBar:FindFirstChildOfClass("UICorner")
+
+        local Corner =
+            SideBar:FindFirstChildOfClass("UICorner")
+
         if Corner then
-            Corner.CornerRadius = UDim.new(0, 18)
+
+            Corner.CornerRadius =
+                UDim.new(0, 18)
+
         else
-            Corner = Instance.new("UICorner")
-            Corner.CornerRadius = UDim.new(0, 18)
-            Corner.Parent = SideBar
+
+            Corner =
+                Instance.new("UICorner")
+
+            Corner.CornerRadius =
+                UDim.new(0, 18)
+
+            Corner.Parent =
+                SideBar
+
         end
+
     end
 
 end)
