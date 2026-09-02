@@ -1458,151 +1458,325 @@ local function SoltarJogador()
     end
 end
 
+
 -- ====================================================
--- SISTEMA DA ABA SHERIFF
+-- 🎯 SISTEMA DA ABA SHERIFF
 -- ====================================================
 
--- FOV CICLE
+-- ==================================
+-- SERVIÇOS
+-- ==================================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local TweenService = game:GetService("TweenService")
+local CoreGui = game:GetService("CoreGui")
+
+local LocalPlayer = Players.LocalPlayer
+
+
+-- ==================================
+-- 🎯 FOV / LOCK CAMERA
+-- ==================================
+
 local LockCameraAtivo = false
 local MostrarCirculo = false
 local RaioFOV = 150
 
--- ==================================
--- 🎨 CÍRCULO VISUAL DE FOV (Corrigido para Redondo)
--- ==================================
 local FOVCircle = nil
 
+
+-- ==================================
+-- 🎨 CÍRCULO VISUAL DO FOV
+-- ==================================
+
 task.spawn(function()
-    local Players = game:GetService("Players")
-    local CoreGui = game:GetService("CoreGui")
-    local localPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
-    
-    local parentGui = localPlayer:WaitForChild("PlayerGui", 5) or CoreGui
+
+    local ParentGui
+
+    pcall(function()
+        ParentGui = CoreGui
+    end)
+
+    if not ParentGui then
+        ParentGui = LocalPlayer:WaitForChild("PlayerGui")
+    end
 
     local FOVScreen = Instance.new("ScreenGui")
-    FOVScreen.Name = "FOVCircleGui"
+    FOVScreen.Name = "AstralX_FOVCircle"
     FOVScreen.ResetOnSpawn = false
-    FOVScreen.IgnoreGuiInset = true -- Centraliza perfeitamente com a mira
-    FOVScreen.Parent = parentGui
+    FOVScreen.IgnoreGuiInset = true
+    FOVScreen.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    FOVScreen.Parent = ParentGui
+
 
     FOVCircle = Instance.new("Frame")
     FOVCircle.Name = "Circle"
+
     FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
-    FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
-    FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+
+    FOVCircle.Position =
+        UDim2.new(0.5, 0, 0.5, 0)
+
+    FOVCircle.Size =
+        UDim2.fromOffset(
+            RaioFOV,
+            RaioFOV
+        )
+
     FOVCircle.BackgroundTransparency = 1
+    FOVCircle.BorderSizePixel = 0
     FOVCircle.Visible = false
+
     FOVCircle.Parent = FOVScreen
 
+
     local UIStroke = Instance.new("UIStroke")
-    UIStroke.Color = Color3.fromRGB(255, 255, 255) -- Cor Branca
+    UIStroke.Name = "FOVBorder"
+    UIStroke.Color = Color3.fromRGB(255, 255, 255)
     UIStroke.Thickness = 1.5
     UIStroke.Parent = FOVCircle
 
+
     local UICorner = Instance.new("UICorner")
-    UICorner.CornerRadius = UDim.new(1, 0) -- 📌 CORRIGIDO: UDim em vez de UDim2 (Cria o círculo perfeito)
+    UICorner.Name = "FOVCorner"
+    UICorner.CornerRadius = UDim.new(1, 0)
     UICorner.Parent = FOVCircle
+
 end)
 
+
 -- ==================================
--- 🔍 FUNÇÕES AUXILIARES DE DETECÇÃO
+-- 🔍 VERIFICAR SE POSSUI ARMA
 -- ==================================
 
 local function TemArma()
-    local localPlayer = game:GetService("Players").LocalPlayer
-    if not localPlayer then return false end
-    local char = localPlayer.Character
-    if not char then return false end
-    
-    local armaNoChar = char:FindFirstChild("Gun")
-    if not armaNoChar then
-        for _, item in ipairs(char:GetChildren()) do
-            if item:IsA("Tool") and item.Name:lower():find("gun") then
-                armaNoChar = item
-                break
-            end
-        end
-    end
-    if armaNoChar then return true end
 
-    local backpack = localPlayer:FindFirstChild("Backpack")
-    if backpack then
-        local armaNaMochila = backpack:FindFirstChild("Gun")
-        if not armaNaMochila then
-            for _, item in ipairs(backpack:GetChildren()) do
-                if item:IsA("Tool") and item.Name:lower():find("gun") then
-                    armaNaMochila = item
-                    break
-                end
-            end
-        end
-        if armaNaMochila then return true end
+    local Character = LocalPlayer.Character
+
+    if not Character then
+        return false
     end
+
+
+    -- Procura Gun diretamente
+    if Character:FindFirstChild("Gun") then
+        return true
+    end
+
+
+    -- Procura qualquer Tool contendo "gun"
+    for _, Item in ipairs(Character:GetChildren()) do
+
+        if Item:IsA("Tool") then
+
+            if Item.Name:lower():find("gun") then
+                return true
+            end
+
+        end
+
+    end
+
+
+    -- Mochila
+    local Backpack = LocalPlayer:FindFirstChild("Backpack")
+
+    if Backpack then
+
+        if Backpack:FindFirstChild("Gun") then
+            return true
+        end
+
+
+        for _, Item in ipairs(Backpack:GetChildren()) do
+
+            if Item:IsA("Tool") then
+
+                if Item.Name:lower():find("gun") then
+                    return true
+                end
+
+            end
+
+        end
+
+    end
+
 
     return false
+
 end
+
+
+-- ==================================
+-- 🔍 ENCONTRAR MURDERER
+-- ==================================
 
 local function ObterMurderer()
-    local localPlayer = game:GetService("Players").LocalPlayer
-    if not localPlayer then return nil end
-    
-    for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
-        if p ~= localPlayer and p.Character then
-            local char = p.Character
-            local hum = char:FindFirstChildOfClass("Humanoid")
-            local hrp = char:FindFirstChild("HumanoidRootPart")
-            
-            if hum and hum.Health > 0 and hrp then
-                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
-                local eMurder = (p:GetAttribute("Role") == "Murderer") or (temFaca ~= nil)
-                
-                if eMurder then
-                    return hrp
+
+    for _, Player in ipairs(Players:GetPlayers()) do
+
+        if Player ~= LocalPlayer then
+
+            local Character = Player.Character
+
+            if Character then
+
+                local Humanoid =
+                    Character:FindFirstChildOfClass("Humanoid")
+
+                local HRP =
+                    Character:FindFirstChild("HumanoidRootPart")
+
+
+                if Humanoid
+                    and Humanoid.Health > 0
+                    and HRP then
+
+
+                    local Backpack =
+                        Player:FindFirstChild("Backpack")
+
+
+                    local Knife =
+                        Character:FindFirstChild("Knife")
+
+
+                    if not Knife and Backpack then
+                        Knife = Backpack:FindFirstChild("Knife")
+                    end
+
+
+                    local IsMurderer =
+                        Player:GetAttribute("Role") == "Murderer"
+                        or Knife ~= nil
+
+
+                    if IsMurderer then
+                        return HRP
+                    end
+
                 end
+
             end
+
         end
+
     end
+
+
     return nil
+
 end
 
-local function EstaDentroDoFOV(posicao3D)
-    local camera = workspace.CurrentCamera
-    if not camera then return false end
-    
-    local posTela, visivel = camera:WorldToViewportPoint(posicao3D)
-    if not visivel then return false end
-
-    local centroTela = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
-    local posAlvo2D = Vector2.new(posTela.X, posTela.Y)
-    
-    local distanciaPixels = (posAlvo2D - centroTela).Magnitude
-    return distanciaPixels <= (RaioFOV / 2)
-end
 
 -- ==================================
--- 🎥 LOOP DE ATUALIZAÇÃO DA CÂMERA
+-- 🎯 VERIFICAR ALVO DENTRO DO FOV
 -- ==================================
-game:GetService("RunService").RenderStepped:Connect(function()
-    if not LockCameraAtivo or not TemArma() then return end
 
-    local hrpMurderer = ObterMurderer()
-    if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
-        local camera = workspace.CurrentCamera
-        if camera then
-            local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
-            camera.CFrame = CFrame.new(camera.CFrame.Position, posAlvo)
-        end
+local function EstaDentroDoFOV(Posicao3D)
+
+    local Camera = workspace.CurrentCamera
+
+    if not Camera then
+        return false
     end
+
+
+    local PosTela, Visivel =
+        Camera:WorldToViewportPoint(Posicao3D)
+
+
+    if not Visivel then
+        return false
+    end
+
+
+    local CentroTela =
+        Vector2.new(
+            Camera.ViewportSize.X / 2,
+            Camera.ViewportSize.Y / 2
+        )
+
+
+    local PosAlvo =
+        Vector2.new(
+            PosTela.X,
+            PosTela.Y
+        )
+
+
+    local Distancia =
+        (PosAlvo - CentroTela).Magnitude
+
+
+    return Distancia <= (RaioFOV / 2)
+
+end
+
+
+-- ==================================
+-- 🎥 LOCK CAMERA
+-- ==================================
+
+RunService.RenderStepped:Connect(function()
+
+    if not LockCameraAtivo then
+        return
+    end
+
+
+    if not TemArma() then
+        return
+    end
+
+
+    local MurdererHRP =
+        ObterMurderer()
+
+
+    if not MurdererHRP then
+        return
+    end
+
+
+    if not EstaDentroDoFOV(MurdererHRP.Position) then
+        return
+    end
+
+
+    local Camera =
+        workspace.CurrentCamera
+
+
+    if not Camera then
+        return
+    end
+
+
+    local PosAlvo =
+        MurdererHRP.Position
+        + Vector3.new(0, 0.5, 0)
+
+
+    Camera.CFrame =
+        CFrame.new(
+            Camera.CFrame.Position,
+            PosAlvo
+        )
+
 end)
 
--- ===========================================
--- 🎯 CONFIG BUTTONS - SILENT AIM
--- ===========================================
 
-local SilentAimButtonStyle = "Quadrado"
-local SilentAimButtonSize = 75
+-- ====================================================
+-- 🎯 SILENT AIM - BOTÃO FLUTUANTE
+-- ====================================================
 
-local SilentAimButtonGui = SilentAimButtonGui or nil
+-- ⚠️ NÃO DECLARE SilentAimButtonStyle/SilentAimButtonSize
+-- AQUI SE ELES JÁ EXISTIREM EM OUTRA PARTE DO HUB.
+
+local SilentAimButtonGui = nil
 
 local isDraggingSilent = false
 local buttonStartPosSilent = nil
@@ -1610,7 +1784,7 @@ local dragStartPosSilent = nil
 
 
 -- ===========================================
--- 🔄 ATUALIZAR BOTÃO
+-- 🔄 ATUALIZAR BOTÃO SILENT AIM
 -- ===========================================
 
 local function AtualizarSilentAimButton()
@@ -1619,41 +1793,56 @@ local function AtualizarSilentAimButton()
         return
     end
 
+
     local Btn =
-        SilentAimButtonGui:FindFirstChild("SilentAimButton")
+        SilentAimButtonGui:FindFirstChild(
+            "SilentAimButton"
+        )
+
 
     if not Btn then
         return
     end
 
 
-    -- 📏 TAMANHO
+    -- TAMANHO
     if SilentAimButtonStyle == "Quadrado"
         or SilentAimButtonStyle == "Círculo" then
 
-        Btn.Size = UDim2.fromOffset(
-            SilentAimButtonSize,
-            SilentAimButtonSize
-        )
+        Btn.Size =
+            UDim2.fromOffset(
+                SilentAimButtonSize,
+                SilentAimButtonSize
+            )
+
 
     elseif SilentAimButtonStyle == "Retângulo" then
 
-        Btn.Size = UDim2.fromOffset(
-            SilentAimButtonSize + 35,
-            math.floor(SilentAimButtonSize * 0.55)
-        )
+        Btn.Size =
+            UDim2.fromOffset(
+                SilentAimButtonSize + 35,
+                math.floor(
+                    SilentAimButtonSize * 0.55
+                )
+            )
 
     end
 
 
-    -- 🔵 FORMATO
+    -- FORMATO
     local Corner =
-        Btn:FindFirstChild("SilentAimCorner")
+        Btn:FindFirstChild(
+            "SilentAimCorner"
+        )
+
 
     if not Corner then
 
         Corner = Instance.new("UICorner")
-        Corner.Name = "SilentAimCorner"
+
+        Corner.Name =
+            "SilentAimCorner"
+
         Corner.Parent = Btn
 
     end
@@ -1664,10 +1853,12 @@ local function AtualizarSilentAimButton()
         Corner.CornerRadius =
             UDim.new(1, 0)
 
+
     elseif SilentAimButtonStyle == "Quadrado" then
 
         Corner.CornerRadius =
             UDim.new(0, 10)
+
 
     elseif SilentAimButtonStyle == "Retângulo" then
 
@@ -1692,11 +1883,14 @@ local function CreateShootButton()
 
     local ParentGui = CoreGui
 
+
     pcall(function()
 
         if not ParentGui then
             ParentGui =
-                player:WaitForChild("PlayerGui")
+                LocalPlayer:WaitForChild(
+                    "PlayerGui"
+                )
         end
 
     end)
@@ -1705,14 +1899,18 @@ local function CreateShootButton()
     local GuiBtn =
         Instance.new("ScreenGui")
 
+
     GuiBtn.Name =
         "AstralX_ShootButton"
+
 
     GuiBtn.ResetOnSpawn =
         false
 
+
     GuiBtn.ZIndexBehavior =
         Enum.ZIndexBehavior.Sibling
+
 
     GuiBtn.Parent =
         ParentGui
@@ -1725,8 +1923,10 @@ local function CreateShootButton()
     local Btn =
         Instance.new("ImageButton")
 
+
     Btn.Name =
         "SilentAimButton"
+
 
     Btn.Size =
         UDim2.fromOffset(
@@ -1734,9 +1934,10 @@ local function CreateShootButton()
             SilentAimButtonSize
         )
 
-    -- ⭐ POSIÇÃO PELO CENTRO
+
     Btn.AnchorPoint =
         Vector2.new(0.5, 0.5)
+
 
     Btn.Position =
         UDim2.new(
@@ -1746,14 +1947,18 @@ local function CreateShootButton()
             0
         )
 
+
     Btn.BackgroundColor3 =
         Color3.fromRGB(0, 0, 0)
+
 
     Btn.BackgroundTransparency =
         0.4
 
+
     Btn.AutoButtonColor =
         false
+
 
     Btn.Parent =
         GuiBtn
@@ -1766,11 +1971,14 @@ local function CreateShootButton()
     local Corner =
         Instance.new("UICorner")
 
+
     Corner.Name =
         "SilentAimCorner"
 
+
     Corner.CornerRadius =
         UDim.new(0, 10)
+
 
     Corner.Parent =
         Btn
@@ -1780,22 +1988,27 @@ local function CreateShootButton()
     -- ⚫ BORDA
     -- ===========================================
 
-    local Borda =
+    local Border =
         Instance.new("UIStroke")
 
-    Borda.Name =
+
+    Border.Name =
         "SilentAimBorder"
 
-    Borda.Color =
+
+    Border.Color =
         Color3.fromRGB(0, 0, 0)
 
-    Borda.Thickness =
+
+    Border.Thickness =
         2
 
-    Borda.ApplyStrokeMode =
+
+    Border.ApplyStrokeMode =
         Enum.ApplyStrokeMode.Border
 
-    Borda.Parent =
+
+    Border.Parent =
         Btn
 
 
@@ -1803,56 +2016,64 @@ local function CreateShootButton()
     -- 📝 TEXTO
     -- ===========================================
 
-    local Texto =
+    local Text =
         Instance.new("TextLabel")
 
-    Texto.Name =
+
+    Text.Name =
         "SilentAimText"
 
-    Texto.Size =
+
+    Text.Size =
         UDim2.new(1, 0, 1, 0)
 
-    Texto.BackgroundTransparency =
+
+    Text.BackgroundTransparency =
         1
 
-    Texto.Text =
+
+    Text.Text =
         "Silent AIM"
 
-    Texto.TextColor3 =
+
+    Text.TextColor3 =
         Color3.fromRGB(255, 255, 255)
 
-    Texto.TextSize =
+
+    Text.TextSize =
         15
 
-    Texto.Font =
+
+    Text.Font =
         Enum.Font.GothamBold
 
-    Texto.Parent =
+
+    Text.Parent =
         Btn
 
 
     -- ===========================================
-    -- 🎬 ESCALA DA ANIMAÇÃO
+    -- 🎬 ANIMAÇÃO
     -- ===========================================
-
-    local TweenService =
-        game:GetService("TweenService")
 
     local ButtonScale =
         Instance.new("UIScale")
 
+
     ButtonScale.Name =
         "SilentAimButtonScale"
 
+
     ButtonScale.Scale =
         1
+
 
     ButtonScale.Parent =
         Btn
 
 
     -- ===========================================
-    -- 🖱️ ARRASTAR
+    -- 🖐️ ARRASTAR
     -- ===========================================
 
     Btn.InputBegan:Connect(function(Input)
@@ -1863,11 +2084,14 @@ local function CreateShootButton()
             or Input.UserInputType ==
             Enum.UserInputType.MouseButton1 then
 
+
             isDraggingSilent =
                 true
 
+
             buttonStartPosSilent =
                 Btn.Position
+
 
             dragStartPosSilent =
                 Input.Position
@@ -1892,24 +2116,27 @@ local function CreateShootButton()
 
     Btn.InputChanged:Connect(function(Input)
 
-        if isDraggingSilent
-            and (
-                Input.UserInputType ==
-                    Enum.UserInputType.Touch
+        if not isDraggingSilent then
+            return
+        end
 
-                or Input.UserInputType ==
-                    Enum.UserInputType.MouseMovement
-            ) then
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseMovement then
+
 
             Btn.Position =
                 buttonStartPosSilent
                 + UDim2.fromOffset(
 
                     Input.Position.X
-                        - dragStartPosSilent.X,
+                    - dragStartPosSilent.X,
 
                     Input.Position.Y
-                        - dragStartPosSilent.Y
+                    - dragStartPosSilent.Y
 
                 )
 
@@ -1919,17 +2146,20 @@ local function CreateShootButton()
 
 
     -- ===========================================
-    -- 👆 CLIQUE + ANIMAÇÃO
+    -- 👆 CLIQUE
     -- ===========================================
 
-    Btn.MouseButton1Click:Connect(function()
+    Btn.Activated:Connect(function()
 
         if isDraggingSilent then
             return
         end
 
 
-        -- 🔽 ENCOLHE PARA O CENTRO
+        -- ANIMAÇÃO
+        ButtonScale.Scale = 1
+
+
         local Encolher =
             TweenService:Create(
 
@@ -1948,7 +2178,6 @@ local function CreateShootButton()
             )
 
 
-        -- 🔼 CRESCE A PARTIR DO CENTRO
         local Crescer =
             TweenService:Create(
 
@@ -1969,13 +2198,20 @@ local function CreateShootButton()
 
         Encolher:Play()
 
+
         Encolher.Completed:Once(function()
-            Crescer:Play()
+
+            if ButtonScale.Parent then
+                Crescer:Play()
+            end
+
         end)
 
 
-        -- 🎯 EXECUTA O SILENT AIM
-        ShootMurderer()
+        -- 🎯 EXECUTA O SISTEMA SILENT AIM
+        if typeof(ShootMurderer) == "function" then
+            ShootMurderer()
+        end
 
     end)
 
@@ -1984,14 +2220,13 @@ local function CreateShootButton()
         GuiBtn
 
 
-    -- ⭐ APLICA QUADRADO INICIAL
     AtualizarSilentAimButton()
 
 end
 
 
 -- ===========================================
--- ❌ REMOVER BOTÃO
+-- ❌ REMOVER BOTÃO SILENT AIM
 -- ===========================================
 
 local function RemoveShootButton()
@@ -2006,9 +2241,10 @@ local function RemoveShootButton()
 
 end
 
--- ===========================================
+
+-- ====================================================
 -- 🔫 AUTO GRAB GUN
--- ===========================================
+-- ====================================================
 
 local function GetGun()
 
@@ -2016,147 +2252,378 @@ local function GetGun()
         return
     end
 
-    local Char = player.Character
 
-    if not Char
-        or not Char:FindFirstChild("HumanoidRootPart") then
+    local Character =
+        LocalPlayer.Character
+
+
+    if not Character then
         return
     end
 
-    local MapContainer =
-        Workspace:FindFirstChild("CoinContainer", true)
-        and Workspace:FindFirstChild("CoinContainer", true).Parent
 
-    local mapToSearch =
+    local HRP =
+        Character:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+
+    if not HRP then
+        return
+    end
+
+
+    local CoinContainer =
+        Workspace:FindFirstChild(
+            "CoinContainer",
+            true
+        )
+
+
+    local MapContainer
+
+
+    if CoinContainer then
+        MapContainer =
+            CoinContainer.Parent
+    end
+
+
+    local MapToSearch =
         MapContainer or Workspace
 
-    local gunDrop =
-        mapToSearch:FindFirstChild("GunDrop", true)
-        or Workspace:FindFirstChild("GunDrop", true)
 
-    if gunDrop
-        and gunDrop:IsA("BasePart") then
+    local GunDrop =
+        MapToSearch:FindFirstChild(
+            "GunDrop",
+            true
+        )
 
-        gunDrop.CFrame =
-            Char.HumanoidRootPart.CFrame
+
+    if not GunDrop then
+
+        GunDrop =
+            Workspace:FindFirstChild(
+                "GunDrop",
+                true
+            )
+
+    end
+
+
+    if GunDrop and GunDrop:IsA("BasePart") then
+
+        GunDrop.CFrame =
+            HRP.CFrame
 
     end
 
 end
 
--- 🔄 Procura continuamente a arma
+
+-- ===========================================
+-- 🔄 LOOP AUTO GRAB
+-- ===========================================
+
 RunService.Heartbeat:Connect(function()
+
     GetGun()
+
 end)
 
--- ===========================================
--- 🔫 BOTÃO FLUTUANTE & SISTEMA GRAB GUN (UNIFICADO)
--- ===========================================
+
+-- ====================================================
+-- 🔫 BOTÃO FLUTUANTE GRAB GUN
+-- ====================================================
+
 local function CreateGrabGunButton()
-    if GrabGunButtonGui then return end
+
+    if GrabGunButtonGui then
+        return
+    end
+
 
     local ParentGui = CoreGui
+
+
     pcall(function()
-        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
-    end)
 
-    local GuiBtn = Instance.new("ScreenGui")
-    GuiBtn.Name = "AstralX_GrabGunButton"
-    GuiBtn.ResetOnSpawn = false
-    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    GuiBtn.Parent = ParentGui
-
-    local Btn = Instance.new("ImageButton")
-    Btn.Size = UDim2.new(0, 110, 0, 42)
-    Btn.Position = UDim2.new(0.5, -55, 0.5, -21)
-    Btn.BackgroundColor3 = Color3.fromRGB(20, 100, 150)
-    Btn.BackgroundTransparency = 0.3
-    Btn.Parent = GuiBtn
-
-    local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
-    Corner.Parent = Btn
-
-    local Borda = Instance.new("UIStroke")
-    Borda.Color = Color3.fromRGB(50, 180, 255)
-    Borda.Thickness = 2
-    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-    Borda.Parent = Btn
-
-    local Texto = Instance.new("TextLabel")
-    Texto.Size = UDim2.new(1, 0, 1, 0)
-    Texto.BackgroundTransparency = 1
-    Texto.Text = "Grab Gun"
-    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
-    Texto.TextSize = 15
-    Texto.Font = Enum.Font.GothamBold
-    Texto.Parent = Btn
-
-    -- 🖐️ Lógica de Arrastar o Botão
-    Btn.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
-            isDraggingGrab = true
-            buttonStartPosGrab = Btn.Position
-            dragStartPosGrab = Input.Position
-            Input.Changed:Connect(function()
-                if Input.UserInputState == Enum.UserInputState.End then 
-                    isDraggingGrab = false 
-                end
-            end)
+        if not ParentGui then
+            ParentGui =
+                LocalPlayer:WaitForChild(
+                    "PlayerGui"
+                )
         end
+
     end)
+
+
+    local GuiBtn =
+        Instance.new("ScreenGui")
+
+
+    GuiBtn.Name =
+        "AstralX_GrabGunButton"
+
+
+    GuiBtn.ResetOnSpawn =
+        false
+
+
+    GuiBtn.ZIndexBehavior =
+        Enum.ZIndexBehavior.Sibling
+
+
+    GuiBtn.Parent =
+        ParentGui
+
+
+    -- ===========================================
+    -- 🔵 BOTÃO
+    -- ===========================================
+
+    local Btn =
+        Instance.new("ImageButton")
+
+
+    Btn.Name =
+        "GrabGunButton"
+
+
+    Btn.Size =
+        UDim2.fromOffset(
+            110,
+            42
+        )
+
+
+    Btn.AnchorPoint =
+        Vector2.new(0.5, 0.5)
+
+
+    Btn.Position =
+        UDim2.new(
+            0.5,
+            0,
+            0.5,
+            0
+        )
+
+
+    Btn.BackgroundColor3 =
+        Color3.fromRGB(
+            20,
+            100,
+            150
+        )
+
+
+    Btn.BackgroundTransparency =
+        0.3
+
+
+    Btn.AutoButtonColor =
+        false
+
+
+    Btn.Parent =
+        GuiBtn
+
+
+    -- ===========================================
+    -- 🔵 CANTOS
+    -- ===========================================
+
+    local Corner =
+        Instance.new("UICorner")
+
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
+
+    Corner.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- ⚡ BORDA
+    -- ===========================================
+
+    local Border =
+        Instance.new("UIStroke")
+
+
+    Border.Color =
+        Color3.fromRGB(
+            50,
+            180,
+            255
+        )
+
+
+    Border.Thickness =
+        2
+
+
+    Border.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+
+    Border.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 📝 TEXTO
+    -- ===========================================
+
+    local Text =
+        Instance.new("TextLabel")
+
+
+    Text.Size =
+        UDim2.new(1, 0, 1, 0)
+
+
+    Text.BackgroundTransparency =
+        1
+
+
+    Text.Text =
+        "Grab Gun"
+
+
+    Text.TextColor3 =
+        Color3.fromRGB(
+            255,
+            255,
+            255
+        )
+
+
+    Text.TextSize =
+        15
+
+
+    Text.Font =
+        Enum.Font.GothamBold
+
+
+    Text.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🖐️ ARRASTAR
+    -- ===========================================
+
+    Btn.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+
+            isDraggingGrab =
+                true
+
+
+            buttonStartPosGrab =
+                Btn.Position
+
+
+            dragStartPosGrab =
+                Input.Position
+
+
+            Input.Changed:Connect(function()
+
+                if Input.UserInputState ==
+                    Enum.UserInputState.End then
+
+                    isDraggingGrab =
+                        false
+
+                end
+
+            end)
+
+        end
+
+    end)
+
 
     Btn.InputChanged:Connect(function(Input)
-        if isDraggingGrab and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
-            Btn.Position = buttonStartPosGrab + UDim2.fromOffset(Input.Position.X - dragStartPosGrab.X, Input.Position.Y - dragStartPosGrab.Y)
+
+        if not isDraggingGrab then
+            return
         end
+
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseMovement then
+
+
+            Btn.Position =
+                buttonStartPosGrab
+                + UDim2.fromOffset(
+
+                    Input.Position.X
+                    - dragStartPosGrab.X,
+
+                    Input.Position.Y
+                    - dragStartPosGrab.Y
+
+                )
+
+        end
+
     end)
 
-    -- 🎯 Clique no Botão (Busca e puxa a arma direto pro player)
-    Btn.MouseButton1Click:Connect(function() 
-        if not isDraggingGrab then 
-            local Char = player.Character
-            if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
 
-            local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
-            local mapToSearch = MapContainer or Workspace
-            local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
+    -- ===========================================
+    -- 👆 CLIQUE
+    -- ===========================================
 
-            if gunDrop then
-                if gunDrop:IsA("BasePart") then
-                    gunDrop.CFrame = Char.HumanoidRootPart.CFrame
-                elseif gunDrop:IsA("Model") and gunDrop.PrimaryPart then
-                    gunDrop:SetPrimaryPartCFrame(Char.HumanoidRootPart.CFrame)
-                else
-                    local handle = gunDrop:FindFirstChild("Handle") or gunDrop:FindFirstChildOfClass("BasePart")
-                    if handle then
-                        handle.CFrame = Char.HumanoidRootPart.CFrame
-                    end
-                end
-            end
-        end 
+    Btn.Activated:Connect(function()
+
+        if isDraggingGrab then
+            return
+        end
+
+
+        GetGun()
+
     end)
 
-    GrabGunButtonGui = GuiBtn
+
+    GrabGunButtonGui =
+        GuiBtn
+
 end
+
+
+-- ====================================================
+-- ❌ REMOVER BOTÃO GRAB GUN
+-- ====================================================
 
 local function RemoveGrabGunButton()
-    if GrabGunButtonGui then 
-        GrabGunButtonGui:Destroy() 
-        GrabGunButtonGui = nil 
+
+    if GrabGunButtonGui then
+
+        GrabGunButtonGui:Destroy()
+
+        GrabGunButtonGui = nil
+
     end
+
 end
-
-
-
-
-
-
-
-
-
-
-
 
 
 
