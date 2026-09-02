@@ -1947,6 +1947,49 @@ local function RemoveShootButton()
 end
 
 -- ===========================================
+-- 🔫 AUTO GRAB GUN
+-- ===========================================
+
+local function GetGun()
+
+    if not AutoGrabGun then
+        return
+    end
+
+    local Char = player.Character
+
+    if not Char
+        or not Char:FindFirstChild("HumanoidRootPart") then
+        return
+    end
+
+    local MapContainer =
+        Workspace:FindFirstChild("CoinContainer", true)
+        and Workspace:FindFirstChild("CoinContainer", true).Parent
+
+    local mapToSearch =
+        MapContainer or Workspace
+
+    local gunDrop =
+        mapToSearch:FindFirstChild("GunDrop", true)
+        or Workspace:FindFirstChild("GunDrop", true)
+
+    if gunDrop
+        and gunDrop:IsA("BasePart") then
+
+        gunDrop.CFrame =
+            Char.HumanoidRootPart.CFrame
+
+    end
+
+end
+
+-- 🔄 Procura continuamente a arma
+RunService.Heartbeat:Connect(function()
+    GetGun()
+end)
+
+-- ===========================================
 -- 🔫 BOTÃO FLUTUANTE & SISTEMA GRAB GUN (UNIFICADO)
 -- ===========================================
 local function CreateGrabGunButton()
