@@ -3906,7 +3906,7 @@ Aba_Sheriff:Section({
     TextSize = 18,
 })
 
-Aba_ConfigButtons:Toggle({
+Aba_Sheriff:Toggle({
 
     Title =
         "Mostrar Silent AIM",
