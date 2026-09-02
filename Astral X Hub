@@ -1,214 +1,4662 @@
--- ===========================================
--- 🌐 INTERFACE PERFIL — COM BOTÃO "X" MULTIAÇÃO
--- ===========================================
+-- ==================================
+-- ASTRAL X HUB V1
+-- ==================================
 
 local Players = game:GetService("Players")
-local CoreGui = game:GetService("CoreGui") or Players.LocalPlayer:WaitForChild("PlayerGui")
+local RunService = game:GetService("RunService")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local Workspace = game:GetService("Workspace")
 local UserInputService = game:GetService("UserInputService")
-local TweenService = game:GetService("TweenService")
+
 local player = Players.LocalPlayer
 
-local NomeJanela = "Perfil_Usuario"
-local Largura = 220
-local Altura = 260
+-- ==================================
+-- CARREGAR WINDUI
+-- ==================================
 
--- ✅ INFORMAÇÕES DO JOGADOR
-local NomeExibicao = player.DisplayName
-local NomeJogador = player.Name
-local NomeExecutor = (identifyexecutor and identifyexecutor()) or "Delta Executor"
+local WindUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"
+))()
 
--- DESTRUIR SE JÁ EXISTIR
-if CoreGui:FindFirstChild(NomeJanela) then
-    CoreGui[NomeJanela]:Destroy()
+-- ==================================
+-- FUNÇÃO DE GRADIENTE
+-- ==================================
+
+local function gradient(text, startColor, endColor)
+    local result = ""
+    local length = #text
+
+    for i = 1, length do
+        local t = (i - 1) / math.max(length - 1, 1)
+
+        local r = math.floor(
+            (startColor.R + (endColor.R - startColor.R) * t) * 255
+        )
+
+        local g = math.floor(
+            (startColor.G + (endColor.G - startColor.G) * t) * 255
+        )
+
+        local b = math.floor(
+            (startColor.B + (endColor.B - startColor.B) * t) * 255
+        )
+
+        result = result
+            .. "<font color=\"rgb("
+            .. r .. ", "
+            .. g .. ", "
+            .. b
+            .. ")\">"
+            .. text:sub(i, i)
+            .. "</font>"
+    end
+
+    return result
 end
 
-local Gui = Instance.new("ScreenGui")
-Gui.Name = NomeJanela
-Gui.ResetOnSpawn = false
-Gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-Gui.Parent = CoreGui
+-- ==================================
+-- CONFIGURAÇÃO VISUAL
+-- ==================================
 
--- JANELA PRETA
-local Janela = Instance.new("Frame")
-Janela.Size = UDim2.fromOffset(Largura, Altura)
-Janela.Position = UDim2.new(0.5, -Largura/2, 0.4, -Altura/2)
-Janela.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
-Janela.ClipsDescendants = true
-Janela.Active = true
-Janela.Parent = Gui
+local WindowTransparency = 0.95
 
-local JanelaCorner = Instance.new("UICorner")
-JanelaCorner.CornerRadius = UDim.new(0, 14)
-JanelaCorner.Parent = Janela
+local MainColor = Color3.fromHex("#000000")
 
--- BORDA ANIMADA (UIStroke)
-local JanelaStroke = Instance.new("UIStroke")
-JanelaStroke.Thickness = 3.5
-JanelaStroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
-JanelaStroke.Parent = Janela
+-- ==================================
+-- TEMAS DO ASTRAL
+-- ==================================
 
-local UIGradient = Instance.new("UIGradient")
-UIGradient.Color = ColorSequence.new({
-    ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(0.5, Color3.fromRGB(255, 255, 255)),
-    ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 255))
+local CoresAstral = {
+
+    -- ORIGINAL
+    ["Dark"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    -- RUBY
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
+
+    -- AMETISTA
+    ["Ametista"] = {
+        Accent = "#B026FF",
+        Button = "#B026FF",
+        Icon = "#B026FF",
+    },
+
+    -- VERDE ÁGUA
+    ["Verde Água"] = {
+        Accent = "#2EE6A6",
+        Button = "#2EE6A6",
+        Icon = "#2EE6A6",
+    },
+
+    -- AZUL GELO
+    ["Azul Gelo"] = {
+        Accent = "#A5F2F3",
+        Button = "#A5F2F3",
+        Icon = "#A5F2F3",
+    },
+
+    -- ROXO NEON
+    ["Roxo Neon"] = {
+        Accent = "#BF00FF",
+        Button = "#BF00FF",
+        Icon = "#BF00FF",
+    },
+
+    -- ROSA NEON
+    ["Rosa Neon"] = {
+        Accent = "#FF1493",
+        Button = "#FF1493",
+        Icon = "#FF1493",
+    },
+
+    -- LARANJA NEON
+    ["Laranja Neon"] = {
+        Accent = "#FF5F00",
+        Button = "#FF5F00",
+        Icon = "#FF5F00",
+    },
+
+    -- AMARELO NEON
+    ["Amarelo Neon"] = {
+        Accent = "#FFFF00",
+        Button = "#FFFF00",
+        Icon = "#FFFF00",
+    },
+
+    -- TURQUESA
+    ["Turquesa"] = {
+        Accent = "#40E0D0",
+        Button = "#40E0D0",
+        Icon = "#40E0D0",
+    },
+
+    -- LAVANDA
+    ["Lavanda"] = {
+        Accent = "#B57EDC",
+        Button = "#B57EDC",
+        Icon = "#B57EDC",
+    },
+
+    -- CORAL
+    ["Coral"] = {
+        Accent = "#FF7F50",
+        Button = "#FF7F50",
+        Icon = "#FF7F50",
+    },
+
+    -- DOURADO
+    ["Dourado"] = {
+        Accent = "#FFD700",
+        Button = "#FFD700",
+        Icon = "#FFD700",
+    },
+
+    -- VIOLETA
+    ["Violeta"] = {
+        Accent = "#7F00FF",
+        Button = "#7F00FF",
+        Icon = "#7F00FF",
+    },
+
+    -- PINK
+    ["Pink"] = {
+        Accent = "#FF69B4",
+        Button = "#FF69B4",
+        Icon = "#FF69B4",
+    },
+
+    -- CORES COMUNS
+    ["Verde"] = {
+        Accent = "#1BF2B2",
+        Button = "#1BF2B2",
+        Icon = "#1BF2B2",
+    },
+
+    ["Azul"] = {
+        Accent = "#1B9CF2",
+        Button = "#1B9CF2",
+        Icon = "#1B9CF2",
+    },
+
+    ["Roxo"] = {
+        Accent = "#9B5CFF",
+        Button = "#9B5CFF",
+        Icon = "#9B5CFF",
+    },
+
+    ["Rosa"] = {
+        Accent = "#FF4FA3",
+        Button = "#FF4FA3",
+        Icon = "#FF4FA3",
+    },
+
+    ["Vermelho"] = {
+        Accent = "#FF4545",
+        Button = "#FF4545",
+        Icon = "#FF4545",
+    },
+
+    ["Laranja"] = {
+        Accent = "#FF8A00",
+        Button = "#FF8A00",
+        Icon = "#FF8A00",
+    },
+
+    ["Amarelo"] = {
+        Accent = "#FFD21F",
+        Button = "#FFD21F",
+        Icon = "#FFD21F",
+    },
+
+    ["Ciano"] = {
+        Accent = "#00D9FF",
+        Button = "#00D9FF",
+        Icon = "#00D9FF",
+    },
+
+    ["Prata"] = {
+        Accent = "#C0C0C0",
+        Button = "#C0C0C0",
+        Icon = "#C0C0C0",
+    },
+
+    ["Branco"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    ["Cinza"] = {
+        Accent = "#808080",
+        Button = "#808080",
+        Icon = "#808080",
+    },
+
+    ["Índigo"] = {
+        Accent = "#4B0082",
+        Button = "#4B0082",
+        Icon = "#4B0082",
+    },
+
+    ["Salmão"] = {
+        Accent = "#FA8072",
+        Button = "#FA8072",
+        Icon = "#FA8072",
+    },
+
+    ["Marrom"] = {
+        Accent = "#8B4513",
+        Button = "#8B4513",
+        Icon = "#8B4513",
+    },
+}
+
+-- ==================================
+-- 🎨 REGISTRAR TEMAS
+-- ==================================
+
+for Nome, Cor in pairs(CoresAstral) do
+
+    WindUI:AddTheme({
+        Name = "Astral_" .. Nome,
+
+        Background = "#18181B",
+
+        Accent = Cor.Accent,
+        Button = Cor.Button,
+        Icon = Cor.Icon,
+
+        Text = "#FFFFFF",
+        Placeholder = "#888888",
+        Outline = "#303036",
+    })
+
+end
+
+-- ==================================
+-- ❤️ RUBY SERÁ A COR INICIAL
+-- ==================================
+
+local CorSelecionada = "Ruby"
+
+-- ==================================
+-- 🪟 CRIAR JANELA
+-- ==================================
+
+local Window = WindUI:CreateWindow({
+
+    Title = gradient(
+        "Walker Nyx Project",
+        Color3.fromHex("#FFFFFF"),
+        Color3.fromHex("#CCCCCC")
+    ),
+
+    Icon = "star",
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1BF2B2"),
+        Color3.fromHex("#1BCBF2")
+    ),
+
+    Size = UDim2.fromOffset(480, 340),
+    MinSize = Vector2.new(420, 300),
+
+    Transparent = true,
+    Transparency = WindowTransparency,
+
+    -- ⭐ RUBY APLICADO AO INICIAR
+    Theme = "Astral_Ruby",
+
+    SideBarWidth = 120,
+    HasOutline = true,
+    HideSearchBar = true,
 })
 
-UIGradient.Transparency = NumberSequence.new({
-    NumberSequenceKeypoint.new(0, 1),
-    NumberSequenceKeypoint.new(0.2, 0),
-    NumberSequenceKeypoint.new(0.65, 0),
-    NumberSequenceKeypoint.new(0.85, 0.8),
-    NumberSequenceKeypoint.new(1, 1)
-})
+-- ==================================
+-- 🎨 COR DO FUNDO
+-- ==================================
 
-UIGradient.Rotation = 0
-UIGradient.Parent = JanelaStroke
+pcall(function()
 
--- ANIMAÇÃO DE ROTAÇÃO
-local tweenInfo = TweenInfo.new(5.0, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1)
-local animation = TweenService:Create(UIGradient, tweenInfo, {Rotation = 360})
-animation:Play()
+    if Window.UIElements then
 
--- ===========================================
--- BOTÃO "X" (EXECUTA SCRIPT + FECHA INTERFACE)
--- ===========================================
+        if Window.UIElements.Main then
 
-local BotaoX = Instance.new("TextButton")
-BotaoX.Name = "BotaoX"
-BotaoX.Size = UDim2.fromOffset(26, 26)
-BotaoX.Position = UDim2.new(1, -34, 0, 8) -- Canto superior direito
-BotaoX.BackgroundColor3 = Color3.fromRGB(220, 40, 40) -- Vermelho
-BotaoX.Text = "X"
-BotaoX.TextColor3 = Color3.fromRGB(255, 255, 255)
-BotaoX.Font = Enum.Font.GothamBold
-BotaoX.TextSize = 14
-BotaoX.ZIndex = 5
-BotaoX.Parent = Janela
+            Window.UIElements.Main.BackgroundColor3 =
+                MainColor
 
-local BtnXCorner = Instance.new("UICorner")
-BtnXCorner.CornerRadius = UDim.new(0, 6)
-BtnXCorner.Parent = BotaoX
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
+        end
 
--- 🔴 AÇÃO DO "X": EXECUTA O SCRIPT E FECHA A INTERFACE
-BotaoX.MouseButton1Click:Connect(function()
-    -- Executa o script em segundo plano
-    task.spawn(function()
+
+        if Window.UIElements.SideBar then
+
+            Window.UIElements.SideBar.BackgroundColor3 =
+                Color3.fromHex("#141417")
+
+            Window.UIElements.SideBar.BackgroundTransparency =
+                WindowTransparency
+        end
+
+
+        -- ==================================
+        -- 🔵 CANTOS ARREDONDADOS DA SIDEBAR
+        -- ==================================
+
         pcall(function()
-            loadstring(game:HttpGet("https://raw.githubusercontent.com/guilhermefariasandrade72-cell/Astral-X-Hub/refs/heads/main/%E4%B9%88%EF%BD%81%EF%BD%93%EF%BD%94%EF%BD%92%EF%BD%81%EF%BD%8C%E3%85%A4%20%EF%BD%98%EF%BD%89%EF%BD%94%EF%BD%85%EF%BD%92%E2%80%80%E2%95%B0%E2%80%BF%E2%95%AF"))()
+
+            if Window.UIElements
+                and Window.UIElements.SideBar then
+
+                Window.UIElements.SideBar.ClipsDescendants =
+                    true
+
+                local Corner =
+                    Window.UIElements.SideBar
+                    :FindFirstChildOfClass("UICorner")
+
+                if Corner then
+
+                    Corner.CornerRadius =
+                        UDim.new(0, 18)
+
+                else
+
+                    Corner = Instance.new("UICorner")
+
+                    Corner.CornerRadius =
+                        UDim.new(0, 18)
+
+                    Corner.Parent =
+                        Window.UIElements.SideBar
+
+                end
+
+            end
+
         end)
-    end)
-    
-    -- Destrói a interface imediatamente
-    Gui:Destroy()
+
+
+    elseif Window.Frame then
+
+        Window.Frame.BackgroundColor3 =
+            MainColor
+
+        Window.Frame.BackgroundTransparency =
+            WindowTransparency
+
+    end
+
 end)
 
--- ===========================================
--- CÍRCULO E PERFIL DO JOGADOR
--- ===========================================
 
-local CirculoPerfil = Instance.new("Frame")
-CirculoPerfil.Size = UDim2.fromOffset(90, 90)
-CirculoPerfil.Position = UDim2.new(0.5, -45, 0, 15)
-CirculoPerfil.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-CirculoPerfil.Parent = Janela
+-- ==================================
+-- 🖼️ IMAGEM DE FUNDO
+-- ==================================
 
-local CirculoCorner = Instance.new("UICorner")
-CirculoCorner.CornerRadius = UDim.new(1, 0)
-CirculoCorner.Parent = CirculoPerfil
+pcall(function()
 
-local ImagemPerfil = Instance.new("ImageLabel")
-ImagemPerfil.Size = UDim2.new(0.92, 0, 0.92, 0)
-ImagemPerfil.Position = UDim2.new(0.04, 0, 0.04, 0)
-ImagemPerfil.BackgroundTransparency = 1
-ImagemPerfil.Parent = CirculoPerfil
+    if not Window.UIElements
+        or not Window.UIElements.Main then
+        return
+    end
 
-local ImagemCorner = Instance.new("UICorner")
-ImagemCorner.CornerRadius = UDim.new(1, 0)
-ImagemCorner.Parent = ImagemPerfil
+    local Main =
+        Window.UIElements.Main
 
+    local Background =
+        Instance.new("ImageLabel")
+
+    Background.Name =
+        "AstralXBackground"
+
+    Background.Size =
+        UDim2.new(1, 0, 1, 0)
+
+    Background.Position =
+        UDim2.new(0, 0, 0, 0)
+
+    Background.BackgroundTransparency =
+        1
+
+    Background.BorderSizePixel =
+        0
+
+    -- 🖼️ IMAGEM
+    Background.Image =
+        "rbxassetid://79993609569489"
+
+    Background.ImageTransparency =
+        0
+
+    Background.ImageColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Background.ScaleType =
+        Enum.ScaleType.Crop
+
+    -- 🔴 CANTOS ARREDONDADOS DA IMAGEM
+    local ImageCorner =
+        Instance.new("UICorner")
+
+    ImageCorner.Name =
+        "AstralXImageCorner"
+
+    ImageCorner.CornerRadius =
+        UDim.new(0, 18)
+
+    ImageCorner.Parent =
+        Background
+
+    -- ⭐ ATRÁS DOS ELEMENTOS DO HUB
+    Background.ZIndex = 1
+
+    Background.Parent =
+        Main
+
+end)
+
+
+-- ==================================
+-- ❤️ BOTÃO FLUTUANTE
+-- Ruby: vermelho escuro → vermelho claro
+-- ==================================
+
+local OpenButton =
+    Window:EditOpenButton({
+
+        Title = "Walker Nyx",
+        Icon = "star",
+
+        CornerRadius =
+            UDim.new(0, 12),
+
+        StrokeThickness = 2,
+
+        Color = ColorSequence.new(
+
+            Color3.fromHex("#9B111E"),
+
+            Color3.fromHex("#FF4D5A")
+        ),
+
+        Draggable = true,
+    })
+
+
+-- ==========================================
+-- 🔴 TAMANHO DO BOTÃO ASTRAL
+-- ==========================================
+
+local EscalaBotaoAstral = nil
+
+task.wait(1)
+
+pcall(function()
+
+    local CoreGui =
+        game:GetService("CoreGui")
+
+    for _, Obj in ipairs(
+        CoreGui:GetDescendants()
+    ) do
+
+        if Obj:IsA("TextLabel")
+            and Obj.Text == "Astral" then
+
+            local TextButton =
+                Obj.Parent
+
+            if TextButton
+                and TextButton:IsA("TextButton") then
+
+                -- 📦 Frame que contém o botão
+                local Container =
+                    TextButton.Parent
+
+                if Container then
+
+                    EscalaBotaoAstral =
+                        Container:FindFirstChildOfClass(
+                            "UIScale"
+                        )
+
+                    if not EscalaBotaoAstral then
+
+                        EscalaBotaoAstral =
+                            Instance.new("UIScale")
+
+                        EscalaBotaoAstral.Parent =
+                            Container
+
+                    end
+
+                    EscalaBotaoAstral.Scale =
+                        1
+
+                    print(
+                        "✅ Escala do botão Astral encontrada!"
+                    )
+
+                    print(
+                        "📦 Container:",
+                        Container:GetFullName()
+                    )
+
+                end
+
+                break
+
+            end
+
+        end
+
+    end
+
+end)
+
+-- ==================================
+-- VARIÁVEIS DA ABA MAIN
+-- ==================================
+-- AITO FARM 
+local CONFIG_FARM = {
+    velocidade = 24,
+    limite = 40,
+    alcance_maximo = 999
+}
+local AutoFarmAtivo = false
+local collectedCoins = {}
+local KillAllAoEncher = false
+
+local AutoFarmButtonGui = nil
+local isDraggingFarm = false
+
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
+local Pressionado = false
+
+local GrabGunButtonGui = nil
+local isDraggingGrab = false
+local buttonStartPosGrab, dragStartPosGrab
+
+local KillAura = false
+local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
+
+-- ==================================
+-- VARIÁVEIS DA ABA ESP
+-- ==================================
+local ESPHighlightAtivo = false
+local ESPNomeAtivo = false
+local ESPDistanciaAtiva = false
+local ESPTracerAtivo = false
+
+local Highlights = {}
+local NamesESP = {}
+local DistanceESP = {}
+local TracersESP = {}
+local DadosCargos = {}
+
+-- ==================================
+-- VARIÁVEIS DA ABA LOCAL PLAYER
+-- ==================================
+local InvisivelButtonGui = nil
+local isDraggingInvis = false
+
+local InvisivelAtivo = false
+local PartesCorpo = {}
+local Personagem, Humanoid, Raiz
+
+local VelocidadePadrao = 16
+local ForcaPuloPadrao = 50
+local VelocidadeNoPulo = 300
+local FOV_Padrao = 70
+
+local FlyAtivo = false
+local FlyVelocidade = 16
+
+local bv, bg, con
+local controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+
+local WalkFlingAtivo = false
+local FlingPower = 100000000000
+local FlingConnection = nil
+
+-- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
+_G.PuloInfinito = false
+_G.SpeedNoPulo = false
+_G.CameraInfinita = false
+_G.CameraNoClip = false
+
+-- ==================================
+-- VARIÁVEIS DA ABA TELEPORTE 
+-- ==================================
+local TeleportandoLocais = false
+
+local JogadorSelecionadoTP = nil
+local DropdownJogadores = nil
+
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local EmCooldownHop = false
+local ServidoresVisitados = {}
+
+-- ====================================================
+-- ABAS
+-- ====================================================
+
+local Aba_Murderer = Window:Tab({
+    Title = "Murderer",
+    Icon = "swords"
+})
+
+local Aba_Sheriff = Window:Tab({
+    Title = "Sheriff",
+    Icon = "crosshair",
+})
+
+local Aba_AutoFarm = Window:Tab({
+    Title = "Auto Farm",
+    Icon = "coins",
+})
+
+local Aba_ESP = Window:Tab({
+    Title = "ESP",
+    Icon = "eye",
+})
+
+local Aba_LocalPlayer = Window:Tab({
+    Title = "Local Player",
+    Icon = "user",
+})
+
+local Aba_Camera = Window:Tab({
+    Title = "Camera",
+    Icon = "camera",
+})
+
+local Aba_Trollagem = Window:Tab({
+    Title = "Trollagem",
+    Icon = "laugh",
+})
+
+local Aba_Tele = Window:Tab({
+    Title = "Teleporte",
+    Icon = "globe",
+})
+
+local Aba_ConfigButtons = Window:Tab({
+    Title = "Config Buttons",
+    Icon = "tune",
+})
+
+local Aba_Config = Window:Tab({
+    Title = "Config UI",
+    Icon = "settings",
+})
+
+-- ====================================================
+-- SISTEMA DA ABA MURDERER 
+-- ====================================================
+local function ExecutarAtaque(Alvo)
+    local Char = player.Character
+    if not Char then return end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player.Backpack and player.Backpack:FindFirstChild("Knife"))
+    if not Faca then return end
+    
+    if Faca.Parent ~= Char then 
+        Faca.Parent = Char 
+        task.wait(0.02) 
+    end
+    
+    local Eventos = Faca:FindFirstChild("Events")
+    if not Eventos then return end
+
+    if Alvo and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+        pcall(function()
+            Eventos.KnifeStabbed:FireServer()
+            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+        end)
+    end
+end
+
+-- Função para o Botão de Clique Instantâneo
+local function KillAllInstantaneo()
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            ExecutarAtaque(Alvo)
+        end
+    end
+end
+
+-- Função para o Toggle (Mata 1 por 1 com pequeno intervalo)
+local function KillAuraLoop()
+    for _, Alvo in ipairs(Players:GetPlayers()) do
+        if not KillAura then break end
+        if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+            ExecutarAtaque(Alvo)
+            task.wait(0.15)
+        end
+    end
+end
+
+-- Loop de execução do Toggle
 task.spawn(function()
-    local IdUsuario = player.UserId
-    local Sucesso, Icone = pcall(function()
-        return Players:GetUserThumbnailAsync(IdUsuario, Enum.ThumbnailType.HeadShot, Enum.ThumbnailSize.Size420x420)
-    end)
-    if Sucesso and Icone then
-        ImagemPerfil.Image = Icone
+    while true do
+        task.wait(0.3)
+        if KillAura then
+            KillAuraLoop()
+        end
     end
 end)
 
-local function PegarHoras()
-    local Tempo = os.date("*t")
-    return string.format("%02d:%02d", Tempo.hour, Tempo.min)
+-- ===========================================
+-- 🎛️ CONFIG BUTTONS - KILL ALL
+-- ===========================================
+
+-- ===========================================
+-- ⚙️ CONFIGURAÇÕES INICIAIS
+-- ===========================================
+
+local KillAllButtonStyle = "Quadrado"
+local KillAllButtonSize = 75
+
+local KillAllButtonGui = KillAllButtonGui or nil
+
+local isDraggingKill = false
+local buttonStartPosKill = nil
+local dragStartPosKill = nil
+
+
+-- ===========================================
+-- 🔄 ATUALIZAR BOTÃO
+-- ===========================================
+
+local function AtualizarKillAllButton()
+
+    if not KillAllButtonGui then
+        return
+    end
+
+    local Btn =
+        KillAllButtonGui:FindFirstChild("KillAllButton")
+
+    if not Btn then
+        return
+    end
+
+
+    -- ===========================================
+    -- 📏 TAMANHO
+    -- ===========================================
+
+    if KillAllButtonStyle == "Quadrado"
+        or KillAllButtonStyle == "Círculo" then
+
+        Btn.Size =
+            UDim2.fromOffset(
+                KillAllButtonSize,
+                KillAllButtonSize
+            )
+
+    elseif KillAllButtonStyle == "Retângulo" then
+
+        Btn.Size =
+            UDim2.fromOffset(
+                KillAllButtonSize + 35,
+                math.floor(KillAllButtonSize * 0.55)
+            )
+
+    end
+
+
+    -- ===========================================
+    -- 🔵 FORMATO
+    -- ===========================================
+
+    local Corner =
+        Btn:FindFirstChild("KillAllCorner")
+
+    if not Corner then
+
+        Corner =
+            Instance.new("UICorner")
+
+        Corner.Name =
+            "KillAllCorner"
+
+        Corner.Parent =
+            Btn
+
+    end
+
+
+    if KillAllButtonStyle == "Círculo" then
+
+        Corner.CornerRadius =
+            UDim.new(1, 0)
+
+    elseif KillAllButtonStyle == "Quadrado" then
+
+        Corner.CornerRadius =
+            UDim.new(0, 10)
+
+    elseif KillAllButtonStyle == "Retângulo" then
+
+        Corner.CornerRadius =
+            UDim.new(0, 10)
+
+    end
+
 end
 
-local function CriarTexto(Ordem, Titulo, Valor)
-    local Container = Instance.new("Frame")
-    Container.Size = UDim2.new(1, -20, 0, 20)
-    Container.Position = UDim2.new(0, 10, 0, 120 + (Ordem - 1) * 28)
-    Container.BackgroundTransparency = 1
-    Container.Parent = Janela
+
+-- ===========================================
+-- 🗡️ CRIAR BOTÃO KILL ALL
+-- ===========================================
+
+local function CreateKillAllButton()
+
+    if KillAllButtonGui then
+        return
+    end
+
+
+    -- ===========================================
+    -- 📦 GUI
+    -- ===========================================
+
+    local ParentGui = CoreGui
+
+    pcall(function()
+
+        if not ParentGui then
+
+            ParentGui =
+                player:WaitForChild("PlayerGui")
+
+        end
+
+    end)
+
+
+    local GuiBtn =
+        Instance.new("ScreenGui")
+
+    GuiBtn.Name =
+        "AstralX_KillAllButton"
+
+    GuiBtn.ResetOnSpawn =
+        false
+
+    GuiBtn.ZIndexBehavior =
+        Enum.ZIndexBehavior.Sibling
+
+    GuiBtn.Parent =
+        ParentGui
+
+
+    -- ===========================================
+    -- 🔴 BOTÃO
+    -- ===========================================
+
+    local Btn =
+        Instance.new("ImageButton")
+
+    Btn.Name =
+        "KillAllButton"
+
+    -- ⭐ COMEÇA QUADRADO
+    Btn.Size =
+        UDim2.fromOffset(
+            KillAllButtonSize,
+            KillAllButtonSize
+        )
+
+    -- ⭐ POSIÇÃO PELO CENTRO
+    Btn.AnchorPoint =
+        Vector2.new(0.5, 0.5)
+
+    Btn.Position =
+        UDim2.new(
+            0.5,
+            0,
+            0.7,
+            0
+        )
+
+    Btn.BackgroundColor3 =
+        Color3.fromRGB(150, 20, 20)
+
+    Btn.BackgroundTransparency =
+        0.3
+
+    Btn.AutoButtonColor =
+        false
+
+    Btn.Parent =
+        GuiBtn
+
+
+    -- ===========================================
+    -- 🔵 CANTOS
+    -- ===========================================
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.Name =
+        "KillAllCorner"
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
+    Corner.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🔴 BORDA
+    -- ===========================================
+
+    local Borda =
+        Instance.new("UIStroke")
+
+    Borda.Name =
+        "KillAllBorder"
+
+    Borda.Color =
+        Color3.fromRGB(255, 50, 50)
+
+    Borda.Thickness =
+        2
+
+    Borda.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    Borda.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 📝 TEXTO
+    -- ===========================================
+
+    local Texto =
+        Instance.new("TextLabel")
+
+    Texto.Name =
+        "KillAllText"
+
+    Texto.Size =
+        UDim2.new(1, 0, 1, 0)
+
+    Texto.BackgroundTransparency =
+        1
+
+    Texto.Text =
+        "Kill All"
+
+    Texto.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Texto.TextSize =
+        15
+
+    Texto.Font =
+        Enum.Font.GothamBold
+
+    Texto.TextScaled =
+        false
+
+    Texto.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🎬 ESCALA PARA ANIMAÇÃO
+    -- ===========================================
+
+    local TweenService =
+        game:GetService("TweenService")
+
+    local ButtonScale =
+        Instance.new("UIScale")
+
+    ButtonScale.Name =
+        "KillAllButtonScale"
+
+    ButtonScale.Scale =
+        1
+
+    ButtonScale.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🖱️ ARRASTAR
+    -- ===========================================
+
+    Btn.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            isDraggingKill =
+                true
+
+            buttonStartPosKill =
+                Btn.Position
+
+            dragStartPosKill =
+                Input.Position
+
+
+            Input.Changed:Connect(function()
+
+                if Input.UserInputState ==
+                    Enum.UserInputState.End then
+
+                    isDraggingKill =
+                        false
+
+                end
+
+            end)
+
+        end
+
+    end)
+
+
+    Btn.InputChanged:Connect(function(Input)
+
+        if isDraggingKill
+            and (
+                Input.UserInputType ==
+                    Enum.UserInputType.Touch
+
+                or Input.UserInputType ==
+                    Enum.UserInputType.MouseMovement
+            ) then
+
+            Btn.Position =
+                buttonStartPosKill
+                + UDim2.fromOffset(
+
+                    Input.Position.X
+                        - dragStartPosKill.X,
+
+                    Input.Position.Y
+                        - dragStartPosKill.Y
+
+                )
+
+        end
+
+    end)
+
+
+    -- ===========================================
+    -- 👆 CLIQUE + ANIMAÇÃO CENTRALIZADA
+    -- ===========================================
+
+    Btn.MouseButton1Click:Connect(function()
+
+        if isDraggingKill then
+            return
+        end
+
+
+        -- Evita acumular animações
+        ButtonScale.Scale =
+            1
+
+
+        -- 🔽 DIMINUI PARA DENTRO
+        local Encolher =
+            TweenService:Create(
+
+                ButtonScale,
+
+                TweenInfo.new(
+
+                    0.08,
+
+                    Enum.EasingStyle.Quad,
+
+                    Enum.EasingDirection.Out
+
+                ),
+
+                {
+                    Scale = 0.88
+                }
+
+            )
+
+
+        -- 🔼 CRESCE DO CENTRO PARA FORA
+        local Crescer =
+            TweenService:Create(
+
+                ButtonScale,
+
+                TweenInfo.new(
+
+                    0.12,
+
+                    Enum.EasingStyle.Back,
+
+                    Enum.EasingDirection.Out
+
+                ),
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+
+        Encolher:Play()
+
+
+        Encolher.Completed:Once(function()
+
+            Crescer:Play()
+
+        end)
+
+
+        -- =======================================
+        -- 🗡️ EXECUTA O KILL ALL
+        -- =======================================
+
+        KillAllInstantaneo()
+
+    end)
+
+
+    -- ===========================================
+    -- 💾 SALVAR GUI
+    -- ===========================================
+
+    KillAllButtonGui =
+        GuiBtn
+
+
+    -- ===========================================
+    -- ⭐ APLICAR FORMATO INICIAL
+    -- ===========================================
+
+    AtualizarKillAllButton()
+
+end
+
+
+-- ===========================================
+-- ❌ REMOVER BOTÃO
+-- ===========================================
+
+local function RemoveKillAllButton()
+
+    if KillAllButtonGui then
+
+        KillAllButtonGui:Destroy()
+
+        KillAllButtonGui = nil
+
+    end
+
+end
+
+-- ==================================
+-- 🔴 SISTEMA DE KILL AURA + CÍRCULO DINÂMICO
+-- =================================
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
+
+local KillAuraAtivo = false
+local RaioKillAura = 15
+local MostrarCirculoAura = false
+
+local CirculoAdornment = nil
+
+-- 📏 CRIAR / ATUALIZAR O CÍRCULO VERMELHO VISUAL
+local function AtualizarCirculoAura()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+
+    -- Removido o 'KillAuraAtivo' daqui para dependente apenas do 'MostrarCirculoAura'
+    if not MostrarCirculoAura or not hrp then
+        if CirculoAdornment then
+            CirculoAdornment:Destroy()
+            CirculoAdornment = nil
+        end
+        return
+    end
+
+    if not CirculoAdornment or not CirculoAdornment.Parent then
+        CirculoAdornment = Instance.new("CylinderHandleAdornment")
+        CirculoAdornment.Name = "KillAuraRangeVisual"
+        CirculoAdornment.Color3 = Color3.fromRGB(255, 0, 0)
+        CirculoAdornment.Transparency = 0.6
+        CirculoAdornment.AlwaysOnTop = true
+        CirculoAdornment.ZIndex = 5
+        CirculoAdornment.CFrame = CFrame.Angles(math.rad(90), 0, 0)
+    end
+
+    CirculoAdornment.Adornee = hrp
+    CirculoAdornment.Parent = hrp
+    CirculoAdornment.Height = 0.2
+    CirculoAdornment.Radius = RaioKillAura
+end
+
+-- ⚔️ EXECUTAR ATAQUE DE FACA
+local function ExecutarAtaque(Alvo)
+    local Char = player.Character
+    if not Char then return end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
+    if not Faca then return end
+    
+    if Faca.Parent ~= Char then 
+        Faca.Parent = Char 
+        task.wait(0.02) 
+    end
+    
+    local Eventos = Faca:FindFirstChild("Events")
+    if not Eventos then return end
+
+    if Alvo and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+        pcall(function()
+            Eventos.KnifeStabbed:FireServer()
+            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+        end)
+    end
+end
+
+-- 🔴 LOOP DE ATUALIZAÇÃO DO CÍRCULO (Roda de forma independente do Kill Aura)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        AtualizarCirculoAura()
+    end
+end)
+
+-- ⚔️ LOOP DO KILL AURA (Roda apenas a lógica de ataque)
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+
+        if KillAuraAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local hum = char and char:FindFirstChildOfClass("Humanoid")
+
+            if hrp and hum and hum.Health > 0 then
+                for _, Alvo in ipairs(Players:GetPlayers()) do
+                    if not KillAuraAtivo then break end
+                    
+                    if Alvo ~= player and Alvo.Character then
+                        local alvoHrp = Alvo.Character:FindFirstChild("HumanoidRootPart")
+                        local alvoHum = Alvo.Character:FindFirstChildOfClass("Humanoid")
+                        
+                        if alvoHrp and alvoHum and alvoHum.Health > 0 then
+                            local distancia = (hrp.Position - alvoHrp.Position).Magnitude
+                            
+                            if distancia <= RaioKillAura then
+                                ExecutarAtaque(Alvo)
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+    AtualizarCirculoAura()
+end)
+
+-- =========================================================
+-- 📦 VARIÁVEIS GLOBAIS
+-- =========================================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+local JogadorSelecionado = nil
+local ConexaoGrabLocal = nil
+
+-- =========================================================
+-- 🧲 FUNÇÃO VISUAL GRAB PLAYER (LOCAL/CLIENTE)
+-- =========================================================
+
+local function TrancarJogadorNaFrente()
+    if ConexaoGrabLocal then
+        ConexaoGrabLocal:Disconnect()
+        ConexaoGrabLocal = nil
+    end
+
+    if not JogadorSelecionado or JogadorSelecionado == "Nenhum Jogador" then return end
+
+    local targetPlayer = Players:FindFirstChild(JogadorSelecionado)
+    if not targetPlayer then return end
+
+    local character = player.Character
+    local targetChar = targetPlayer.Character
+
+    if not character or not targetChar then return end
+
+    local myHRP = character:FindFirstChild("HumanoidRootPart")
+    local targetHRP = targetChar:FindFirstChild("HumanoidRootPart")
+
+    if not myHRP or not targetHRP then return end
+
+    ConexaoGrabLocal = RunService.RenderStepped:Connect(function()
+        if character and character:FindFirstChild("HumanoidRootPart") and targetChar and targetChar:FindFirstChild("HumanoidRootPart") then
+            -- Fixa 2.5 studs na sua frente, virado para você
+            local posicaoFrente = myHRP.CFrame * CFrame.new(0, 0, -2.5) * CFrame.Angles(0, math.rad(180), 0)
+            targetHRP.CFrame = posicaoFrente
+        else
+            if ConexaoGrabLocal then
+                ConexaoGrabLocal:Disconnect()
+                ConexaoGrabLocal = nil
+            end
+        end
+    end)
+end
+
+local function SoltarJogador()
+    if ConexaoGrabLocal then
+        ConexaoGrabLocal:Disconnect()
+        ConexaoGrabLocal = nil
+    end
+end
+
+-- ====================================================
+-- SISTEMA DA ABA SHERIFF
+-- ====================================================
+
+-- FOV CICLE
+local LockCameraAtivo = false
+local MostrarCirculo = false
+local RaioFOV = 150
+
+-- ==================================
+-- 🎨 CÍRCULO VISUAL DE FOV (Corrigido para Redondo)
+-- ==================================
+local FOVCircle = nil
+
+task.spawn(function()
+    local Players = game:GetService("Players")
+    local CoreGui = game:GetService("CoreGui")
+    local localPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+    
+    local parentGui = localPlayer:WaitForChild("PlayerGui", 5) or CoreGui
+
+    local FOVScreen = Instance.new("ScreenGui")
+    FOVScreen.Name = "FOVCircleGui"
+    FOVScreen.ResetOnSpawn = false
+    FOVScreen.IgnoreGuiInset = true -- Centraliza perfeitamente com a mira
+    FOVScreen.Parent = parentGui
+
+    FOVCircle = Instance.new("Frame")
+    FOVCircle.Name = "Circle"
+    FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+    FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+    FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+    FOVCircle.BackgroundTransparency = 1
+    FOVCircle.Visible = false
+    FOVCircle.Parent = FOVScreen
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Color3.fromRGB(255, 255, 255) -- Cor Branca
+    UIStroke.Thickness = 1.5
+    UIStroke.Parent = FOVCircle
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(1, 0) -- 📌 CORRIGIDO: UDim em vez de UDim2 (Cria o círculo perfeito)
+    UICorner.Parent = FOVCircle
+end)
+
+-- ==================================
+-- 🔍 FUNÇÕES AUXILIARES DE DETECÇÃO
+-- ==================================
+
+local function TemArma()
+    local localPlayer = game:GetService("Players").LocalPlayer
+    if not localPlayer then return false end
+    local char = localPlayer.Character
+    if not char then return false end
+    
+    local armaNoChar = char:FindFirstChild("Gun")
+    if not armaNoChar then
+        for _, item in ipairs(char:GetChildren()) do
+            if item:IsA("Tool") and item.Name:lower():find("gun") then
+                armaNoChar = item
+                break
+            end
+        end
+    end
+    if armaNoChar then return true end
+
+    local backpack = localPlayer:FindFirstChild("Backpack")
+    if backpack then
+        local armaNaMochila = backpack:FindFirstChild("Gun")
+        if not armaNaMochila then
+            for _, item in ipairs(backpack:GetChildren()) do
+                if item:IsA("Tool") and item.Name:lower():find("gun") then
+                    armaNaMochila = item
+                    break
+                end
+            end
+        end
+        if armaNaMochila then return true end
+    end
+
+    return false
+end
+
+local function ObterMurderer()
+    local localPlayer = game:GetService("Players").LocalPlayer
+    if not localPlayer then return nil end
+    
+    for _, p in ipairs(game:GetService("Players"):GetPlayers()) do
+        if p ~= localPlayer and p.Character then
+            local char = p.Character
+            local hum = char:FindFirstChildOfClass("Humanoid")
+            local hrp = char:FindFirstChild("HumanoidRootPart")
+            
+            if hum and hum.Health > 0 and hrp then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = (p:GetAttribute("Role") == "Murderer") or (temFaca ~= nil)
+                
+                if eMurder then
+                    return hrp
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function EstaDentroDoFOV(posicao3D)
+    local camera = workspace.CurrentCamera
+    if not camera then return false end
+    
+    local posTela, visivel = camera:WorldToViewportPoint(posicao3D)
+    if not visivel then return false end
+
+    local centroTela = Vector2.new(camera.ViewportSize.X / 2, camera.ViewportSize.Y / 2)
+    local posAlvo2D = Vector2.new(posTela.X, posTela.Y)
+    
+    local distanciaPixels = (posAlvo2D - centroTela).Magnitude
+    return distanciaPixels <= (RaioFOV / 2)
+end
+
+-- ==================================
+-- 🎥 LOOP DE ATUALIZAÇÃO DA CÂMERA
+-- ==================================
+game:GetService("RunService").RenderStepped:Connect(function()
+    if not LockCameraAtivo or not TemArma() then return end
+
+    local hrpMurderer = ObterMurderer()
+    if hrpMurderer and EstaDentroDoFOV(hrpMurderer.Position) then
+        local camera = workspace.CurrentCamera
+        if camera then
+            local posAlvo = hrpMurderer.Position + Vector3.new(0, 0.5, 0)
+            camera.CFrame = CFrame.new(camera.CFrame.Position, posAlvo)
+        end
+    end
+end)
+
+-- ===========================================
+-- 🎯 CONFIG BUTTONS - SILENT AIM
+-- ===========================================
+
+local SilentAimButtonStyle = "Quadrado"
+local SilentAimButtonSize = 75
+
+local SilentAimButtonGui = SilentAimButtonGui or nil
+
+local isDraggingSilent = false
+local buttonStartPosSilent = nil
+local dragStartPosSilent = nil
+
+
+-- ===========================================
+-- 🔄 ATUALIZAR BOTÃO
+-- ===========================================
+
+local function AtualizarSilentAimButton()
+
+    if not SilentAimButtonGui then
+        return
+    end
+
+    local Btn =
+        SilentAimButtonGui:FindFirstChild("SilentAimButton")
+
+    if not Btn then
+        return
+    end
+
+
+    -- 📏 TAMANHO
+    if SilentAimButtonStyle == "Quadrado"
+        or SilentAimButtonStyle == "Círculo" then
+
+        Btn.Size = UDim2.fromOffset(
+            SilentAimButtonSize,
+            SilentAimButtonSize
+        )
+
+    elseif SilentAimButtonStyle == "Retângulo" then
+
+        Btn.Size = UDim2.fromOffset(
+            SilentAimButtonSize + 35,
+            math.floor(SilentAimButtonSize * 0.55)
+        )
+
+    end
+
+
+    -- 🔵 FORMATO
+    local Corner =
+        Btn:FindFirstChild("SilentAimCorner")
+
+    if not Corner then
+
+        Corner = Instance.new("UICorner")
+        Corner.Name = "SilentAimCorner"
+        Corner.Parent = Btn
+
+    end
+
+
+    if SilentAimButtonStyle == "Círculo" then
+
+        Corner.CornerRadius =
+            UDim.new(1, 0)
+
+    elseif SilentAimButtonStyle == "Quadrado" then
+
+        Corner.CornerRadius =
+            UDim.new(0, 10)
+
+    elseif SilentAimButtonStyle == "Retângulo" then
+
+        Corner.CornerRadius =
+            UDim.new(0, 10)
+
+    end
+
+end
+
+
+-- ===========================================
+-- 🎯 CRIAR BOTÃO SILENT AIM
+-- ===========================================
+
+local function CreateShootButton()
+
+    if SilentAimButtonGui then
+        return
+    end
+
+
+    local ParentGui = CoreGui
+
+    pcall(function()
+
+        if not ParentGui then
+            ParentGui =
+                player:WaitForChild("PlayerGui")
+        end
+
+    end)
+
+
+    local GuiBtn =
+        Instance.new("ScreenGui")
+
+    GuiBtn.Name =
+        "AstralX_ShootButton"
+
+    GuiBtn.ResetOnSpawn =
+        false
+
+    GuiBtn.ZIndexBehavior =
+        Enum.ZIndexBehavior.Sibling
+
+    GuiBtn.Parent =
+        ParentGui
+
+
+    -- ===========================================
+    -- 🔴 BOTÃO
+    -- ===========================================
+
+    local Btn =
+        Instance.new("ImageButton")
+
+    Btn.Name =
+        "SilentAimButton"
+
+    Btn.Size =
+        UDim2.fromOffset(
+            SilentAimButtonSize,
+            SilentAimButtonSize
+        )
+
+    -- ⭐ POSIÇÃO PELO CENTRO
+    Btn.AnchorPoint =
+        Vector2.new(0.5, 0.5)
+
+    Btn.Position =
+        UDim2.new(
+            0.5,
+            0,
+            0.6,
+            0
+        )
+
+    Btn.BackgroundColor3 =
+        Color3.fromRGB(0, 0, 0)
+
+    Btn.BackgroundTransparency =
+        0.4
+
+    Btn.AutoButtonColor =
+        false
+
+    Btn.Parent =
+        GuiBtn
+
+
+    -- ===========================================
+    -- 🔵 CANTOS
+    -- ===========================================
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.Name =
+        "SilentAimCorner"
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
+    Corner.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- ⚫ BORDA
+    -- ===========================================
+
+    local Borda =
+        Instance.new("UIStroke")
+
+    Borda.Name =
+        "SilentAimBorder"
+
+    Borda.Color =
+        Color3.fromRGB(0, 0, 0)
+
+    Borda.Thickness =
+        2
+
+    Borda.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    Borda.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 📝 TEXTO
+    -- ===========================================
+
+    local Texto =
+        Instance.new("TextLabel")
+
+    Texto.Name =
+        "SilentAimText"
+
+    Texto.Size =
+        UDim2.new(1, 0, 1, 0)
+
+    Texto.BackgroundTransparency =
+        1
+
+    Texto.Text =
+        "Silent AIM"
+
+    Texto.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Texto.TextSize =
+        15
+
+    Texto.Font =
+        Enum.Font.GothamBold
+
+    Texto.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🎬 ESCALA DA ANIMAÇÃO
+    -- ===========================================
+
+    local TweenService =
+        game:GetService("TweenService")
+
+    local ButtonScale =
+        Instance.new("UIScale")
+
+    ButtonScale.Name =
+        "SilentAimButtonScale"
+
+    ButtonScale.Scale =
+        1
+
+    ButtonScale.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🖱️ ARRASTAR
+    -- ===========================================
+
+    Btn.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            isDraggingSilent =
+                true
+
+            buttonStartPosSilent =
+                Btn.Position
+
+            dragStartPosSilent =
+                Input.Position
+
+
+            Input.Changed:Connect(function()
+
+                if Input.UserInputState ==
+                    Enum.UserInputState.End then
+
+                    isDraggingSilent =
+                        false
+
+                end
+
+            end)
+
+        end
+
+    end)
+
+
+    Btn.InputChanged:Connect(function(Input)
+
+        if isDraggingSilent
+            and (
+                Input.UserInputType ==
+                    Enum.UserInputType.Touch
+
+                or Input.UserInputType ==
+                    Enum.UserInputType.MouseMovement
+            ) then
+
+            Btn.Position =
+                buttonStartPosSilent
+                + UDim2.fromOffset(
+
+                    Input.Position.X
+                        - dragStartPosSilent.X,
+
+                    Input.Position.Y
+                        - dragStartPosSilent.Y
+
+                )
+
+        end
+
+    end)
+
+
+    -- ===========================================
+    -- 👆 CLIQUE + ANIMAÇÃO
+    -- ===========================================
+
+    Btn.MouseButton1Click:Connect(function()
+
+        if isDraggingSilent then
+            return
+        end
+
+
+        -- 🔽 ENCOLHE PARA O CENTRO
+        local Encolher =
+            TweenService:Create(
+
+                ButtonScale,
+
+                TweenInfo.new(
+                    0.08,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    Scale = 0.88
+                }
+
+            )
+
+
+        -- 🔼 CRESCE A PARTIR DO CENTRO
+        local Crescer =
+            TweenService:Create(
+
+                ButtonScale,
+
+                TweenInfo.new(
+                    0.12,
+                    Enum.EasingStyle.Back,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+
+        Encolher:Play()
+
+        Encolher.Completed:Once(function()
+            Crescer:Play()
+        end)
+
+
+        -- 🎯 EXECUTA O SILENT AIM
+        ShootMurderer()
+
+    end)
+
+
+    SilentAimButtonGui =
+        GuiBtn
+
+
+    -- ⭐ APLICA QUADRADO INICIAL
+    AtualizarSilentAimButton()
+
+end
+
+
+-- ===========================================
+-- ❌ REMOVER BOTÃO
+-- ===========================================
+
+local function RemoveShootButton()
+
+    if SilentAimButtonGui then
+
+        SilentAimButtonGui:Destroy()
+
+        SilentAimButtonGui = nil
+
+    end
+
+end
+
+-- ===========================================
+-- 🔫 BOTÃO FLUTUANTE & SISTEMA GRAB GUN (UNIFICADO)
+-- ===========================================
+local function CreateGrabGunButton()
+    if GrabGunButtonGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_GrabGunButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.5, -21)
+    Btn.BackgroundColor3 = Color3.fromRGB(20, 100, 150)
+    Btn.BackgroundTransparency = 0.3
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(50, 180, 255)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
 
     local Texto = Instance.new("TextLabel")
     Texto.Size = UDim2.new(1, 0, 1, 0)
     Texto.BackgroundTransparency = 1
-    Texto.Text = Titulo .. ": " .. Valor
-    Texto.TextColor3 = Color3.fromRGB(230, 230, 230)
-    Texto.Font = Enum.Font.Gotham
-    Texto.TextSize = 11
-    Texto.TextXAlignment = Enum.TextXAlignment.Left
-    Texto.Name = "Label_" .. Ordem
-    Texto.Parent = Container
-    return Texto
+    Texto.Text = "Grab Gun"
+    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Texto.TextSize = 15
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    -- 🖐️ Lógica de Arrastar o Botão
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingGrab = true
+            buttonStartPosGrab = Btn.Position
+            dragStartPosGrab = Input.Position
+            Input.Changed:Connect(function()
+                if Input.UserInputState == Enum.UserInputState.End then 
+                    isDraggingGrab = false 
+                end
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if isDraggingGrab and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
+            Btn.Position = buttonStartPosGrab + UDim2.fromOffset(Input.Position.X - dragStartPosGrab.X, Input.Position.Y - dragStartPosGrab.Y)
+        end
+    end)
+
+    -- 🎯 Clique no Botão (Busca e puxa a arma direto pro player)
+    Btn.MouseButton1Click:Connect(function() 
+        if not isDraggingGrab then 
+            local Char = player.Character
+            if not Char or not Char:FindFirstChild("HumanoidRootPart") then return end
+
+            local MapContainer = Workspace:FindFirstChild("CoinContainer", true) and Workspace:FindFirstChild("CoinContainer", true).Parent
+            local mapToSearch = MapContainer or Workspace
+            local gunDrop = mapToSearch:FindFirstChild("GunDrop", true) or Workspace:FindFirstChild("GunDrop", true)
+
+            if gunDrop then
+                if gunDrop:IsA("BasePart") then
+                    gunDrop.CFrame = Char.HumanoidRootPart.CFrame
+                elseif gunDrop:IsA("Model") and gunDrop.PrimaryPart then
+                    gunDrop:SetPrimaryPartCFrame(Char.HumanoidRootPart.CFrame)
+                else
+                    local handle = gunDrop:FindFirstChild("Handle") or gunDrop:FindFirstChildOfClass("BasePart")
+                    if handle then
+                        handle.CFrame = Char.HumanoidRootPart.CFrame
+                    end
+                end
+            end
+        end 
+    end)
+
+    GrabGunButtonGui = GuiBtn
 end
 
-local Label_Exibicao = CriarTexto(1, "Nome de exibição", NomeExibicao)
-local Label_Original = CriarTexto(2, "Nome da conta", NomeJogador)
-local Label_Executor = CriarTexto(3, "Executor", NomeExecutor)
-local Label_Horas = CriarTexto(4, "Horário", PegarHoras())
+local function RemoveGrabGunButton()
+    if GrabGunButtonGui then 
+        GrabGunButtonGui:Destroy() 
+        GrabGunButtonGui = nil 
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+-- ====================================================
+-- SISTEMA DA ABA AUTO FARM
+-- ====================================================
+-- Services
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+
+-- Configurações Base do Auto Farm
+local CONFIG_FARM = {
+    velocidade = 18,
+    alcance_maximo = 500,
+    raio_perigo_murder = 30 -- Raio de distância do Murderer
+}
+
+local AutoFarmAtivo = false
+local BolsaCheia = false
+local collectedCoins = {}
+local moedasIgnoradasInvisivel = {}
+
+local cachedCoinContainer = nil
+local ultimoCheckBolsa = 0
+local resultadoUltimoCheckBolsa = false
+
+-- ==================================
+-- 🔍 DETECTOR DO MURDERER
+-- ==================================
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+                
+                if eMurder then
+                    return char
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- ==================================
+-- 1. RESETS AUTOMÁTICOS DE RODADA (SOMENTE NA PRÓXIMA PARTIDA)
+-- ==================================
+local function ResetarEstadoFarm()
+    BolsaCheia = false
+    table.clear(collectedCoins)
+    table.clear(moedasIgnoradasInvisivel)
+    cachedCoinContainer = nil
+end
+
+player.CharacterAdded:Connect(ResetarEstadoFarm)
+
+player:GetAttributeChangedSignal("Alive"):Connect(function()
+    if player:GetAttribute("Alive") == true then
+        ResetarEstadoFarm()
+    end
+end)
+
+-- ==================================
+-- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA
+-- ==================================
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if AutoFarmAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local charMurderer = ObterMurderer()
+            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+            if hrp and hrpMurderer then
+                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
+
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    if not InvisivelAtivo then
+                        InvisivelAtivo = true
+                    end
+                else
+                    if InvisivelAtivo then
+                        InvisivelAtivo = false
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 2. DETECTOR DE BOLSA CHEIA
+-- ==================================
+local function VerificarTextoBolsaCheia()
+    local agora = os.clock()
+    if agora - ultimoCheckBolsa < 0.5 then 
+        return resultadoUltimoCheckBolsa 
+    end
+    ultimoCheckBolsa = agora
+
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if not playerGui then return false end
+
+    local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
+    if not mainGui then return false end
+
+    for _, gui in ipairs(mainGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
+            local texto = string.lower(gui.Text)
+            if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
+               (string.find(texto, "bag") and string.find(texto, "full")) or
+               string.find(texto, "full coin") or string.find(texto, "max coins") then 
+                resultadoUltimoCheckBolsa = true
+                return true
+            end
+        end
+    end
+
+    resultadoUltimoCheckBolsa = false
+    return false
+end
+
+-- Detecção via Remote Event nativo
+task.spawn(function()
+    local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
+    if Remotes then
+        local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
+        if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
+            coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
+                if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
+                    if tonumber(atual) and tonumber(maximo) then
+                        BolsaCheia = (tonumber(atual) >= tonumber(maximo))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+-- ==================================
+-- 3. VERIFICAÇÃO DE PARTIDA RIGOROSA
+-- ==================================
+local function EmPartida()
+    local c = player.Character
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    if not c:FindFirstChild("HumanoidRootPart") then return false end
+    
+    -- Checa se o jogador está realmente vivo no status do MM2
+    local aliveAttr = player:GetAttribute("Alive")
+    if aliveAttr ~= nil and aliveAttr == false then
+        return false
+    end
+    
+    -- Evita coletar moedas se estiver preso no Lobby
+    if Workspace:FindFirstChild("Lobby") then
+        local distLobby = (c.HumanoidRootPart.Position - Workspace.Lobby:GetPivot().Position).Magnitude
+        if distLobby < 100 then
+            return false
+        end
+    end
+    
+    return true
+end
+
+-- ==================================
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA
+-- ==================================
+local function getNearestCoin(minhaPos)
+    local melhorMoeda, menorDistancia = nil, math.huge
+
+    if not cachedCoinContainer or not cachedCoinContainer.Parent then
+        cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    end
+    
+    if not cachedCoinContainer then return nil end
+
+    local charMurderer = ObterMurderer()
+    local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+    for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
+        if moeda:IsA("BasePart") 
+        and moeda.Name == "Coin_Server"
+        and moeda:FindFirstChild("TouchInterest") 
+        and not collectedCoins[moeda] 
+        and not moeda:GetAttribute("Collected") then
+
+            -- 1. FILTRO: Ignora moedas a menos de 30 studs do Murderer
+            if hrpMurderer then
+                local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    continue
+                end
+            end
+
+            -- 2. FILTRO: Ignora moedas marcadas por invisibilidade
+            if moedasIgnoradasInvisivel[moeda] then
+                if not InvisivelAtivo then
+                    moedasIgnoradasInvisivel[moeda] = nil
+                else
+                    continue
+                end
+            end
+
+            local distancia = (minhaPos - moeda.Position).Magnitude
+            if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
+                menorDistancia = distancia
+                melhorMoeda = moeda
+            end
+        end
+    end
+    return melhorMoeda
+end
+
+-- ==================================
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
+-- ==================================
+task.spawn(function()
+    while true do
+        if AutoFarmAtivo then
+            local c = player.Character
+            local hrp = c and c:FindFirstChild("HumanoidRootPart")
+
+            -- Se não está em partida, apenas espera sem resetar a bolsa
+            if not EmPartida() or not hrp then
+                task.wait(0.5)
+                continue
+            end
+
+            -- Aguarda se a bolsa estiver cheia
+            if BolsaCheia or VerificarTextoBolsaCheia() then
+                BolsaCheia = true
+                task.wait(0.5)
+                continue
+            end
+
+            local alvo = getNearestCoin(hrp.Position)
+
+            if alvo then
+                local tempoPassadoNaMoeda = 0
+
+                while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
+                and not BolsaCheia and not VerificarTextoBolsaCheia()
+                and not alvo:GetAttribute("Collected") 
+                and not collectedCoins[alvo] do
+                    
+                    local minhaPosAtual = hrp.Position
+                    
+                    local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
+                    if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
+                        alvo = moedaMaisPertoAgora
+                        tempoPassadoNaMoeda = 0
+                    end
+
+                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
+                        break
+                    end
+
+                    local posAlvo = alvo.Position
+                    local direcao = (posAlvo - minhaPosAtual)
+                    local distancia = direcao.Magnitude
+
+                    if distancia <= 0.8 then
+                        if InvisivelAtivo then
+                            moedasIgnoradasInvisivel[alvo] = true
+                            break
+                        else
+                            collectedCoins[alvo] = true
+                            break
+                        end
+                    end
+
+                    local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
+                    local dt = RunService.Heartbeat:Wait()
+                    local passo = math.min(velAtual * dt, distancia)
+                    local novaPos = minhaPosAtual + (direcao.Unit * passo)
+
+                    hrp.CFrame = CFrame.new(novaPos)
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+                    tempoPassadoNaMoeda = tempoPassadoNaMoeda + dt
+                    if tempoPassadoNaMoeda > 1.5 and InvisivelAtivo then
+                        moedasIgnoradasInvisivel[alvo] = true
+                        break
+                    end
+                end
+            else
+                task.wait(0.2)
+            end
+        else
+            -- Quando desliga o botão, apenas aguarda sem limpar a bolsa
+            task.wait(0.5)
+        end
+    end
+end)
+
+-- ==================================
+-- 📌 CONFIGURAÇÕES E VARIÁVEIS
+-- ==================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+
+local TPSafeAoEncher = false
+local SafePlatform = nil
+local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
+
+-- ==================================
+-- 🛡️ FUNÇÃO TELEPORTE SAFE
+-- ==================================
+local function TeleportarParaSafe()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Cria a plataforma se não existir
+    if not SafePlatform or not SafePlatform.Parent then
+        SafePlatform = Instance.new("Part")
+        SafePlatform.Name = "AstralX_SafePlatform"
+        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Position = SafePosition
+        SafePlatform.Anchored = true
+        SafePlatform.Color = Color3.fromRGB(0, 0, 0)
+        SafePlatform.Transparency = 0.5
+        SafePlatform.Material = Enum.Material.SmoothPlastic
+        SafePlatform.CanCollide = true
+        SafePlatform.Parent = Workspace
+    end
+
+    -- Teleporta o jogador para cima da plataforma
+    hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
+end
+
+-- ==================================
+-- 🛡️ MONITOR DE BOLSA CHEIA -> TP SAFE (COM DELAY DE 2s)
+-- ==================================
+task.spawn(function()
+    while true do
+        if TPSafeAoEncher then
+            -- Verifica se a bolsa encheu
+            if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
+                print("⏳ Bolsa cheia detectada! Aguardando 1 segundos para TP...")
+                
+                -- ⏳ Espera 2 segundos antes de teleportar
+                task.wait(0.2)
+                
+                -- Confirma se ainda está vivo e no jogo antes de teleportar
+                if TPSafeAoEncher and EmPartida() then
+                    TeleportarParaSafe()
+                    print("📍 Teleportado para a plataforma Safe!")
+                end
+                
+                -- Aguarda a partida acabar ou o reset da bolsa para rearmar
+                repeat
+                    RunService.Heartbeat:Wait()
+                until not TPSafeAoEncher or not EmPartida() or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) or player:GetAttribute("Alive") ~= true
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+-- ==================================
+-- 🔪 KILL ALL AUTOMÁTICO (ASSASSINO + BOLSA CHEIA)
+-- ==================================
+
+-- Função para verificar e equipar a faca
+local function EquiparFaca()
+    local Char = player.Character
+    if not Char then return nil end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
+    if Faca then
+        if Faca.Parent ~= Char then
+            Faca.Parent = Char -- Puxa a faca para a mão
+            task.wait(0.1)
+        end
+        return Faca
+    end
+    return nil
+end
+
+local JaDisparouNestaRodada = false
 
 task.spawn(function()
-    while task.wait(10) do
-        if Label_Horas and Label_Horas.Parent then
-            Label_Horas.Text = "Horário: " .. PegarHoras()
+    while true do
+        task.wait(0.3)
+        
+        local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
+        
+        -- Reset da trava se a partida acabar ou a bolsa esvaziar
+        if not EmPartida() or not estaComBolsaCheia then
+            JaDisparouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não disparou ainda + Em Partida + Bolsa Cheia
+        if KillAllAoEncher and not JaDisparouNestaRodada and EmPartida() and estaComBolsaCheia then
+            -- Tenta equipar a faca (se conseguir, confirma que é o Assassino)
+            local facaEquipada = EquiparFaca()
+            
+            if facaEquipada then
+                JaDisparouNestaRodada = true -- Bloqueia execuções repetidas
+                print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
+
+                -- ⏳ Espera 1 segundo antes do ataque
+                task.wait(0.3)
+
+                -- Confirma se continua vivo antes de atacar
+                if EmPartida() then
+                    print("🔪 Executando Kill All via Remotes...")
+                    
+                    local Faca = EquiparFaca()
+                    if Faca then
+                        local Eventos = Faca:FindFirstChild("Events")
+                        
+                        if Eventos then
+                            -- Ataca a cabeça de todos os alvos vivos na partida
+                            for _, Alvo in ipairs(Players:GetPlayers()) do
+                                if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+                                    local hum = Alvo.Character:FindFirstChildOfClass("Humanoid")
+                                    if hum and hum.Health > 0 then
+                                        pcall(function()
+                                            Eventos.KnifeStabbed:FireServer()
+                                            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+                                        end)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 🔄 AUTO RESET AO ENCHER A BOLSA
+-- ==================================
+local AutoResetAoEncher = false -- Alterne para false se quiser desativar via UI
+local JaResetouNestaRodada = false
+
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        
+        local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
+        
+        -- Reseta a trava se a partida acabar ou a bolsa esvaziar
+        if not EmPartida() or not estaComBolsaCheia then
+            JaResetouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não resetou ainda + Em Partida + Bolsa Cheia
+        if AutoResetAoEncher and not JaResetouNestaRodada and EmPartida() and estaComBolsaCheia then
+            JaResetouNestaRodada = true -- Evita múltiplos agendamentos de reset
+            print("💰 Bolsa cheia! Aguardando 2.5 segundos para dar Reset...")
+
+            -- ⏳ Espera os 2.5 segundos solicitados
+            task.wait(0.3)
+
+            -- Confirma se ainda está vivo e na partida antes de resetar
+            if EmPartida() then
+                print("🔄 Executando Reset...")
+                local char = player.Character
+                if char then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0 -- Reseta o personagem
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
+-- ==================================
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+AutoShootAtivo = false
+local ExecutandoShoot = false
+local PRECISAO_FIXA = 50
+
+-- 🔍 BUSCAR MURDERER NA PARTIDA
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+                
+                if eMurder then
+                    return char
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- 🔍 BUSCAR A ARMA (MÃO OU BACKPACK)
+local function ObterArma()
+    local char = player.Character
+    if not char then return nil end
+    
+    local arma = char:FindFirstChild("Gun")
+    if not arma then
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            arma = backpack:FindFirstChild("Gun")
+        end
+    end
+    return arma
+end
+
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT
+local function IniciarSequenciaShoot()
+    if ExecutandoShoot then return end
+
+    -- 1. Checa se a bolsa encheu e se está em partida
+    local bolsaEncheu = (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()))
+    local emJogo = (EmPartida and EmPartida()) or true
+
+    if not (bolsaEncheu and emJogo) then
+        return
+    end
+
+    -- 2. Checa se possui a arma
+    local arma = ObterArma()
+    if not arma then return end
+
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local backpack = player:FindFirstChild("Backpack")
+    if not hrp or not hum or not backpack then return end
+
+    local charMurderer = ObterMurderer()
+    if not charMurderer then return end
+    
+    local hrpMurderer = charMurderer:FindFirstChild("HumanoidRootPart")
+    local humMurderer = charMurderer:FindFirstChild("Humanoid")
+    if not hrpMurderer or not humMurderer then return end
+
+    ExecutandoShoot = true
+
+    -- ⏳ PASSO 1: Aguarda 3 SEGUNDOS após a bolsa encher (Tempo para o TP Safe te levar à plataforma)
+    task.wait(3.0)
+
+    -- 📍 PASSO 2: MARCA A POSIÇÃO AGORA (Já com o boneco salvo na plataforma)
+    local posOriginal = hrp.CFrame
+
+    -- 🔹 PASSO 3: Ativa a invisibilidade e equipa a arma
+    InvisivelAtivo = true
+    hum.PlatformStand = false
+
+    if arma.Parent ~= char then
+        arma.Parent = char
+    end
+
+    task.wait(0.1)
+
+    local tempoComArma = 0
+    local tempoSemArma = 0
+    local estaComArma = true
+
+    -- 🔹 PASSO 4: Loop de ataque colado nas costas do Murderer
+    while AutoShootAtivo and humMurderer and humMurderer.Health > 0 and charMurderer.Parent do
+        
+        hrp.CFrame = hrpMurderer.CFrame * CFrame.new(0, 1, 5)
+        hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+        hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+
+        arma = ObterArma()
+
+        if estaComArma then
+            if arma and arma.Parent ~= char then
+                arma.Parent = char
+            end
+
+            -- 🎯 DISPARO COM PREVISÃO
+            if arma then
+                local shootEvent = arma:FindFirstChild("Shoot") 
+                    or arma:FindFirstChild("ShootEvent") 
+                    or ReplicatedStorage:FindFirstChild("Shoot", true)
+                
+                if shootEvent and shootEvent:IsA("RemoteEvent") then
+                    local veloc = hrpMurderer.AssemblyLinearVelocity
+                    local posComPrevisao = hrpMurderer.Position + (veloc * (PRECISAO_FIXA / 100))
+                    
+                    pcall(function()
+                        shootEvent:FireServer(hrp.CFrame, CFrame.new(posComPrevisao))
+                    end)
+                end
+            end
+
+            tempoComArma = tempoComArma + 0.15
+
+            if tempoComArma >= 10.0 then
+                if arma and arma.Parent == char then
+                    arma.Parent = backpack
+                end
+                estaComArma = false
+                tempoComArma = 0
+                tempoSemArma = 0
+            end
         else
-            break
+            tempoSemArma = tempoSemArma + 0.15
+
+            if tempoSemArma >= 1.0 then
+                if arma then
+                    arma.Parent = char
+                end
+                estaComArma = true
+                tempoSemArma = 0
+            end
         end
+
+        task.wait(0.15)
+    end
+
+    -- 🔹 PASSO 5: Murderer morreu — Desliga invisibilidade e volta para a plataforma
+    InvisivelAtivo = false
+
+    if hrp and posOriginal then
+        hrp.CFrame = posOriginal
+    end
+
+    -- 🔄 PASSO 6: Aguarda a bolsa esvaziar/reiniciar partida para rearmar
+    repeat
+        RunService.Heartbeat:Wait()
+    until not AutoShootAtivo 
+       or (EmPartida and not EmPartida()) 
+       or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) 
+       or player:GetAttribute("Alive") ~= true
+
+    ExecutandoShoot = false
+end
+
+-- 🔄 LOOP DE EXECUÇÃO CONTÍNUA
+task.spawn(function()
+    while true do
+        if AutoShootAtivo and not ExecutandoShoot then
+            IniciarSequenciaShoot()
+        end
+        RunService.Heartbeat:Wait()
     end
 end)
 
 -- ===========================================
--- ARRASTAR A INTERFACE (MÓVEL)
+-- 🔘 SISTEMA DO BOTÃO NA TELA
 -- ===========================================
+local function CreateAutoFarmButton()
+    if AutoFarmButtonGui then return end
 
-local Arrastando = false
-local InicioPos, InicioToque
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
 
-Janela.InputBegan:Connect(function(t)
-    if t.UserInputType == Enum.UserInputType.MouseButton1 or t.UserInputType == Enum.UserInputType.Touch then
-        -- Impede de arrastar ao clicar diretamente no botão X
-        if UserInputService:GetFocusedTextBox() == nil then
-            Arrastando = true
-            InicioPos = Janela.Position
-            InicioToque = t.Position
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_AutoFarmButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.4, -21)
+    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Branco (Desligado)
+    Btn.BackgroundTransparency = 0.2
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(0, 0, 0)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Auto Farm Coin"
+    Texto.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto preto no fundo branco
+    Texto.TextSize = 14
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    local dragThreshold = 10
+    local dragStartMousePos, buttonStartPosScreen
+
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingFarm = false
+            dragStartMousePos = Input.Position
+            buttonStartPosScreen = Btn.Position
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartMousePos then
+            local delta = Input.Position - dragStartMousePos
+            if delta.Magnitude > dragThreshold then
+                isDraggingFarm = true
+                Btn.Position = buttonStartPosScreen + UDim2.fromOffset(delta.X, delta.Y)
+            end
+        end
+    end)
+
+    Btn.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not isDraggingFarm then
+                AutoFarmAtivo = not AutoFarmAtivo
+
+                if AutoFarmAtivo then
+                    -- LIGADO: Verde com texto Branco
+                    Btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
+                    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+                else
+                    -- DESLIGADO: Branco com texto Preto
+                    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    Texto.TextColor3 = Color3.fromRGB(0, 0, 0)
+                end
+            end
+            dragStartMousePos = nil
+            isDraggingFarm = false
+        end
+    end)
+
+    AutoFarmButtonGui = GuiBtn
+end
+
+local function RemoveAutoFarmButton()
+    if AutoFarmButtonGui then 
+        AutoFarmButtonGui:Destroy() 
+        AutoFarmButtonGui = nil 
+    end
+    AutoFarmAtivo = false
+end
+
+-- ==================================
+-- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
+-- ==================================
+local UltimaChecagemCargo = 0
+
+local function PegarCargos()
+    if tick() - UltimaChecagemCargo < 2 then return end
+    UltimaChecagemCargo = tick()
+
+    task.spawn(function()
+        local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+        if not R then return end
+        local ok, d = pcall(function() return R:InvokeServer() end)
+        if ok and d then DadosCargos = d end
+    end)
+end
+
+-- 🔴 HIGHLIGHT REUTILIZÁVEL
+local function CriarHighlight(Alvo, Cor)
+    if not Alvo then return end
+    local H = Highlights[Alvo]
+    if not H or H.Parent ~= Alvo then
+        H = Instance.new("Highlight")
+        H.Name = "ESP_Highlight"
+        H.Adornee = Alvo
+        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        H.OutlineTransparency = 0
+        H.Parent = Alvo
+        Highlights[Alvo] = H
+    end
+    H.FillColor = Cor
+    H.OutlineColor = Cor
+    H.Enabled = true
+end
+
+-- 🟢 NOME E DISTÂNCIA EM UMA ÚNICA BILLBOARD
+local function CriarTextESP(Jogador, Cor, TextoExibido)
+    local Char = Jogador.Character
+    if not Char or not Char:FindFirstChild("Head") then return end
+    local Head = Char.Head
+
+    local Data = NamesESP[Jogador]
+    if not Data or not Data.Gui or Data.Gui.Parent ~= Head then
+        if Data and Data.Gui then Data.Gui:Destroy() end
+        
+        local BGui = Instance.new("BillboardGui")
+        BGui.Name = "ESP_Text"
+        BGui.Adornee = Head
+        BGui.Size = UDim2.new(0, 200, 0, 40)
+        BGui.StudsOffset = Vector3.new(0, 2.5, 0)
+        BGui.AlwaysOnTop = true
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Name = "Label"
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Font = Enum.Font.SourceSansBold
+        TextLabel.TextSize = 13
+        TextLabel.TextStrokeTransparency = 0
+        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+        TextLabel.Parent = BGui
+
+        BGui.Parent = Head
+        Data = {Gui = BGui, Label = TextLabel}
+        NamesESP[Jogador] = Data
+    end
+
+    Data.Label.Text = TextoExibido
+    Data.Label.TextColor3 = Cor
+    Data.Gui.Enabled = true
+end
+
+-- 🧹 LIMPEZA COMPLETA DE UM JOGADOR
+local function LimparJogadorESP(p)
+    if p and p.Character and Highlights[p.Character] then
+        Highlights[p.Character]:Destroy()
+        Highlights[p.Character] = nil
+    end
+    if p and NamesESP[p] then
+        if NamesESP[p].Gui then NamesESP[p].Gui:Destroy() end
+        NamesESP[p] = nil
+    end
+    if p and TracersESP[p] then
+        TracersESP[p].Visible = false
+        TracersESP[p]:Remove()
+        TracersESP[p] = nil
+    end
+end
+
+-- 🧹 LIMPEZA GERAL
+local function LimparTabela(Tabela)
+    for key, item in pairs(Tabela) do
+        if typeof(item) == "Instance" then
+            item:Destroy()
+        elseif type(item) == "table" and item.Gui then
+            item.Gui:Destroy()
+        elseif type(item) == "userdata" and item.Remove then
+            item.Visible = false
+            item:Remove()
+        end
+    end
+    table.clear(Tabela)
+end
+
+-- 📌 EVENTOS DE REMOÇÃO INSTANTÂNEA (Sem esperar o loop)
+Players.PlayerRemoving:Connect(function(p)
+    LimparJogadorESP(p)
+end)
+
+-- 🟡 LOOP EXCLUSIVO PARA LINHAS/TRACERS (Roda todo quadro sem lag visual)
+RunService.RenderStepped:Connect(function()
+    if not ESPTracerAtivo then
+        for p, line in pairs(TracersESP) do
+            if line then line.Visible = false end
+        end
+        return
+    end
+
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local Char = p.Character
+            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
+            local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+            if Char and HRP and Humanoid and Humanoid.Health > 0 then
+                local Vector, OnScreen = Cam:WorldToViewportPoint(HRP.Position)
+
+                local Line = TracersESP[p]
+                if not Line then
+                    Line = Drawing.new("Line")
+                    Line.Thickness = 1.5
+                    Line.Transparency = 0.8
+                    TracersESP[p] = Line
+                end
+
+                if OnScreen then
+                    -- Obtém a cor definida na tabela de cargos (se existir)
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(255, 255, 255)
+                    if Info and not Info.Killed and not Info.Dead then
+                        if Info.Role == "Murderer" then Cor = Color3.fromRGB(220, 50, 50)
+                        elseif Info.Role == "Sheriff" then Cor = Color3.fromRGB(0, 85, 255)
+                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0)
+                        elseif Info.Role == "Innocent" then Cor = Color3.fromRGB(60, 200, 80) end
+                    end
+
+                    Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+                    Line.To = Vector2.new(Vector.X, Vector.Y)
+                    Line.Color = Cor
+                    Line.Visible = true
+                else
+                    Line.Visible = false
+                end
+            else
+                if TracersESP[p] then
+                    TracersESP[p].Visible = false
+                end
+            end
         end
     end
 end)
 
-UserInputService.InputChanged:Connect(function(t)
-    if Arrastando and (t.UserInputType == Enum.UserInputType.MouseMovement or t.UserInputType == Enum.UserInputType.Touch) then
-        local Delta = t.Position - InicioToque
-        Janela.Position = UDim2.new(
-            InicioPos.X.Scale,
-            InicioPos.X.Offset + Delta.X,
-            InicioPos.Y.Scale,
-            InicioPos.Y.Offset + Delta.Y
-        )
+-- 📌 LOOP DE ATUALIZAÇÃO LEVE (Cargos, Highlights e Nomes)
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+
+        if ESPHighlightAtivo or ESPNomeAtivo or ESPDistanciaAtiva or ESPTracerAtivo then
+            PegarCargos()
+            local MeuChar = player.Character
+            local MinhaPos = (MeuChar and MeuChar:FindFirstChild("HumanoidRootPart")) and MeuChar.HumanoidRootPart.Position or Vector3.new(0,0,0)
+
+            -- Limpa quem saiu do servidor
+            for p, _ in pairs(NamesESP) do
+                if not Players:FindFirstChild(p.Name) then
+                    LimparJogadorESP(p)
+                end
+            end
+
+            for _, p in ipairs(Players:GetPlayers()) do
+                local Char = p.Character
+                local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
+                local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+                if p == player or not Char or not HRP or not Humanoid or Humanoid.Health <= 0 then
+                    LimparJogadorESP(p)
+                else
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(255, 255, 255)
+                    local CargoNome = "Lobby"
+
+                    if Info and not Info.Killed and not Info.Dead then
+                        if Info.Role == "Murderer" then 
+                            Cor = Color3.fromRGB(220, 50, 50)
+                            CargoNome = "Assassino"
+                        elseif Info.Role == "Sheriff" then 
+                            Cor = Color3.fromRGB(0, 85, 255)
+                            CargoNome = "Xerife"
+                        elseif Info.Role == "Hero" then 
+                            Cor = Color3.fromRGB(255, 215, 0)
+                            CargoNome = "Herói"
+                        elseif Info.Role == "Innocent" then
+                            Cor = Color3.fromRGB(60, 200, 80)
+                            CargoNome = "Inocente"
+                        end
+                    end
+
+                    local Distancia = math.floor((MinhaPos - HRP.Position).Magnitude)
+
+                    -- 1. Highlight
+                    if ESPHighlightAtivo then
+                        CriarHighlight(Char, Cor)
+                    elseif Highlights[Char] then
+                        Highlights[Char].Enabled = false
+                    end
+
+                    -- 2 e 3. Nome e Distância
+                    if ESPNomeAtivo or ESPDistanciaAtiva then
+                        local TextoFinal = ""
+                        if ESPNomeAtivo and ESPDistanciaAtiva then
+                            TextoFinal = p.Name .. " [" .. CargoNome .. "]\n" .. Distancia .. "m"
+                        elseif ESPNomeAtivo then
+                            TextoFinal = p.Name .. " [" .. CargoNome .. "]"
+                        else
+                            TextoFinal = Distancia .. "m"
+                        end
+                        CriarTextESP(p, Cor, TextoFinal)
+                    elseif NamesESP[p] and NamesESP[p].Gui then
+                        NamesESP[p].Gui.Enabled = false
+                    end
+                end
+            end
+        else
+            if next(Highlights) then LimparTabela(Highlights) end
+            if next(NamesESP) then LimparTabela(NamesESP) end
+            if next(TracersESP) then LimparTabela(TracersESP) end
+        end
     end
 end)
 
-UserInputService.InputEnded:Connect(function(t)
-    if t.UserInputType == Enum.UserInputType.MouseButton1 or t.UserInputType == Enum.UserInputType.Touch then
-        Arrastando = false
+-- ===================================================
+-- SISTEMA DA ABA LOCAL PLAYER
+-- ===================================================
+-- 🟢 APLICAR VALORES INICIAIS
+local function AplicarValoresBase()
+    local Char = player.Character
+
+    if Char and Char:FindFirstChild("Humanoid") then
+        Char.Humanoid.WalkSpeed = VelocidadePadrao
+        Char.Humanoid.UseJumpPower = true
+        Char.Humanoid.JumpPower = ForcaPuloPadrao
+    end
+end
+
+task.wait(1)
+AplicarValoresBase()
+
+player.CharacterAdded:Connect(function()
+    task.wait(0.5)
+    AplicarValoresBase()
+end)
+
+
+-- 🟢 PULO INFINITO
+UserInputService.JumpRequest:Connect(function()
+    if _G.PuloInfinito then
+        local Char = player.Character
+
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid:ChangeState(
+                Enum.HumanoidStateType.Jumping
+            )
+        end
     end
 end)
+
+
+-- 🟢 VELOCIDADE NO PULO
+RunService.Stepped:Connect(function()
+    local Char = player.Character
+
+    if not Char or not Char:FindFirstChild("Humanoid") then
+        return
+    end
+
+    local Hum = Char.Humanoid
+
+    if _G.SpeedNoPulo then
+        if Hum.FloorMaterial == Enum.Material.Air then
+            Hum.WalkSpeed = VelocidadeNoPulo
+        else
+            Hum.WalkSpeed = VelocidadePadrao
+        end
+    end
+end)
+
+-- =====================================
+-- Sistema de Anti-Fling separadinho
+-- =====================================
+task.spawn(function()
+    while true do
+        if getgenv().AntiFling then
+            pcall(function()
+                for _, OtherPlayer in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if OtherPlayer ~= game:GetService("Players").LocalPlayer and OtherPlayer.Character then
+                        for _, Part in ipairs(OtherPlayer.Character:GetChildren()) do
+                            if Part:IsA("BasePart") then
+                                Part.CanCollide = false
+                                Part.AssemblyLinearVelocity = Vector3.zero
+                                Part.AssemblyAngularVelocity = Vector3.zero
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        game:GetService("RunService").Stepped:Wait()
+    end
+end)
+
+-- ==================================
+-- SISTEMA WALK FLING (ANTI-GROUND BOUNCE)
+-- ==================================
+local function ToggleWalkFling(state)
+    WalkFlingAtivo = state
+
+    if not WalkFlingAtivo then
+        if FlingConnection then
+            FlingConnection:Disconnect()
+            FlingConnection = nil
+        end
+        return
+    end
+
+    FlingConnection = RunService.Heartbeat:Connect(function()
+        if not WalkFlingAtivo then return end
+
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+
+        if hrp and humanoid then
+            for _, part in ipairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+
+            local oldCFrame = hrp.CFrame
+            local vel = hrp.AssemblyLinearVelocity
+
+            -- Aplica a velocidade fixa extrema
+            hrp.CFrame = oldCFrame * CFrame.Angles(0, math.rad(math.random(1, 360)), 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, FlingPower, 0)
+
+            RunService.RenderStepped:Wait()
+            if hrp then
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                if humanoid.MoveDirection.Magnitude > 0 then
+                    hrp.AssemblyLinearVelocity = vel
+                else
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+            end
+        end
+    end)
+end
+
+player.CharacterAdded:Connect(function()
+    if WalkFlingAtivo then
+        task.wait(1.5)
+        ToggleWalkFling(true)
+    end
+end)
+
+-- ==================================
+-- SISTEMA FLY (MÓVEL / DIREÇÃO DA CÂMERA)
+-- ==================================
+local function StartFly()
+    local c = player.Character
+    if not c then return end
+    local h = c:FindFirstChild("Humanoid")
+    local r = c:FindFirstChild("HumanoidRootPart")
+    if not h or not r then return end
+
+    if bv then bv:Destroy() end
+    if bg then bg:Destroy() end
+
+    bv = Instance.new("BodyVelocity")
+    bv.MaxForce = Vector3.new(1e5, 1e5, 1e5)
+    bv.Velocity = Vector3.new(0, 0, 0)
+    bv.P = 3000
+    bv.Parent = r
+
+    bg = Instance.new("BodyGyro")
+    bg.MaxTorque = Vector3.new(1e5, 1e5, 1e5)
+    bg.P = 30000
+    bg.D = 500
+    bg.CFrame = r.CFrame
+    bg.Parent = r
+
+    h.PlatformStand = true
+
+    if con then con:Disconnect() end
+    con = RunService.Heartbeat:Connect(function()
+        if not FlyAtivo or not bv or not bg then return end
+        local cam = workspace.CurrentCamera
+        local m = controls:GetMoveVector()
+        local dir = (cam.CFrame.RightVector * m.X) + (cam.CFrame.LookVector * -m.Z)
+        
+        bv.Velocity = dir * FlyVelocidade
+        bg.CFrame = cam.CFrame
+    end)
+end
+
+local function StopFly()
+    FlyAtivo = false
+    if con then con:Disconnect() con = nil end
+    if bv then bv:Destroy() bv = nil end
+    if bg then bg:Destroy() bg = nil end
+
+    local c = player.Character
+    if c and c:FindFirstChild("Humanoid") then
+        c.Humanoid.PlatformStand = false
+    end
+end
+
+local function ToggleFly(state)
+    FlyAtivo = state
+    if FlyAtivo then
+        StartFly()
+    else
+        StopFly()
+    end
+end
+
+player.CharacterAdded:Connect(function()
+    task.wait(0.8)
+    if FlyAtivo then 
+        StartFly() 
+    end
+end)
+
+-- ==============================================================================
+-- ⚙️ SISTEMA LÓGICO DE INVISIBILIDADE (CORRIGIDO)
+-- ==============================================================================
+local function ConfigurarPersonagem()
+    Personagem = player.Character or player.CharacterAdded:Wait()
+    Humanoid = Personagem:WaitForChild("Humanoid")
+    Raiz = Personagem:WaitForChild("HumanoidRootPart")
+    
+    PartesCorpo = {}
+    for _, obj in ipairs(Personagem:GetDescendants()) do
+        if obj:IsA("BasePart") then
+            table.insert(PartesCorpo, obj)
+        end
+    end
+end
+
+-- Atualiza referências sempre que um novo personagem for adicionado pelo servidor
+player.CharacterAdded:Connect(function(novoChar)
+    task.wait(0.5)
+    ConfigurarPersonagem()
+end)
+
+-- Loop principal para manter a invisibilidade sem quebrar no TP/Respawn
+RunService.Heartbeat:Connect(function()
+    if not InvisivelAtivo then return end
+    
+    -- Se o personagem mudou ou morreu, tenta reconectar
+    if not Personagem or not Personagem.Parent or not Raiz or not Humanoid or Humanoid.Health <= 0 then
+        ConfigurarPersonagem()
+        return
+    end
+
+    -- Deixa o corpo transparente localmente e oculta o HumanoidRootPart
+    for _, parte in ipairs(PartesCorpo) do
+        if parte and parte.Parent then
+            if parte.Name == "HumanoidRootPart" then
+                parte.Transparency = 1 -- Totalmente invisível
+            else
+                parte.Transparency = 0.5 -- Transparência do corpo
+            end
+        end
+    end
+
+    -- Desloca a CFrame do servidor sem perder o controle da câmera
+    local PosOriginal = Raiz.CFrame
+    local CamOffset = Humanoid.CameraOffset
+    
+    Raiz.CFrame = PosOriginal * CFrame.new(0, -200000, 0)
+    Humanoid.CameraOffset = Raiz.CFrame:ToObjectSpace(CFrame.new(PosOriginal.Position)).Position
+    
+    RunService.RenderStepped:Wait()
+    
+    if Raiz and Raiz.Parent then
+        Raiz.CFrame = PosOriginal
+        Humanoid.CameraOffset = CamOffset
+    end
+end)
+
+-- Restaura a transparência normal caso desative o toggle
+task.spawn(function()
+    while true do
+        task.wait(0.2)
+        if not InvisivelAtivo and Personagem and Humanoid and Humanoid.Health > 0 then
+            for _, parte in ipairs(PartesCorpo) do
+                if parte and parte.Parent and parte.Name ~= "HumanoidRootPart" then
+                    parte.Transparency = 0
+                end
+            end
+        end
+    end
+end)
+
+-- Inicialização
+if player.Character then
+    ConfigurarPersonagem()
+end
+
+-- ===========================================
+-- 👁️ SISTEMA BOTÃO FLUTUANTE INVISÍVEL
+-- ===========================================
+local function CreateInvisivelButton()
+    if InvisivelButtonGui then return end
+
+    local ParentGui = CoreGui
+    pcall(function()
+        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_InvisivelButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Size = UDim2.new(0, 110, 0, 42)
+    Btn.Position = UDim2.new(0.5, -55, 0.3, -21)
+    
+    -- Estado Inicial (DESLIGADO): Branco semi-transparente
+    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    Btn.BackgroundTransparency = 0.3
+    Btn.Parent = GuiBtn
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 12)
+    Corner.Parent = Btn
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Color = Color3.fromRGB(200, 200, 200) -- Borda suave desligado
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Invisible"
+    Texto.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto preto no fundo branco
+    Texto.TextSize = 14
+    Texto.Font = Enum.Font.GothamBold
+    Texto.Parent = Btn
+
+    local dragThreshold = 10
+    local dragStartMousePos, buttonStartPosScreen
+
+    Btn.InputBegan:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            isDraggingInvis = false
+            dragStartMousePos = Input.Position
+            buttonStartPosScreen = Btn.Position
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartMousePos then
+            local delta = Input.Position - dragStartMousePos
+            if delta.Magnitude > dragThreshold then
+                isDraggingInvis = true
+                Btn.Position = buttonStartPosScreen + UDim2.fromOffset(delta.X, delta.Y)
+            end
+        end
+    end)
+
+    Btn.InputEnded:Connect(function(Input)
+        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+            if not isDraggingInvis then
+                InvisivelAtivo = not InvisivelAtivo
+
+                if InvisivelAtivo then
+                    -- LIGADO: Rosa semi-transparente com borda rosa forte
+                    Btn.BackgroundColor3 = Color3.fromRGB(255, 105, 180) -- Rosa
+                    Btn.BackgroundTransparency = 0.3
+                    Borda.Color = Color3.fromRGB(255, 20, 147)          -- Rosa Choque (Borda)
+                    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)    -- Texto Branco
+                else
+                    -- DESLIGADO: Branco semi-transparente
+                    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+                    Btn.BackgroundTransparency = 0.3
+                    Borda.Color = Color3.fromRGB(200, 200, 200)
+                    Texto.TextColor3 = Color3.fromRGB(0, 0, 0)          -- Texto Preto
+                end
+            end
+            dragStartMousePos = nil
+            isDraggingInvis = false
+        end
+    end)
+
+    InvisivelButtonGui = GuiBtn
+end
+
+local function RemoveInvisivelButton()
+    if InvisivelButtonGui then 
+        InvisivelButtonGui:Destroy() 
+        InvisivelButtonGui = nil 
+    end
+    InvisivelAtivo = false
+end
+
+-- ==================================
+-- SISTEMAS DA ABA CÂMERA 
+-- ==================================
+
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
+local FOV_Padrao = 70
+
+_G.CameraInfinita = false
+_G.CameraNoClip = false
+
+
+-- ==================================
+-- 🔄 RESTAURAR ZOOM AO RENASCER
+-- ==================================
+
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+
+    if not _G.CameraInfinita then
+        player.CameraMaxZoomDistance = ZoomMaxOriginal
+        player.CameraMinZoomDistance = ZoomMinOriginal
+    end
+end)
+
+-- ==================================
+-- SISTEMAS DA ABA TELEPORTE 
+-- ==================================
+local function TeleportarPara(posicaoCFrame)
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if hrp then
+        hrp.CFrame = posicaoCFrame
+    end
+end
+
+local function GetMapSpawn()
+    -- Procura o container do mapa atual no Workspace
+    local coinContainer = workspace:FindFirstChild("CoinContainer", true)
+    if coinContainer and coinContainer.Parent then
+        local map = coinContainer.Parent
+        local spawns = map:FindFirstChild("Spawns") or map:FindFirstChild("Spawn")
+        
+        if spawns then
+            local partesSpawn = spawns:GetChildren()
+            if #partesSpawn > 0 then
+                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+        
+        -- Caso não ache uma pasta de spawns, usa a posição central do próprio mapa
+        if map:IsA("Model") then
+            local cf, _ = map:GetBoundingBox()
+            return cf + Vector3.new(0, 5, 0)
+        end
+    end
+    return nil
+end
+
+local function GetLobbySpawn()
+    -- 📍 Coordenada fixa gravada (Posiciona 3 studs acima para evitar cair no chão)
+    local posLobby = Vector3.new(-0.32, -67.11, -31.52)
+    
+    -- Se encontrar a pasta ou modelo do Lobby no Workspace, tenta pegar um Spawn oficial
+    local lobby = workspace:FindFirstChild("Lobby") or workspace:FindFirstChild("LobbyMap")
+    if lobby then
+        local spawns = lobby:FindFirstChild("Spawns") or lobby:FindFirstChild("Spawn")
+        if spawns then
+            local partesSpawn = spawns:GetChildren()
+            if #partesSpawn > 0 then
+                return partesSpawn[math.random(1, #partesSpawn)].CFrame + Vector3.new(0, 3, 0)
+            end
+        end
+    end
+
+    -- Retorna a coordenada exata enviada
+    return CFrame.new(posLobby + Vector3.new(0, 3, 0))
+end
+
+-- ==================================
+-- 🛡️ SISTEMA DE TELEPORTE SAFE (BOTÃO DE CLIQUE)
+-- ==================================
+local SafePlatform = nil
+local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
+
+local function TeleportarParaSafe()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Cria a plataforma no local se ela ainda não existir
+    if not SafePlatform or not SafePlatform.Parent then
+        SafePlatform = Instance.new("Part")
+        SafePlatform.Name = "AstralX_SafePlatform"
+        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Position = SafePosition
+        SafePlatform.Anchored = true
+        SafePlatform.Color = Color3.fromRGB(0, 0, 0) -- Cor preta
+        SafePlatform.Transparency = 0.5            -- Semi-transparente
+        SafePlatform.Material = Enum.Material.SmoothPlastic
+        SafePlatform.CanCollide = true
+        SafePlatform.Parent = workspace
+    end
+
+    -- Teleporta o jogador para cima da plataforma
+    hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
+end
+
+
+-- ==============================================
+
+local function PegarListaJogadores()
+    local lista = {}
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+    table.sort(lista)
+    return lista
+end
+
+local function TeleportarParaPlayer(alvo)
+    if alvo and alvo.Character and alvo.Character:FindFirstChild("HumanoidRootPart") then
+        local meuChar = player.Character
+        local meuHRP = meuChar and meuChar:FindFirstChild("HumanoidRootPart")
+        if meuHRP then
+            meuHRP.CFrame = alvo.Character.HumanoidRootPart.CFrame + Vector3.new(0, 3, 0)
+        end
+    end
+end
+
+local function TeleportarPorCargo(cargoBusca)
+    local DataRemote = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+    if not DataRemote then return end
+    
+    local ok, Data = pcall(function() return DataRemote:InvokeServer() end)
+    if not ok or not Data then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character then
+            local info = Data[p.Name]
+            if info and not info.Killed and not info.Dead and info.Role == cargoBusca then
+                TeleportarParaPlayer(p)
+                break
+            end
+        end
+    end
+end
+
+
+
+local function ExecutarServerHop()
+    if EmCooldownHop then return end
+    EmCooldownHop = true
+
+    local placeId = game.PlaceId
+    local currentJobId = game.JobId
+    local url = "https://games.roblox.com/v1/games/" .. placeId .. "/servers/0?sortOrder=Desc&limit=100"
+
+    task.spawn(function()
+        local sucesso, resposta = pcall(function()
+            return game:HttpGet(url)
+        end)
+
+        if sucesso and resposta then
+            local dados = HttpService:JSONDecode(resposta)
+            if dados and dados.data then
+                local servidoresValidos = {}
+
+                for _, server in ipairs(dados.data) do
+                    if type(server) == "table" 
+                    and server.id ~= currentJobId 
+                    and server.playing < server.maxPlayers 
+                    and not ServidoresVisitados[server.id] then
+                        table.insert(servidoresValidos, server.id)
+                    end
+                end
+
+                if #servidoresValidos > 0 then
+                    local servidorEscolhido = servidoresValidos[math.random(1, #servidoresValidos)]
+                    ServidoresVisitados[servidorEscolhido] = true
+                    
+                    TeleportService:TeleportToPlaceInstance(placeId, servidorEscolhido, player)
+                else
+                    -- Se visitou todos, limpa o histórico e tenta de novo
+                    table.clear(ServidoresVisitados)
+                    TeleportService:Teleport(placeId, player)
+                end
+            end
+        else
+            TeleportService:Teleport(placeId, player)
+        end
+
+        task.wait(3)
+        EmCooldownHop = false
+    end)
+end
+
+local function ExecutarRejoin()
+    if EmCooldownHop then return end
+    EmCooldownHop = true
+
+    task.spawn(function()
+        if #Players:GetPlayers() <= 1 then
+            TeleportService:Teleport(game.PlaceId, player)
+        else
+            TeleportService:TeleportToPlaceInstance(game.PlaceId, game.JobId, player)
+        end
+
+        task.wait(3)
+        EmCooldownHop = false
+    end)
+end
+
+-- ==================================
+-- 👁️ CÂMERA SEM BLOQUEIO + FOV
+-- ==================================
+
+RunService.RenderStepped:Connect(function()
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    -- 👁️ Câmera sem bloqueio
+    if _G.CameraNoClip then
+        player.DevCameraOcclusionMode =
+            Enum.DevCameraOcclusionMode.Invisicam
+    else
+        player.DevCameraOcclusionMode =
+            BloqueioOriginal
+    end
+
+    -- 🔭 Campo de visão
+    Cam.FieldOfView = FOV_Padrao
+end)
+
+-- ====================================================
+-- BOTOES DA ABA MURDERER 
+-- ====================================================
+Aba_Murderer:Section({
+    Title = "MURDERER",
+    Box = false,
+    TextSize = 18,
+})
+-- =========================================================
+-- 👤 LISTA DE JOGADORES (DROPDOWN)
+-- =========================================================
+
+local function PegarListaJogadores()
+    local lista = {}
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            table.insert(lista, p.Name)
+        end
+    end
+
+    table.sort(lista)
+
+    if #lista == 0 then
+        table.insert(lista, "Nenhum Jogador")
+    end
+
+    return lista
+end
+
+local DropdownJogadores = Aba_Murderer:Dropdown({
+    Title = "Selecionar Jogador",
+    Desc = "Escolha um jogador para travar na sua frente",
+    Values = PegarListaJogadores(),
+    Callback = function(Value)
+        if typeof(Value) == "table" then
+            JogadorSelecionado = Value[1]
+        else
+            JogadorSelecionado = Value
+        end
+    end
+})
+
+-- =========================================================
+-- 🔄 ATUALIZAR LISTA AUTOMÁTICA
+-- =========================================================
+
+local function AtualizarListaJogadores()
+    local lista = PegarListaJogadores()
+
+    pcall(function()
+        if DropdownJogadores.Refresh then
+            DropdownJogadores:Refresh(lista)
+        elseif DropdownJogadores.SetValues then
+            DropdownJogadores:SetValues(lista)
+        elseif DropdownJogadores.Set then
+            DropdownJogadores:Set(lista)
+        end
+    end)
+end
+
+Players.PlayerAdded:Connect(function()
+    task.wait(0.3)
+    AtualizarListaJogadores()
+end)
+
+Players.PlayerRemoving:Connect(function()
+    task.wait(0.3)
+    AtualizarListaJogadores()
+end)
+
+Aba_Murderer:Button({
+    Title = "Travar Jogador na Frente",
+    Desc = "Puxa e trava o jogador na sua frente (somente você vê)",
+    Callback = function()
+        TrancarJogadorNaFrente()
+    end
+})
+
+Aba_Murderer:Button({
+    Title = "Soltar Jogador",
+    Desc = "Destrava a posição do jogador",
+    Callback = function()
+        SoltarJogador()
+    end
+})
+
+Aba_Murderer:Toggle({
+
+    Title =
+        "Mostrar Kill All",
+
+    Desc =
+        "Mostra ou esconde o botão flutuante",
+
+    -- ⭐ COMEÇA ESCONDIDO
+    Default =
+        false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+
+            CreateKillAllButton()
+
+        else
+
+            RemoveKillAllButton()
+
+        end
+
+    end
+
+})
+
+Aba_Murderer:Toggle({
+    Title = "Kill All",
+    Desc = "Mata todo mundo automaticamente",
+    Default = false,
+
+    Callback = function(Ativo)
+        KillAura = Ativo
+    end
+})
+
+Aba_Murderer:Toggle({
+    Title = "Kill Aura",
+    Desc = "Mata todo mundo em uma distância que você escolher",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        KillAuraAtivo = Ativo
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+Aba_Murderer:Slider({
+    Title = "Distance Kill Aura",
+    Desc = "Ajuste a distância do Kill Aura",
+
+    Value = {
+        Min = 5,
+        Max = 50,
+        Default = 15,
+        Step = 1
+    },
+
+    Callback = function(Valor)
+
+        RaioKillAura = Valor
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+Aba_Murderer:Toggle({
+    Title = "Clicle Aura",
+    Desc = "Consegue ver a distância do kill aura",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        MostrarCirculoAura = Ativo
+
+        AtualizarCirculoAura()
+
+    end
+})
+
+-- ===================================================
+-- BOTOES DA ABA SHERIFF
+-- ===================================================
+Aba_Sheriff:Section({
+    Title = "SHERIFF",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_ConfigButtons:Toggle({
+
+    Title =
+        "Mostrar Silent AIM",
+
+    Desc =
+        "Mostra ou esconde o botão flutuante",
+
+    Default =
+        false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+
+            CreateShootButton()
+
+        else
+
+            RemoveShootButton()
+
+        end
+
+    end
+
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Instant Shoot Beta!",
+    Desc = "Adiciona um botão na tela que ao clicar teleporta atras do assassino e atira nele",
+    Default = false,
+    Callback = function(State)
+        InstantShootAtivo = State
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Grab Gun Button",
+    Desc = "Adicionar um botão na tela que ao clicar traz a Gun para seu personagem",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateGrabGunButton()
+        else
+            RemoveGrabGunButton()
+        end
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Grab Gun",
+    Desc = "Verifca se a Gun esta no chão e traz ela pra você",
+    Default = false,
+    Callback = function(Ativo)
+        AutoGrabGun = Ativo
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "Aimbot",
+    Desc = "Centraliza a mira no peito do assassino",
+    Default = false,
+    Callback = function(State)
+        LockCameraAtivo = State
+    end
+})
+
+Aba_Sheriff:Slider({
+    Title = "FOV",
+    Desc = "Ajuste o Aimbot",
+    Value = {Min = 50, Max = 500, Default = 150, Step = 5},
+    Callback = function(Valor)
+        RaioFOV = Valor
+        if FOVCircle then
+            FOVCircle.Size = UDim2.new(0, Valor, 0, Valor)
+        end
+    end
+})
+
+Aba_Sheriff:Toggle({
+    Title = "FOV Cicle",
+   Desc = "Adiciona o Fov na tela",
+    Default = false,
+    Callback = function(State)
+        MostrarCirculo = State
+        if FOVCircle then
+            FOVCircle.Visible = State
+        end
+    end
+})
+
+-- ====================================================
+-- BOTOES DA ABA AUTO FARM
+-- ====================================================
+
+Aba_AutoFarm:Section({
+    Title = "AUTO FARM COIN",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Farm Coin Button",
+    Desc = "Adiciona um botão de Farm na tela",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateAutoFarmButton()
+        else
+            RemoveAutoFarmButton()
+        end
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Farm Coin",
+    Desc = "Voa ate as moedas mas proxima e para ao coletar o max de moedas",
+    Default = false,
+    Callback = function(Ativo)
+        AutoFarmAtivo = Ativo
+    end
+})
+
+Aba_AutoFarm:Slider({
+    Title = "Speed Farm",
+    Desc = "Ajuate a velocidade do auto farm",
+    Value = {Min = 16, Max = 20, Default = 16, Step = 1},
+    Callback = function(Valor)
+        CONFIG_FARM.velocidade = Valor
+    end
+})
+
+Aba_AutoFarm:Button({
+    Title = "Anti-AFK",
+    Desc = "Executa um script de Anti-AFK",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+        end)
+    end
+})
+
+Aba_AutoFarm:Section({
+    Title = "SENTTINGS AUTO FARM",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Reset",
+    Desc = "Morre automaticando ao ter coletado o max de moedas",
+    Default = true,
+    Callback = function(estado)
+        AutoResetAoEncher = estado
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Shoot Murderer",
+    Desc = "Apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShootAtivo = Ativo
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Kill All",
+    Desc = "Mata todo mundo apos ter coletado o max de moedas",
+    Default = false,
+    Callback = function(estado)
+        KillAllAoEncher = estado
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Safe TP",
+    Desc = "Apos ter coletado o max de moeda e teleportado para um lugar seguro",
+    Default = false,
+    Callback = function(estado)
+        TPSafeAoEncher = estado
+    end
+})
+
+-- ==================================
+-- BOTOES DA ABA ESP
+-- ==================================
+Aba_ESP:Section({
+    Title = "ESP",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_ESP:Toggle({
+    Title = "Highlight ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPHighlightAtivo = Ativo
+        if not Ativo then
+            for _, h in pairs(Highlights) do h.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Name ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPNomeAtivo = Ativo
+        if not Ativo then
+            for _, n in pairs(NamesESP) do n.Gui.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Distance ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPDistanciaAtiva = Ativo
+        if not Ativo then
+            for _, d in pairs(DistanceESP) do d.Gui.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Tracer ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPTracerAtivo = Ativo
+        if not Ativo then
+            for _, t in pairs(TracersESP) do t.Visible = false end
+        end
+    end
+})
+
+-- ==================================
+-- BOTÕES DA ABA LOCAL PLAYER 
+-- ==================================
+Aba_LocalPlayer:Section({
+    Title = "Extra",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Invisível",
+    Desc = "Move seu personagem para um lugar distante fazendo parecer que estar invisivel",
+    Default = false,
+    Callback = function(Ativo)
+        InvisivelAtivo = Ativo
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Invisível (botão)",
+    Desc = "Adiciona um botão que ao clicar deixa seu personagem invisivel",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateInvisivelButton()
+        else
+            RemoveInvisivelButton()
+        end
+    end
+})
+
+Aba_LocalPlayer:Section({
+    Title = "Moviment Player",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_LocalPlayer:Slider({
+    Title = "Speed",
+    Desc = "Ajuste a valocidade do seu personagem",
+    Value = {Min = 16, Max = 30, Default = 16, Step = 1},
+    Callback = function(Valor)
+        VelocidadePadrao = Valor
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.WalkSpeed = Valor
+        end
+    end
+})
+
+Aba_LocalPlayer:Slider({
+    Title = "Jump",
+    Desc = "Ajuste o pulo do seu personagem",
+    Value = {Min = 50, Max = 75, Default = 50, Step = 1},
+    Callback = function(Valor)
+        ForcaPuloPadrao = Valor
+        local Char = player.Character
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.UseJumpPower = true
+            Char.Humanoid.JumpPower = Valor
+        end
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Fly",
+    Desc = "Consegue voar pelo mapa",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleFly(Ativo)
+    end
+})
+
+Aba_LocalPlayer:Slider({
+    Title = "Fly Speed",
+    Desc = "Ajuste a velocidade do Voo",
+    Value = {Min = 16, Max = 100, Default = 16, Step = 1},
+    Callback = function(Valor)
+        FlyVelocidade = Valor
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Infinite Jump",
+    Desc = "Consegue pular infinitamente ao presionar o botão de pulo",
+    Default = false,
+    Callback = function(Ativo)
+        _G.PuloInfinito = Ativo
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Walk Fling",
+    Desc = "Faz seu personagem fica jirando e consegue jogar jogadores pra longe",
+    Default = false,
+    Callback = function(Ativo)
+        ToggleWalkFling(Ativo)
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Anti-Fling",
+    Desc = "Impede que outros scripts te jogue pra longe",
+    Default = false,
+    Callback = function(Ativo)
+        getgenv().AntiFling = Ativo
+    end
+})
+
+Aba_LocalPlayer:Toggle({
+    Title = "Speed glith",
+    Desc = "Aplica velocidade 300 ao pular e volta ao normal quando encostar mo chão",
+    Default = false,
+    Callback = function(Ativo)
+        _G.SpeedNoPulo = Ativo
+    end
+})
+
+-- =========================================
+-- ABA CAMERA 
+-- =========================================
+
+-- ✅ CÂMERA INFINITA — TUDO DENTRO DO BOTÃO (não fica no loop!)
+Aba_Camera:Toggle({
+    Title = "Infinite Zoom",
+    Desc = "Consegue dar zoom para uma distância de 99999",
+    Default = false,
+    Callback = function(Ativo)
+        _G.CameraInfinita = Ativo
+        if Ativo then
+            -- ✅ LIGADO → ZOOM GRANDE
+            player.CameraMaxZoomDistance = 1000000
+        else
+            -- ❌ DESLIGADO → VOLTA EXATAMENTE AO ORIGINAL
+            player.CameraMaxZoomDistance = ZoomMaxOriginal
+            player.CameraMinZoomDistance = ZoomMinOriginal
+        end
+    end
+})
+
+Aba_Camera:Toggle({
+    Title = "Noclip camera",
+    Desc = "Impede que sua camera encoste em paredes",
+    Default = false,
+    Callback = function(Ativo)
+        _G.CameraNoClip = Ativo
+    end
+})
+
+Aba_Camera:Slider({
+    Title = "Fov",
+    Desc = "Ajuste o Fov de sua camera",
+    Value = {Min = 70, Max = 130, Default = 70, Step = 1},
+    Callback = function(Valor)
+        FOV_Padrao = Valor
+        workspace.CurrentCamera.FieldOfView = Valor
+    end
+})
+
+-- ==================================
+-- 👤 DROPDOWN
+-- ==================================
+
+local DropdownJogadores = Aba_Tele:Dropdown({
+
+    Title = "Select Player",
+
+    Values = PegarListaJogadores(),
+
+    Default = "",
+
+    Callback = function(nome)
+
+        JogadorSelecionadoTP = nome
+
+    end
+
+})
+
+
+-- ==================================
+-- 🔄 ATUALIZAR SOMENTE OS VALORES
+-- ==================================
+
+local function AtualizarListaJogadores()
+
+    local novaLista = PegarListaJogadores()
+
+    pcall(function()
+
+        DropdownJogadores:Refresh(novaLista)
+
+    end)
+
+end
+
+
+-- Atualiza quando alguém entra
+Players.PlayerAdded:Connect(function()
+
+    task.wait(0.3)
+
+    AtualizarListaJogadores()
+
+end)
+
+
+-- Atualiza quando alguém sai
+Players.PlayerRemoving:Connect(function()
+
+    task.wait(0.3)
+
+    AtualizarListaJogadores()
+
+end)
+
+
+-- ==================================
+-- 👤 TP PLAYER
+-- ==================================
+
+Aba_Tele:Button({
+
+    Title = "TP Player",
+
+    Callback = function()
+
+        if not JogadorSelecionadoTP
+            or JogadorSelecionadoTP == "Nenhum Jogador" then
+            return
+        end
+
+        local alvo =
+            Players:FindFirstChild(JogadorSelecionadoTP)
+
+        if alvo then
+            TeleportarParaPlayer(alvo)
+        end
+
+    end
+
+})
+
+Aba_Tele:Button({
+
+    Title = "TP Murderer",
+
+    Callback = function()
+
+        TeleportarPorCargo("Murderer")
+
+    end
+
+})
+
+Aba_Tele:Button({
+
+    Title = "TP Xerife",
+
+    Callback = function()
+
+        TeleportarPorCargo("Sheriff")
+
+    end
+
+})
+
+
+-- ==================================
+-- 📍 TÍTULO: TP LOCAIS
+-- ==================================
+
+Aba_Tele:Section({
+
+    Title = "TP Locais",
+
+    Box = false,
+
+    TextSize = 18,
+
+})
+
+
+Aba_Tele:Button({
+
+    Title = "TP Mapa",
+
+    Callback = function()
+
+        local posMapa = GetMapSpawn()
+
+        if posMapa then
+            TeleportarPara(posMapa)
+        end
+
+    end
+
+})
+
+
+Aba_Tele:Button({
+
+    Title = "TP Lobby",
+
+    Callback = function()
+
+        local posLobby = GetLobbySpawn()
+
+        if posLobby then
+            TeleportarPara(posLobby)
+        end
+
+    end
+
+})
+
+Aba_Tele:Button({
+    Title = "TP Safe",
+    Callback = function()
+        TeleportarParaSafe()
+    end
+})
+
+-- ==================================
+-- BOTOES DA ABA CONFIG BUTTONS
+-- ==================================
+Aba_ConfigButtons:Section({
+    Title = "MURDERER",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_ConfigButtons:Dropdown({
+
+    Title =
+        "Formato do Kill All",
+
+    Desc =
+        "Escolha o formato do botão",
+
+    Values = {
+
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+
+    },
+
+    -- ⭐ JÁ COMEÇA SELECIONADO
+    Default =
+        "Quadrado",
+
+    Callback = function(Value)
+
+        KillAllButtonStyle =
+            Value
+
+        AtualizarKillAllButton()
+
+    end
+
+})
+
+-- ===========================================
+-- 📏 SLIDER DE TAMANHO
+-- ===========================================
+
+Aba_ConfigButtons:Slider({
+
+    Title =
+        "Tamanho do Kill All",
+
+    Desc =
+        "Escolha o tamanho do botão",
+
+    Value = {
+
+        Min = 40,
+        Max = 200,
+        Default = 75
+
+    },
+
+    Step =
+        1,
+
+    Callback = function(Valor)
+
+        KillAllButtonSize =
+            Valor
+
+        AtualizarKillAllButton()
+
+    end
+
+})
+
+Aba_ConfigButtons:Section({
+    Title = "SHERIFF",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_ConfigButtons:Dropdown({
+
+    Title =
+        "Formato do Silent AIM",
+
+    Desc =
+        "Escolha o formato do botão",
+
+    Values = {
+
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+
+    },
+
+    -- ⭐ QUADRADO JÁ SELECIONADO
+    Default =
+        "Quadrado",
+
+    Callback = function(Value)
+
+        SilentAimButtonStyle =
+            Value
+
+        AtualizarSilentAimButton()
+
+    end
+
+})
+
+-- ===========================================
+-- 📏 TAMANHO DO SILENT AIM
+-- ===========================================
+
+Aba_ConfigButtons:Slider({
+
+    Title =
+        "Tamanho do Silent AIM",
+
+    Desc =
+        "Escolha o tamanho do botão",
+
+    Value = {
+
+        Min = 40,
+        Max = 200,
+        Default = 75
+
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+
+        SilentAimButtonSize =
+            Valor
+
+        AtualizarSilentAimButton()
+
+    end
+
+})
+
+-- ==================================
+-- BOTOES DA ABA CONFIG UI
+-- ==================================
+
+local ListaCores = {
+
+    "Ruby",
+    "Ametista",
+
+    "Verde Água",
+    "Azul Gelo",
+    "Roxo Neon",
+    "Rosa Neon",
+    "Laranja Neon",
+    "Amarelo Neon",
+    "Turquesa",
+    "Lavanda",
+    "Coral",
+    "Dourado",
+    "Violeta",
+    "Pink",
+
+    "Verde",
+    "Azul",
+    "Roxo",
+    "Rosa",
+    "Vermelho",
+    "Laranja",
+    "Amarelo",
+    "Ciano",
+    "Prata",
+    "Cinza",
+    "Índigo",
+    "Salmão",
+    "Marrom",
+}
+
+
+-- ==================================
+-- 🎨 DROPDOWN
+-- ==================================
+
+Aba_Config:Dropdown({
+    Title = "Cor da Interface",
+    Values = ListaCores,
+    Value = CorSelecionada,
+
+    Callback = function(Value)
+        CorSelecionada = Value
+    end
+})
+
+
+-- ==================================
+-- ✅ BOTÃO APLICAR
+-- ==================================
+
+Aba_Config:Button({
+    Title = "Aplicar Cor",
+
+    Callback = function()
+
+        local Cor = CoresAstral[CorSelecionada]
+
+        if not Cor then
+            return
+        end
+
+        -- Ativa o tema correspondente
+        pcall(function()
+            WindUI:SetTheme("Astral_" .. CorSelecionada)
+        end)
+
+    end
+})
+
+Aba_Config:Slider({
+    Title = "Tamanho do Botão Astral",
+
+    Value = {
+        Min = 1.0,
+        Max = 1.9,
+        Default = 1.0,
+    },
+
+    Step = 0.1,
+
+    Callback = function(Valor)
+        if EscalaBotaoAstral then
+            EscalaBotaoAstral.Scale = Valor
+        end
+    end
+})
