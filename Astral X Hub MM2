@@ -3659,47 +3659,22 @@ Aba_Murderer:Button({
     end
 })
 
--- ===========================================
--- 📋 FORMATO DO BOTÃO
--- ===========================================
-
-Aba_ConfigButtons:Dropdown({
-
-    Title = "Formato do Kill All",
-
-    Desc = "Escolha o formato do botão",
-
-    Values = {
-        "Quadrado",
-        "Retângulo",
-        "Círculo"
-    },
-
-    Default = "Quadrado",
-
-    Callback = function(Value)
-
-        KillAllButtonStyle =
-            Value
-
-        AtualizarKillAllButton()
-
-    end
-
-})
-
 
 -- ===========================================
 -- 🔘 MOSTRAR / ESCONDER
 -- ===========================================
 
-Aba_ConfigButtons:Toggle({
+Aba_Murderer:Toggle({
 
-    Title = "Mostrar Kill All",
+    Title =
+        "Mostrar Kill All",
 
-    Desc = "Mostra ou esconde o botão flutuante",
+    Desc =
+        "Mostra ou esconde o botão flutuante",
 
-    Default = false,
+    -- ⭐ COMEÇA ESCONDIDO
+    Default =
+        false,
 
     Callback = function(Ativo)
 
@@ -3712,36 +3687,6 @@ Aba_ConfigButtons:Toggle({
             RemoveKillAllButton()
 
         end
-
-    end
-
-})
-
-
--- ===========================================
--- 📏 TAMANHO DO BOTÃO
--- ===========================================
-
-Aba_ConfigButtons:Slider({
-
-    Title = "Tamanho do Kill All",
-
-    Desc = "Escolha o tamanho do botão",
-
-    Value = {
-        Min = 40,
-        Max = 200,
-        Default = 75
-    },
-
-    Step = 1,
-
-    Callback = function(Valor)
-
-        KillAllButtonSize =
-            Valor
-
-        AtualizarKillAllButton()
 
     end
 
@@ -4359,6 +4304,70 @@ Aba_Tele:Button({
     Callback = function()
         TeleportarParaSafe()
     end
+})
+
+-- ==================================
+-- BOTOES DA ABA CONFIG BUTTONS
+-- ==================================
+Aba_ConfigButtons:Dropdown({
+
+    Title =
+        "Formato do Kill All",
+
+    Desc =
+        "Escolha o formato do botão",
+
+    Values = {
+
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+
+    },
+
+    -- ⭐ JÁ COMEÇA SELECIONADO
+    Default =
+        "Quadrado",
+
+    Callback = function(Value)
+
+        KillAllButtonStyle =
+            Value
+
+        AtualizarKillAllButton()
+
+    end
+
+})
+
+Aba_ConfigButtons:Slider({
+
+    Title =
+        "Tamanho do Kill All",
+
+    Desc =
+        "Escolha o tamanho do botão",
+
+    Value = {
+
+        Min = 40,
+        Max = 200,
+        Default = 75
+
+    },
+
+    Step =
+        1,
+
+    Callback = function(Valor)
+
+        KillAllButtonSize =
+            Valor
+
+        AtualizarKillAllButton()
+
+    end
+
 })
 
 -- ==================================
