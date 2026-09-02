@@ -568,28 +568,64 @@ end)
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
--- 🎯 Silent AIM
+
+-- 🪙 AUTO FARM
+local CONFIG_FARM = {
+    velocidade = 24,
+    limite = 40,
+    alcance_maximo = 999
+}
+
+local AutoFarmAtivo = false
+local collectedCoins = {}
+local KillAllAoEncher = false
+
+local AutoFarmButtonGui = nil
+local isDraggingFarm = false
+
+
+-- ==================================
+-- 🎯 SILENT AIM
+-- ==================================
+
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+
 local ShootButtonGui = nil
 local isDragging = false
 local buttonStartPos = nil
 local dragStartPos = nil
-local SilentAimButtonStyle = "Quadrado"
-local SilentAimButtonSize = 75
 
 local Pressionado = false
 
--- 🔫 Grab Gun
+
+-- ==================================
+-- 🔫 GRAB GUN
+-- ==================================
+
 local GrabGunButtonGui = nil
 local isDraggingGrab = false
 local buttonStartPosGrab = nil
 local dragStartPosGrab = nil
 
+
+-- ==================================
+-- 🗡️ KILL AURA / KILL ALL
+-- ==================================
+
 local KillAura = false
-local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
+
+local KillAllButtonGui = nil
+local isDraggingKill = false
+local buttonStartPosKill = nil
+local dragStartPosKill = nil
+
 
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
 -- ==================================
+
 local ESPHighlightAtivo = false
 local ESPNomeAtivo = false
 local ESPDistanciaAtiva = false
@@ -601,15 +637,20 @@ local DistanceESP = {}
 local TracersESP = {}
 local DadosCargos = {}
 
+
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
+
 local InvisivelButtonGui = nil
 local isDraggingInvis = false
 
 local InvisivelAtivo = false
 local PartesCorpo = {}
-local Personagem, Humanoid, Raiz
+
+local Personagem = nil
+local Humanoid = nil
+local Raiz = nil
 
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
@@ -619,33 +660,59 @@ local FOV_Padrao = 70
 local FlyAtivo = false
 local FlyVelocidade = 16
 
-local bv, bg, con
-local controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
+local bv = nil
+local bg = nil
+local con = nil
+
+local controls =
+    require(
+        player:WaitForChild("PlayerScripts")
+            :WaitForChild("PlayerModule")
+    ):GetControls()
 
 local WalkFlingAtivo = false
 local FlingPower = 100000000000
 local FlingConnection = nil
 
--- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
-local ZoomMaxOriginal = player.CameraMaxZoomDistance
-local ZoomMinOriginal = player.CameraMinZoomDistance
-local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
+
+-- ==================================
+-- 📷 ZOOM ORIGINAL
+-- ==================================
+
+local ZoomMaxOriginal =
+    player.CameraMaxZoomDistance
+
+local ZoomMinOriginal =
+    player.CameraMinZoomDistance
+
+local BloqueioOriginal =
+    Enum.DevCameraOcclusionMode.Zoom
+
+
+-- ==================================
+-- ⚙️ CONFIGURAÇÕES GLOBAIS
+-- ==================================
 
 _G.PuloInfinito = false
 _G.SpeedNoPulo = false
 _G.CameraInfinita = false
 _G.CameraNoClip = false
 
+
 -- ==================================
--- VARIÁVEIS DA ABA TELEPORTE 
+-- 📍 VARIÁVEIS DA ABA TELEPORTE
 -- ==================================
+
 local TeleportandoLocais = false
 
 local JogadorSelecionadoTP = nil
 local DropdownJogadores = nil
 
-local TeleportService = game:GetService("TeleportService")
-local HttpService = game:GetService("HttpService")
+local TeleportService =
+    game:GetService("TeleportService")
+
+local HttpService =
+    game:GetService("HttpService")
 
 local EmCooldownHop = false
 local ServidoresVisitados = {}
