@@ -657,6 +657,20 @@ local HttpService = game:GetService("HttpService")
 local EmCooldownHop = false
 local ServidoresVisitados = {}
 
+-- ==================================
+-- VARIÁVEIS DA ABA TELEPORTE 
+-- ==================================
+local TeleportandoLocais = false
+
+local JogadorSelecionadoTP = nil
+local DropdownJogadores = nil
+
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
+
+local EmCooldownHop = false
+local ServidoresVisitados = {}
+
 -- ====================================================
 -- ABAS
 -- ====================================================
