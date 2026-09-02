@@ -703,7 +703,7 @@ local Aba_Tele = Window:Tab({
 
 local Aba_ConfigButtons = Window:Tab({
     Title = "Config Buttons",
-    Icon = "settings",
+    Icon = "sliders",
 })
 
 local Aba_Config = Window:Tab({
