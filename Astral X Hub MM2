@@ -565,17 +565,16 @@ pcall(function()
 
 end)
 
+
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
-
--- 🪙 AUTO FARM
+-- AITO FARM 
 local CONFIG_FARM = {
     velocidade = 24,
     limite = 40,
     alcance_maximo = 999
 }
-
 local AutoFarmAtivo = false
 local collectedCoins = {}
 local KillAllAoEncher = false
@@ -583,49 +582,22 @@ local KillAllAoEncher = false
 local AutoFarmButtonGui = nil
 local isDraggingFarm = false
 
-
--- ==================================
--- 🎯 SILENT AIM
--- ==================================
-
 local AutoShoot = false
 local AutoGrabGun = false
 local ShootPredictMultiplier = 1
-
-local ShootButtonGui = nil
-local isDragging = false
-local buttonStartPos = nil
-local dragStartPos = nil
-
+local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
 local Pressionado = false
-
-
--- ==================================
--- 🔫 GRAB GUN
--- ==================================
 
 local GrabGunButtonGui = nil
 local isDraggingGrab = false
-local buttonStartPosGrab = nil
-local dragStartPosGrab = nil
-
-
--- ==================================
--- 🗡️ KILL AURA / KILL ALL
--- ==================================
+local buttonStartPosGrab, dragStartPosGrab
 
 local KillAura = false
-
-local KillAllButtonGui = nil
-local isDraggingKill = false
-local buttonStartPosKill = nil
-local dragStartPosKill = nil
-
+local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
 
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
 -- ==================================
-
 local ESPHighlightAtivo = false
 local ESPNomeAtivo = false
 local ESPDistanciaAtiva = false
@@ -637,20 +609,15 @@ local DistanceESP = {}
 local TracersESP = {}
 local DadosCargos = {}
 
-
 -- ==================================
 -- VARIÁVEIS DA ABA LOCAL PLAYER
 -- ==================================
-
 local InvisivelButtonGui = nil
 local isDraggingInvis = false
 
 local InvisivelAtivo = false
 local PartesCorpo = {}
-
-local Personagem = nil
-local Humanoid = nil
-local Raiz = nil
+local Personagem, Humanoid, Raiz
 
 local VelocidadePadrao = 16
 local ForcaPuloPadrao = 50
@@ -660,59 +627,33 @@ local FOV_Padrao = 70
 local FlyAtivo = false
 local FlyVelocidade = 16
 
-local bv = nil
-local bg = nil
-local con = nil
-
-local controls =
-    require(
-        player:WaitForChild("PlayerScripts")
-            :WaitForChild("PlayerModule")
-    ):GetControls()
+local bv, bg, con
+local controls = require(player:WaitForChild("PlayerScripts"):WaitForChild("PlayerModule")):GetControls()
 
 local WalkFlingAtivo = false
 local FlingPower = 100000000000
 local FlingConnection = nil
 
-
--- ==================================
--- 📷 ZOOM ORIGINAL
--- ==================================
-
-local ZoomMaxOriginal =
-    player.CameraMaxZoomDistance
-
-local ZoomMinOriginal =
-    player.CameraMinZoomDistance
-
-local BloqueioOriginal =
-    Enum.DevCameraOcclusionMode.Zoom
-
-
--- ==================================
--- ⚙️ CONFIGURAÇÕES GLOBAIS
--- ==================================
+-- ✅ SALVA O ZOOM ORIGINAL DO ROBLOX AO INICIAR
+local ZoomMaxOriginal = player.CameraMaxZoomDistance
+local ZoomMinOriginal = player.CameraMinZoomDistance
+local BloqueioOriginal = Enum.DevCameraOcclusionMode.Zoom
 
 _G.PuloInfinito = false
 _G.SpeedNoPulo = false
 _G.CameraInfinita = false
 _G.CameraNoClip = false
 
-
 -- ==================================
--- 📍 VARIÁVEIS DA ABA TELEPORTE
+-- VARIÁVEIS DA ABA TELEPORTE 
 -- ==================================
-
 local TeleportandoLocais = false
 
 local JogadorSelecionadoTP = nil
 local DropdownJogadores = nil
 
-local TeleportService =
-    game:GetService("TeleportService")
-
-local HttpService =
-    game:GetService("HttpService")
+local TeleportService = game:GetService("TeleportService")
+local HttpService = game:GetService("HttpService")
 
 local EmCooldownHop = false
 local ServidoresVisitados = {}
@@ -3959,30 +3900,17 @@ Aba_Sheriff:Section({
 })
 
 Aba_Sheriff:Toggle({
-
-    Title =
-        "Mostrar Silent AIM",
-
-    Desc =
-        "Mostra ou esconde o botão flutuante",
-
-    Default =
-        false,
-
+    Title = "Silent AIM Button",
+    Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
+    Default = false,
     Callback = function(Ativo)
-
+        AutoShoot = Ativo
         if Ativo then
-
             CreateShootButton()
-
         else
-
             RemoveShootButton()
-
         end
-
     end
-
 })
 
 Aba_Sheriff:Toggle({
@@ -4598,69 +4526,18 @@ Aba_ConfigButtons:Section({
     TextSize = 18,
 })
 
-Aba_ConfigButtons:Dropdown({
-
-    Title =
-        "Formato do Silent AIM",
-
-    Desc =
-        "Escolha o formato do botão",
-
-    Values = {
-
-        "Quadrado",
-        "Retângulo",
-        "Círculo"
-
-    },
-
-    -- ⭐ QUADRADO JÁ SELECIONADO
-    Default =
-        "Quadrado",
-
-    Callback = function(Value)
-
-        SilentAimButtonStyle =
-            Value
-
-        AtualizarSilentAimButton()
-
-    end
-
+Aba_ConfigButtons:Section({
+    Title = "Auto Farm",
+    Box = false,
+    TextSize = 18,
 })
 
--- ===========================================
--- 📏 TAMANHO DO SILENT AIM
--- ===========================================
-
-Aba_ConfigButtons:Slider({
-
-    Title =
-        "Tamanho do Silent AIM",
-
-    Desc =
-        "Escolha o tamanho do botão",
-
-    Value = {
-
-        Min = 40,
-        Max = 200,
-        Default = 75
-
-    },
-
-    Step = 1,
-
-    Callback = function(Valor)
-
-        SilentAimButtonSize =
-            Valor
-
-        AtualizarSilentAimButton()
-
-    end
-
+Aba_ConfigButtons:Section({
+    Title = "Local Player",
+    Box = false,
+    TextSize = 18,
 })
+
 
 -- ==================================
 -- BOTOES DA ABA CONFIG UI
