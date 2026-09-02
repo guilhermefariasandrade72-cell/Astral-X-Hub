@@ -568,28 +568,21 @@ end)
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
--- AITO FARM 
-local CONFIG_FARM = {
-    velocidade = 24,
-    limite = 40,
-    alcance_maximo = 999
-}
-local AutoFarmAtivo = false
-local collectedCoins = {}
-local KillAllAoEncher = false
+-- 🎯 Silent AIM
+local ShootButtonGui = nil
+local isDragging = false
+local buttonStartPos = nil
+local dragStartPos = nil
+local SilentAimButtonStyle = "Quadrado"
+local SilentAimButtonSize = 75
 
-local AutoFarmButtonGui = nil
-local isDraggingFarm = false
-
-local AutoShoot = false
-local AutoGrabGun = false
-local ShootPredictMultiplier = 1
-local ShootButtonGui, isDragging, buttonStartPos, dragStartPos
 local Pressionado = false
 
+-- 🔫 Grab Gun
 local GrabGunButtonGui = nil
 local isDraggingGrab = false
-local buttonStartPosGrab, dragStartPosGrab
+local buttonStartPosGrab = nil
+local dragStartPosGrab = nil
 
 local KillAura = false
 local KillAllButtonGui, isDraggingKill, buttonStartPosKill, dragStartPosKill
