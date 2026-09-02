@@ -770,12 +770,16 @@ end)
 -- ===========================================
 -- 🗡️ SISTEMA BOTÃO FLUTUANTE KILL ALL
 -- ===========================================
+
 local function CreateKillAllButton()
     if KillAllButtonGui then return end
 
     local ParentGui = CoreGui
+
     pcall(function()
-        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+        if not CoreGui then
+            ParentGui = player:WaitForChild("PlayerGui")
+        end
     end)
 
     local GuiBtn = Instance.new("ScreenGui")
@@ -785,66 +789,234 @@ local function CreateKillAllButton()
     GuiBtn.Parent = ParentGui
 
     local Btn = Instance.new("ImageButton")
+
     Btn.Size = UDim2.new(0, 110, 0, 42)
     Btn.Position = UDim2.new(0.5, -55, 0.7, -21)
+
     Btn.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
     Btn.BackgroundTransparency = 0.3
+
     Btn.Parent = GuiBtn
 
+
+    -- ===========================================
+    -- 🔴 CANTOS ARREDONDADOS
+    -- ===========================================
+
     local Corner = Instance.new("UICorner")
-    Corner.CornerRadius = UDim.new(0, 10)
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
     Corner.Parent = Btn
 
+
+    -- ===========================================
+    -- 🔴 BORDA
+    -- ===========================================
+
     local Borda = Instance.new("UIStroke")
-    Borda.Color = Color3.fromRGB(255, 50, 50)
+
+    Borda.Color =
+        Color3.fromRGB(255, 50, 50)
+
     Borda.Thickness = 2
-    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    Borda.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
     Borda.Parent = Btn
 
+
+    -- ===========================================
+    -- 📝 TEXTO
+    -- ===========================================
+
     local Texto = Instance.new("TextLabel")
-    Texto.Size = UDim2.new(1, 0, 1, 0)
+
+    Texto.Size =
+        UDim2.new(1, 0, 1, 0)
+
     Texto.BackgroundTransparency = 1
+
     Texto.Text = "Kill All"
-    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+
+    Texto.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
     Texto.TextSize = 15
-    Texto.Font = Enum.Font.GothamBold
+
+    Texto.Font =
+        Enum.Font.GothamBold
+
     Texto.Parent = Btn
 
-    -- Arrastar o botão na tela
+
+    -- ===========================================
+    -- 🎬 SISTEMA DE ANIMAÇÃO
+    -- ===========================================
+
+    local TweenService =
+        game:GetService("TweenService")
+
+    local ButtonScale =
+        Instance.new("UIScale")
+
+    ButtonScale.Scale = 1
+    ButtonScale.Parent = Btn
+
+
+    -- ===========================================
+    -- 🖱️ ARRASTAR O BOTÃO
+    -- ===========================================
+
     Btn.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
             isDraggingKill = true
-            buttonStartPosKill = Btn.Position
-            dragStartPosKill = Input.Position
+
+            buttonStartPosKill =
+                Btn.Position
+
+            dragStartPosKill =
+                Input.Position
+
+
             Input.Changed:Connect(function()
-                if Input.UserInputState == Enum.UserInputState.End then 
-                    isDraggingKill = false 
+
+                if Input.UserInputState ==
+                    Enum.UserInputState.End then
+
+                    isDraggingKill = false
+
                 end
+
             end)
+
         end
+
     end)
+
 
     Btn.InputChanged:Connect(function(Input)
-        if isDraggingKill and (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) then
-            Btn.Position = buttonStartPosKill + UDim2.fromOffset(Input.Position.X - dragStartPosKill.X, Input.Position.Y - dragStartPosKill.Y)
+
+        if isDraggingKill
+            and (
+                Input.UserInputType ==
+                    Enum.UserInputType.Touch
+
+                or Input.UserInputType ==
+                    Enum.UserInputType.MouseMovement
+            ) then
+
+            Btn.Position =
+                buttonStartPosKill
+                + UDim2.fromOffset(
+                    Input.Position.X
+                        - dragStartPosKill.X,
+
+                    Input.Position.Y
+                        - dragStartPosKill.Y
+                )
+
         end
+
     end)
 
-    -- Clique executa o Kill All Instantâneo
-    Btn.MouseButton1Click:Connect(function() 
-        if not isDraggingKill then 
-            KillAllInstantaneo() 
-        end 
+
+    -- ===========================================
+    -- 🎬 CLIQUE + ANIMAÇÃO
+    -- ===========================================
+
+    Btn.MouseButton1Click:Connect(function()
+
+        if isDraggingKill then
+            return
+        end
+
+
+        -- 🔽 ENCOLHER
+        local Encolher =
+            TweenService:Create(
+
+                ButtonScale,
+
+                TweenInfo.new(
+                    0.08,
+                    Enum.EasingStyle.Quad,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    Scale = 0.88
+                }
+
+            )
+
+
+        -- 🔼 VOLTAR AO NORMAL
+        local Voltar =
+            TweenService:Create(
+
+                ButtonScale,
+
+                TweenInfo.new(
+                    0.10,
+                    Enum.EasingStyle.Back,
+                    Enum.EasingDirection.Out
+                ),
+
+                {
+                    Scale = 1
+                }
+
+            )
+
+
+        Encolher:Play()
+
+
+        Encolher.Completed:Connect(function()
+
+            Voltar:Play()
+
+        end)
+
+
+        -- 🗡️ EXECUTA O KILL ALL
+        KillAllInstantaneo()
+
     end)
+
+
+    -- ===========================================
+    -- ✅ SALVAR GUI
+    -- ===========================================
 
     KillAllButtonGui = GuiBtn
+
 end
 
+
+-- ===========================================
+-- ❌ REMOVER BOTÃO
+-- ===========================================
+
 local function RemoveKillAllButton()
-    if KillAllButtonGui then 
-        KillAllButtonGui:Destroy() 
-        KillAllButtonGui = nil 
+
+    if KillAllButtonGui then
+
+        KillAllButtonGui:Destroy()
+
+        KillAllButtonGui = nil
+
     end
+
 end
 
 -- ==================================
