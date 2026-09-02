@@ -691,6 +691,11 @@ local Aba_Camera = Window:Tab({
     Icon = "camera",
 })
 
+local Aba_Trollagem = Window:Tab({
+    Title = "Trollagem",
+    Icon = "laugh",
+})
+
 local Aba_Tele = Window:Tab({
     Title = "Teleporte",
     Icon = "globe",
