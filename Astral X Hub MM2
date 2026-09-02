@@ -3558,20 +3558,92 @@ Aba_Murderer:Button({
     end
 })
 
-Aba_Murderer:Toggle({
-    Title = "Kill All Button",
-    Desc = "Adiciona um botão na tela que ao clicar mata todo mundo",
+-- ===========================================
+-- 📋 FORMATO DO BOTÃO
+-- ===========================================
+
+Aba_ConfigButtons:Dropdown({
+
+    Title = "Formato do Kill All",
+
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        KillAllButtonStyle =
+            Value
+
+        AtualizarKillAllButton()
+
+    end
+
+})
+
+
+-- ===========================================
+-- 🔘 MOSTRAR / ESCONDER
+-- ===========================================
+
+Aba_ConfigButtons:Toggle({
+
+    Title = "Mostrar Kill All",
+
+    Desc = "Mostra ou esconde o botão flutuante",
+
     Default = false,
 
     Callback = function(Ativo)
 
         if Ativo then
+
             CreateKillAllButton()
+
         else
+
             RemoveKillAllButton()
+
         end
 
     end
+
+})
+
+
+-- ===========================================
+-- 📏 TAMANHO DO BOTÃO
+-- ===========================================
+
+Aba_ConfigButtons:Slider({
+
+    Title = "Tamanho do Kill All",
+
+    Desc = "Escolha o tamanho do botão",
+
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+
+        KillAllButtonSize =
+            Valor
+
+        AtualizarKillAllButton()
+
+    end
+
 })
 
 Aba_Murderer:Toggle({
