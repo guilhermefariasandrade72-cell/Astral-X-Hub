@@ -3555,7 +3555,7 @@ Aba_Murderer:Button({
     end
 })
 
-Aba_ConfigButtons:Toggle({
+Aba_Murderer:Toggle({
 
     Title =
         "Mostrar Kill All",
@@ -3814,7 +3814,7 @@ Aba_AutoFarm:Toggle({
 
 Aba_AutoFarm:Toggle({
     Title = "Safe TP",
-    Desc = "Apos ter coletado o max de moeda e teleprtado para um lugar seguro",
+    Desc = "Apos ter coletado o max de moeda e teleportado para um lugar seguro",
     Default = false,
     Callback = function(estado)
         TPSafeAoEncher = estado
@@ -3878,7 +3878,7 @@ Aba_ESP:Toggle({
 -- BOTÕES DA ABA LOCAL PLAYER 
 -- ==================================
 Aba_LocalPlayer:Section({
-    Title = "Settings Auto Farm",
+    Title = "Extra",
     Box = false,
     TextSize = 18,
 })
@@ -4200,6 +4200,12 @@ Aba_Tele:Button({
 -- ==================================
 -- BOTOES DA ABA CONFIG BUTTONS
 -- ==================================
+Aba_ConfigButtons:Section({
+    Title = "MURDERER",
+    Box = false,
+    TextSize = 18,
+})
+
 Aba_ConfigButtons:Dropdown({
 
     Title =
