@@ -768,54 +768,162 @@ task.spawn(function()
 end)
 
 -- ===========================================
--- 🗡️ SISTEMA BOTÃO FLUTUANTE KILL ALL
+-- 🎛️ CONFIG BUTTONS - KILL ALL
+-- ===========================================
+
+-- Configurações
+local KillAllButtonStyle = "Quadrado"
+local KillAllButtonSize = 75
+
+
+-- ===========================================
+-- 🔄 ATUALIZAR FORMATO E TAMANHO
+-- ===========================================
+
+local function AtualizarKillAllButton()
+
+    if not KillAllButtonGui then
+        return
+    end
+
+    local Btn = KillAllButtonGui:FindFirstChild("KillAllButton")
+
+    if not Btn then
+        return
+    end
+
+
+    -- =========================================
+    -- 📏 TAMANHO
+    -- =========================================
+
+    if KillAllButtonStyle == "Quadrado"
+        or KillAllButtonStyle == "Círculo" then
+
+        Btn.Size = UDim2.fromOffset(
+            KillAllButtonSize,
+            KillAllButtonSize
+        )
+
+    elseif KillAllButtonStyle == "Retângulo" then
+
+        Btn.Size = UDim2.fromOffset(
+            KillAllButtonSize + 35,
+            math.floor(KillAllButtonSize * 0.55)
+        )
+
+    end
+
+
+    -- =========================================
+    -- 🔵 FORMATO
+    -- =========================================
+
+    local Corner =
+        Btn:FindFirstChild("KillAllCorner")
+
+    if not Corner then
+        Corner = Instance.new("UICorner")
+        Corner.Name = "KillAllCorner"
+        Corner.Parent = Btn
+    end
+
+
+    if KillAllButtonStyle == "Círculo" then
+
+        Corner.CornerRadius =
+            UDim.new(1, 0)
+
+    elseif KillAllButtonStyle == "Quadrado" then
+
+        Corner.CornerRadius =
+            UDim.new(0, 10)
+
+    elseif KillAllButtonStyle == "Retângulo" then
+
+        Corner.CornerRadius =
+            UDim.new(0, 10)
+
+    end
+
+end
+
+
+-- ===========================================
+-- 🗡️ CRIAR BOTÃO KILL ALL
 -- ===========================================
 
 local function CreateKillAllButton()
-    if KillAllButtonGui then return end
+
+    if KillAllButtonGui then
+        return
+    end
+
 
     local ParentGui = CoreGui
 
     pcall(function()
+
         if not CoreGui then
             ParentGui = player:WaitForChild("PlayerGui")
         end
+
     end)
 
-    local GuiBtn = Instance.new("ScreenGui")
-    GuiBtn.Name = "AstralX_KillAllButton"
+
+    local GuiBtn =
+        Instance.new("ScreenGui")
+
+    GuiBtn.Name =
+        "AstralX_KillAllButton"
+
     GuiBtn.ResetOnSpawn = false
-    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    GuiBtn.Parent = ParentGui
 
-    local Btn = Instance.new("ImageButton")
+    GuiBtn.ZIndexBehavior =
+        Enum.ZIndexBehavior.Sibling
 
-    Btn.Size = UDim2.new(0, 110, 0, 42)
-    Btn.Position = UDim2.new(0.5, -55, 0.7, -21)
+    GuiBtn.Parent =
+        ParentGui
 
-    Btn.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
+
+    local Btn =
+        Instance.new("ImageButton")
+
+    Btn.Name =
+        "KillAllButton"
+
+    Btn.Size =
+        UDim2.fromOffset(
+            KillAllButtonSize,
+            KillAllButtonSize
+        )
+
+    Btn.Position =
+        UDim2.new(
+            0.5,
+            -KillAllButtonSize / 2,
+            0.7,
+            -KillAllButtonSize / 2
+        )
+
+    Btn.BackgroundColor3 =
+        Color3.fromRGB(150, 20, 20)
+
     Btn.BackgroundTransparency = 0.3
 
-    Btn.Parent = GuiBtn
-
-
-    -- ===========================================
-    -- 🔴 CANTOS ARREDONDADOS
-    -- ===========================================
-
-    local Corner = Instance.new("UICorner")
-
-    Corner.CornerRadius =
-        UDim.new(0, 10)
-
-    Corner.Parent = Btn
+    Btn.Parent =
+        GuiBtn
 
 
     -- ===========================================
     -- 🔴 BORDA
     -- ===========================================
 
-    local Borda = Instance.new("UIStroke")
+    local Borda =
+        Instance.new("UIStroke")
+
+    Borda.Name =
+        "KillAllBorder"
 
     Borda.Color =
         Color3.fromRGB(255, 50, 50)
@@ -825,21 +933,27 @@ local function CreateKillAllButton()
     Borda.ApplyStrokeMode =
         Enum.ApplyStrokeMode.Border
 
-    Borda.Parent = Btn
+    Borda.Parent =
+        Btn
 
 
     -- ===========================================
     -- 📝 TEXTO
     -- ===========================================
 
-    local Texto = Instance.new("TextLabel")
+    local Texto =
+        Instance.new("TextLabel")
+
+    Texto.Name =
+        "KillAllText"
 
     Texto.Size =
         UDim2.new(1, 0, 1, 0)
 
     Texto.BackgroundTransparency = 1
 
-    Texto.Text = "Kill All"
+    Texto.Text =
+        "Kill All"
 
     Texto.TextColor3 =
         Color3.fromRGB(255, 255, 255)
@@ -849,11 +963,29 @@ local function CreateKillAllButton()
     Texto.Font =
         Enum.Font.GothamBold
 
-    Texto.Parent = Btn
+    Texto.Parent =
+        Btn
 
 
     -- ===========================================
-    -- 🎬 SISTEMA DE ANIMAÇÃO
+    -- 🔵 CANTOS
+    -- ===========================================
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.Name =
+        "KillAllCorner"
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
+    Corner.Parent =
+        Btn
+
+
+    -- ===========================================
+    -- 🎬 ANIMAÇÃO
     -- ===========================================
 
     local TweenService =
@@ -863,11 +995,13 @@ local function CreateKillAllButton()
         Instance.new("UIScale")
 
     ButtonScale.Scale = 1
-    ButtonScale.Parent = Btn
+
+    ButtonScale.Parent =
+        Btn
 
 
     -- ===========================================
-    -- 🖱️ ARRASTAR O BOTÃO
+    -- 🖱️ ARRASTAR
     -- ===========================================
 
     Btn.InputBegan:Connect(function(Input)
@@ -930,7 +1064,7 @@ local function CreateKillAllButton()
 
 
     -- ===========================================
-    -- 🎬 CLIQUE + ANIMAÇÃO
+    -- 👆 CLIQUE
     -- ===========================================
 
     Btn.MouseButton1Click:Connect(function()
@@ -940,10 +1074,8 @@ local function CreateKillAllButton()
         end
 
 
-        -- 🔽 ENCOLHER
         local Encolher =
             TweenService:Create(
-
                 ButtonScale,
 
                 TweenInfo.new(
@@ -955,14 +1087,11 @@ local function CreateKillAllButton()
                 {
                     Scale = 0.88
                 }
-
             )
 
 
-        -- 🔼 VOLTAR AO NORMAL
         local Voltar =
             TweenService:Create(
-
                 ButtonScale,
 
                 TweenInfo.new(
@@ -974,17 +1103,13 @@ local function CreateKillAllButton()
                 {
                     Scale = 1
                 }
-
             )
 
 
         Encolher:Play()
 
-
         Encolher.Completed:Connect(function()
-
             Voltar:Play()
-
         end)
 
 
@@ -994,11 +1119,12 @@ local function CreateKillAllButton()
     end)
 
 
-    -- ===========================================
-    -- ✅ SALVAR GUI
-    -- ===========================================
+    KillAllButtonGui =
+        GuiBtn
 
-    KillAllButtonGui = GuiBtn
+
+    -- Aplica o formato inicial
+    AtualizarKillAllButton()
 
 end
 
@@ -1018,6 +1144,95 @@ local function RemoveKillAllButton()
     end
 
 end
+
+
+-- ===========================================
+-- 📋 FORMATO DO BOTÃO
+-- ===========================================
+
+Aba_ConfigButtons:Dropdown({
+
+    Title = "Formato do Kill All",
+
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        KillAllButtonStyle =
+            Value
+
+        AtualizarKillAllButton()
+
+    end
+
+})
+
+
+-- ===========================================
+-- 🔘 MOSTRAR / ESCONDER
+-- ===========================================
+
+Aba_ConfigButtons:Toggle({
+
+    Title = "Mostrar Kill All",
+
+    Desc = "Mostra ou esconde o botão flutuante",
+
+    Default = false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+
+            CreateKillAllButton()
+
+        else
+
+            RemoveKillAllButton()
+
+        end
+
+    end
+
+})
+
+
+-- ===========================================
+-- 📏 TAMANHO DO BOTÃO
+-- ===========================================
+
+Aba_ConfigButtons:Slider({
+
+    Title = "Tamanho do Kill All",
+
+    Desc = "Escolha o tamanho do botão",
+
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+
+        KillAllButtonSize =
+            Valor
+
+        AtualizarKillAllButton()
+
+    end
+
+})
 
 -- ==================================
 -- 🔴 SISTEMA DE KILL AURA + CÍRCULO DINÂMICO
