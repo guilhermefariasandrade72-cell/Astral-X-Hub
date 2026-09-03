@@ -1399,6 +1399,200 @@ local function SoltarJogador()
     end
 end
 
+-- ===========================================
+-- 🔪 THROWING KNIFE
+-- Sistema baseado no Kairis Hub
+-- ===========================================
+
+local ThrowingKnifeGui = nil
+local ThrowingKnifeButton = nil
+
+-- Procura o jogador vivo mais próximo
+local function GetClosestPlayerForKnife()
+    local myCharacter = player.Character
+    if not myCharacter then
+        return nil
+    end
+
+    local myRoot = myCharacter:FindFirstChild("HumanoidRootPart")
+    if not myRoot then
+        return nil
+    end
+
+    local closestPlayer = nil
+    local shortestDistance = math.huge
+
+    for _, target in ipairs(Players:GetPlayers()) do
+        if target ~= player
+        and target.Character
+        and target.Character:FindFirstChild("HumanoidRootPart")
+        and target.Character:FindFirstChild("Humanoid") then
+
+            local humanoid = target.Character.Humanoid
+
+            if humanoid.Health > 0 then
+                local targetRoot = target.Character.HumanoidRootPart
+                local distance =
+                    (myRoot.Position - targetRoot.Position).Magnitude
+
+                if distance < shortestDistance then
+                    shortestDistance = distance
+                    closestPlayer = target
+                end
+            end
+        end
+    end
+
+    return closestPlayer
+end
+
+
+-- ===========================================
+-- 🔪 EXECUTAR THROWING KNIFE
+-- ===========================================
+
+local function ThrowKnife()
+    local character = player.Character
+    if not character then
+        return false
+    end
+
+    -- Procura a faca no Character ou Backpack
+    local knife =
+        character:FindFirstChild("Knife")
+        or (player:FindFirstChild("Backpack")
+        and player.Backpack:FindFirstChild("Knife"))
+
+    if not knife then
+        return false
+    end
+
+    -- Procura o sistema de evento da faca
+    local events = knife:FindFirstChild("Events")
+    if not events then
+        return false
+    end
+
+    local knifeThrown = events:FindFirstChild("KnifeThrown")
+    if not knifeThrown then
+        return false
+    end
+
+    -- Procura o alvo
+    local target = GetClosestPlayerForKnife()
+
+    if not target
+    or not target.Character
+    or not target.Character:FindFirstChild("HumanoidRootPart") then
+        return false
+    end
+
+    local targetRoot = target.Character.HumanoidRootPart
+
+    -- Posição do alvo
+    local targetCFrame = targetRoot.CFrame
+
+    -- Posição ligeiramente à frente do alvo
+    local frontCFrame =
+        targetCFrame + (targetCFrame.LookVector * 2)
+
+    -- Mesmo formato usado no Kairis Hub
+    local args = {
+        frontCFrame,
+        targetCFrame
+    }
+
+    knifeThrown:FireServer(unpack(args))
+
+    return true
+end
+
+
+-- ===========================================
+-- 🔘 CRIAR BOTÃO FLUTUANTE
+-- ===========================================
+
+local function CreateThrowingKnifeButton()
+
+    if ThrowingKnifeGui then
+        ThrowingKnifeGui:Destroy()
+        ThrowingKnifeGui = nil
+        ThrowingKnifeButton = nil
+    end
+
+    local gui = Instance.new("ScreenGui")
+    gui.Name = "AstralX_ThrowingKnife"
+    gui.ResetOnSpawn = false
+    gui.Parent = game:GetService("CoreGui")
+
+    local button = Instance.new("TextButton")
+    button.Name = "ThrowingKnifeButton"
+    button.Size = UDim2.fromOffset(140, 52)
+    button.Position = UDim2.new(0.5, 10, 0.87, 0)
+    button.AnchorPoint = Vector2.new(0.5, 0)
+
+    button.BackgroundColor3 =
+        Color3.fromRGB(180, 220, 255)
+
+    button.BackgroundTransparency = 0.35
+
+    button.TextColor3 =
+        Color3.fromRGB(0, 70, 150)
+
+    button.Text = "Throwing Knife"
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 14
+
+    button.Active = true
+    button.Draggable = true
+
+    button.Parent = gui
+
+    -- Cantos arredondados
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 18)
+    corner.Parent = button
+
+    -- Borda
+    local stroke = Instance.new("UIStroke")
+    stroke.Thickness = 2.5
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    stroke.Color = Color3.fromRGB(255, 50, 50)
+    stroke.Parent = button
+
+    -- Clique
+    button.MouseButton1Click:Connect(function()
+
+        local success = ThrowKnife()
+
+        if not success then
+            button.Text = "Knife Not Found"
+
+            task.wait(1)
+
+            if button and button.Parent then
+                button.Text = "Throwing Knife"
+            end
+        end
+    end)
+
+    ThrowingKnifeGui = gui
+    ThrowingKnifeButton = button
+end
+
+
+-- ===========================================
+-- ❌ REMOVER BOTÃO
+-- ===========================================
+
+local function RemoveThrowingKnifeButton()
+
+    if ThrowingKnifeGui then
+        ThrowingKnifeGui:Destroy()
+        ThrowingKnifeGui = nil
+        ThrowingKnifeButton = nil
+    end
+end
 
 -- ====================================================
 -- SISTEMA DA ABA SHERIFF
@@ -3575,6 +3769,14 @@ Aba_Murderer:Toggle({
 
     end
 
+})
+
+Aba_Murderer:Button({
+    Title = "Mostrar Throwing Knife",
+    Desc = "Cria o botão flutuante para lançar a faca",
+    Callback = function()
+        CreateThrowingKnifeButton()
+    end
 })
 
 Aba_Murderer:Toggle({
