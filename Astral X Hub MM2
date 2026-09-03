@@ -569,18 +569,6 @@ end)
 -- ==================================
 -- VARIÁVEIS DA ABA MAIN
 -- ==================================
--- AITO FARM 
-local CONFIG_FARM = {
-    velocidade = 24,
-    limite = 40,
-    alcance_maximo = 999
-}
-local AutoFarmAtivo = false
-local collectedCoins = {}
-local KillAllAoEncher = false
-
-local AutoFarmButtonGui = nil
-local isDraggingFarm = false
 
 local AutoShoot = false
 local AutoGrabGun = false
@@ -2582,99 +2570,442 @@ task.spawn(function()
 end)
 
 -- ===========================================
--- 🔘 SISTEMA DO BOTÃO NA TELA
+-- 🟢 AUTO FARM COIN — BOTÃO PERSONALIZÁVEL
 -- ===========================================
-local function CreateAutoFarmButton()
-    if AutoFarmButtonGui then return end
 
-    local ParentGui = CoreGui
-    pcall(function()
-        if not CoreGui then ParentGui = player:WaitForChild("PlayerGui") end
+-- ===========================================
+-- ⚙️ VARIÁVEIS
+-- ===========================================
+
+local AutoFarmButtonGui = nil
+local AutoFarmAtivo = false
+
+-- ⭐ Padrão: Quadrado
+local AutoFarmButtonStyle = "Quadrado"
+
+-- ⭐ Tamanho padrão
+local AutoFarmButtonSize = 75
+
+local isDraggingFarm = false
+
+
+-- ===========================================
+-- 🎨 CORES
+-- ===========================================
+
+local AutoFarmCorOff = Color3.fromRGB(255, 255, 255)
+local AutoFarmCorOn = Color3.fromRGB(46, 204, 113)
+
+local AutoFarmTextoOff = Color3.fromRGB(0, 0, 0)
+local AutoFarmTextoOn = Color3.fromRGB(255, 255, 255)
+
+
+-- ===========================================
+-- 📐 ATUALIZAR FORMATO E TAMANHO
+-- ===========================================
+
+local function AtualizarAutoFarmButton()
+
+    if not AutoFarmButtonGui then
+        return
+    end
+
+    local Btn = AutoFarmButtonGui:FindFirstChild("AutoFarmButton", true)
+
+    if not Btn then
+        return
+    end
+
+    local Corner = Btn:FindFirstChild("AutoFarmCorner")
+
+    if not Corner then
+        return
+    end
+
+
+    -- ===========================================
+    -- ◼️ QUADRADO
+    -- ===========================================
+
+    if AutoFarmButtonStyle == "Quadrado" then
+
+        Btn.Size = UDim2.fromOffset(
+            AutoFarmButtonSize,
+            AutoFarmButtonSize
+        )
+
+        Corner.CornerRadius = UDim.new(0, 10)
+
+
+    -- ===========================================
+    -- ⚪ CÍRCULO
+    -- ===========================================
+
+    elseif AutoFarmButtonStyle == "Círculo" then
+
+        Btn.Size = UDim2.fromOffset(
+            AutoFarmButtonSize,
+            AutoFarmButtonSize
+        )
+
+        Corner.CornerRadius = UDim.new(1, 0)
+
+
+    -- ===========================================
+    -- ▬ RETÂNGULO
+    -- ===========================================
+
+    elseif AutoFarmButtonStyle == "Retângulo" then
+
+        Btn.Size = UDim2.fromOffset(
+            AutoFarmButtonSize + 35,
+            math.floor(AutoFarmButtonSize * 0.55)
+        )
+
+        Corner.CornerRadius = UDim.new(0, 10)
+    end
+end
+
+
+-- ===========================================
+-- 🟢 ATUALIZAR COR
+-- ===========================================
+
+local function AtualizarCorAutoFarm()
+
+    if not AutoFarmButtonGui then
+        return
+    end
+
+    local Btn = AutoFarmButtonGui:FindFirstChild("AutoFarmButton", true)
+    local Borda = AutoFarmButtonGui:FindFirstChild("AutoFarmBorda", true)
+    local Texto = AutoFarmButtonGui:FindFirstChild("AutoFarmTexto", true)
+
+    if not Btn or not Borda or not Texto then
+        return
+    end
+
+
+    if AutoFarmAtivo then
+
+        -- 🟢 LIGADO
+        Btn.BackgroundColor3 = AutoFarmCorOn
+        Borda.Color = AutoFarmCorOn
+        Texto.TextColor3 = AutoFarmTextoOn
+
+    else
+
+        -- ⚪ DESLIGADO
+        Btn.BackgroundColor3 = AutoFarmCorOff
+        Borda.Color = AutoFarmCorOff
+        Texto.TextColor3 = AutoFarmTextoOff
+    end
+end
+
+
+-- ===========================================
+-- 🔘 CRIAR BOTÃO AUTO FARM
+-- ===========================================
+
+local function CreateAutoFarmButton()
+
+    if AutoFarmButtonGui then
+        return
+    end
+
+
+    -- ===========================================
+    -- 📱 GUI
+    -- ===========================================
+
+    local ParentGui
+
+    local Success = pcall(function()
+        ParentGui = CoreGui
     end)
 
+    if not Success or not ParentGui then
+        ParentGui = player:WaitForChild("PlayerGui")
+    end
+
+
     local GuiBtn = Instance.new("ScreenGui")
+
     GuiBtn.Name = "AstralX_AutoFarmButton"
     GuiBtn.ResetOnSpawn = false
     GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
     GuiBtn.Parent = ParentGui
 
+
+    -- ===========================================
+    -- 🔘 BOTÃO
+    -- ===========================================
+
     local Btn = Instance.new("ImageButton")
-    Btn.Size = UDim2.new(0, 110, 0, 42)
-    Btn.Position = UDim2.new(0.5, -55, 0.4, -21)
-    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255) -- Branco (Desligado)
+
+    Btn.Name = "AutoFarmButton"
+
+    -- ⭐ Nasce no tamanho configurado
+    Btn.Size = UDim2.fromOffset(
+        AutoFarmButtonSize,
+        AutoFarmButtonSize
+    )
+
+    Btn.Position = UDim2.new(
+        0.5,
+        -AutoFarmButtonSize / 2,
+        0.4,
+        -AutoFarmButtonSize / 2
+    )
+
     Btn.BackgroundTransparency = 0.2
+    Btn.AutoButtonColor = false
+    Btn.Image = ""
+
     Btn.Parent = GuiBtn
 
+
+    -- ===========================================
+    -- 🔲 CANTOS
+    -- ===========================================
+
     local Corner = Instance.new("UICorner")
+
+    Corner.Name = "AutoFarmCorner"
+
     Corner.CornerRadius = UDim.new(0, 10)
+
     Corner.Parent = Btn
 
+
+    -- ===========================================
+    -- 🖌️ BORDA
+    -- ===========================================
+
     local Borda = Instance.new("UIStroke")
-    Borda.Color = Color3.fromRGB(0, 0, 0)
+
+    Borda.Name = "AutoFarmBorda"
+
     Borda.Thickness = 2
+
     Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
     Borda.Parent = Btn
 
+
+    -- ===========================================
+    -- 📝 TEXTO
+    -- ===========================================
+
     local Texto = Instance.new("TextLabel")
+
+    Texto.Name = "AutoFarmTexto"
+
     Texto.Size = UDim2.new(1, 0, 1, 0)
+
     Texto.BackgroundTransparency = 1
+
     Texto.Text = "Auto Farm Coin"
-    Texto.TextColor3 = Color3.fromRGB(0, 0, 0) -- Texto preto no fundo branco
+
     Texto.TextSize = 14
+
     Texto.Font = Enum.Font.GothamBold
+
     Texto.Parent = Btn
 
+
+    -- ===========================================
+    -- 🎨 COR INICIAL
+    -- ===========================================
+
+    AutoFarmAtivo = false
+
+    AutoFarmButtonGui = GuiBtn
+
+    AtualizarCorAutoFarm()
+    AtualizarAutoFarmButton()
+
+
+    -- ===========================================
+    -- 🖱️ SISTEMA DE ARRASTAR
+    -- ===========================================
+
     local dragThreshold = 10
-    local dragStartMousePos, buttonStartPosScreen
+
+    local dragStartMousePos = nil
+    local buttonStartPosScreen = nil
+
 
     Btn.InputBegan:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
             isDraggingFarm = false
+
             dragStartMousePos = Input.Position
+
             buttonStartPosScreen = Btn.Position
         end
     end)
 
+
     Btn.InputChanged:Connect(function(Input)
-        if (Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseMovement) and dragStartMousePos then
-            local delta = Input.Position - dragStartMousePos
-            if delta.Magnitude > dragThreshold then
+
+        if (
+            Input.UserInputType == Enum.UserInputType.Touch
+            or Input.UserInputType == Enum.UserInputType.MouseMovement
+        )
+        and dragStartMousePos then
+
+            local Delta =
+                Input.Position - dragStartMousePos
+
+
+            if Delta.Magnitude > dragThreshold then
+
                 isDraggingFarm = true
-                Btn.Position = buttonStartPosScreen + UDim2.fromOffset(delta.X, delta.Y)
+
+                Btn.Position =
+                    buttonStartPosScreen
+                    + UDim2.fromOffset(
+                        Delta.X,
+                        Delta.Y
+                    )
             end
         end
     end)
 
+
+    -- ===========================================
+    -- 👆 CLIQUE
+    -- ===========================================
+
     Btn.InputEnded:Connect(function(Input)
-        if Input.UserInputType == Enum.UserInputType.Touch or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+
             if not isDraggingFarm then
+
+                -- 🔄 Alternar
                 AutoFarmAtivo = not AutoFarmAtivo
 
-                if AutoFarmAtivo then
-                    -- LIGADO: Verde com texto Branco
-                    Btn.BackgroundColor3 = Color3.fromRGB(46, 204, 113)
-                    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
-                else
-                    -- DESLIGADO: Branco com texto Preto
-                    Btn.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-                    Texto.TextColor3 = Color3.fromRGB(0, 0, 0)
-                end
+                AtualizarCorAutoFarm()
+
             end
+
+
             dragStartMousePos = nil
             isDraggingFarm = false
         end
     end)
-
-    AutoFarmButtonGui = GuiBtn
 end
+
+
+-- ===========================================
+-- ❌ REMOVER BOTÃO
+-- ===========================================
 
 local function RemoveAutoFarmButton()
-    if AutoFarmButtonGui then 
-        AutoFarmButtonGui:Destroy() 
-        AutoFarmButtonGui = nil 
+
+    if AutoFarmButtonGui then
+
+        AutoFarmButtonGui:Destroy()
+
+        AutoFarmButtonGui = nil
     end
+
     AutoFarmAtivo = false
 end
+
+
+-- ===========================================
+-- 📋 LISTA / DROPDOWN
+-- ===========================================
+
+Aba_Settings:Dropdown({
+
+    Title = "Formato do botão",
+
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    -- ⭐ JÁ COMEÇA SELECIONADO
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        AutoFarmButtonStyle = Value
+
+        -- Atualiza imediatamente
+        if AutoFarmButtonGui then
+            AtualizarAutoFarmButton()
+        end
+    end
+})
+
+
+-- ===========================================
+-- 📏 SLIDER DO TAMANHO
+-- ===========================================
+
+Aba_Settings:Slider({
+
+    Title = "Tamanho do botão",
+
+    Desc = "Escolha o tamanho do botão",
+
+    Min = 40,
+
+    Max = 200,
+
+    Default = 75,
+
+    Callback = function(Value)
+
+        AutoFarmButtonSize = Value
+
+        -- Atualiza imediatamente
+        if AutoFarmButtonGui then
+            AtualizarAutoFarmButton()
+        end
+    end
+})
+
+
+-- ===========================================
+-- 👁️ TOGGLE — MOSTRAR BOTÃO
+-- ===========================================
+
+Aba_Settings:Toggle({
+
+    Title = "Mostrar botão Auto Farm",
+
+    Desc = "Mostra ou esconde o botão na tela",
+
+    Default = false,
+
+    Callback = function(Value)
+
+        if Value then
+
+            CreateAutoFarmButton()
+
+        else
+
+            RemoveAutoFarmButton()
+
+        end
+    end
+})
 
 -- ==================================
 -- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
@@ -4389,6 +4720,7 @@ Aba_ConfigButtons:Toggle({
 
     end
 })
+
 
 -- ==================================
 -- BOTOES DA ABA CONFIG UI
