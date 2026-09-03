@@ -1399,6 +1399,404 @@ local function SoltarJogador()
     end
 end
 
+-- ===========================================
+-- 🔪 ASTRAL X - THROWING KNIFE BUTTON
+-- SOMENTE SISTEMA DO BOTÃO
+-- ===========================================
+
+local TweenService = game:GetService("TweenService")
+local UserInputService = game:GetService("UserInputService")
+local CoreGui = game:GetService("CoreGui")
+local Players = game:GetService("Players")
+
+local LocalPlayer = Players.LocalPlayer
+
+-- ===========================================
+-- CONFIGURAÇÕES
+-- ===========================================
+
+local ThrowingKnifeButton = nil
+local ThrowingKnifeGui = nil
+local ThrowingKnifeScale = nil
+
+local ThrowingKnifeButtonVisible = false
+local ThrowingKnifeButtonSize = 75
+local ThrowingKnifeButtonStyle = "Quadrado"
+
+local ThrowingKnifeDragging = false
+local ThrowingKnifeDragStart = nil
+local ThrowingKnifeStartPosition = nil
+
+local ThrowingKnifeDragConnection = nil
+local ThrowingKnifeEndConnection = nil
+
+-- ===========================================
+-- ATUALIZAR TAMANHO / FORMATO
+-- ===========================================
+
+local function AtualizarThrowingKnifeButton()
+
+    if not ThrowingKnifeButton then
+        return
+    end
+
+    local tamanho = ThrowingKnifeButtonSize
+
+    if ThrowingKnifeButtonStyle == "Retângulo" then
+
+        ThrowingKnifeButton.Size = UDim2.fromOffset(
+            math.floor(tamanho * 1.5),
+            tamanho
+        )
+
+    else
+
+        ThrowingKnifeButton.Size = UDim2.fromOffset(
+            tamanho,
+            tamanho
+        )
+
+    end
+
+    local corner = ThrowingKnifeButton:FindFirstChild("ThrowingKnifeCorner")
+
+    if corner then
+
+        if ThrowingKnifeButtonStyle == "Círculo" then
+            corner.CornerRadius = UDim.new(1, 0)
+        else
+            corner.CornerRadius = UDim.new(0, 10)
+        end
+
+    end
+
+end
+
+-- ===========================================
+-- REMOVER BOTÃO
+-- ===========================================
+
+local function RemoveThrowingKnifeButton()
+
+    ThrowingKnifeDragging = false
+
+    if ThrowingKnifeDragConnection then
+        ThrowingKnifeDragConnection:Disconnect()
+        ThrowingKnifeDragConnection = nil
+    end
+
+    if ThrowingKnifeEndConnection then
+        ThrowingKnifeEndConnection:Disconnect()
+        ThrowingKnifeEndConnection = nil
+    end
+
+    if ThrowingKnifeGui then
+        ThrowingKnifeGui:Destroy()
+        ThrowingKnifeGui = nil
+    end
+
+    ThrowingKnifeButton = nil
+    ThrowingKnifeScale = nil
+
+end
+
+-- ===========================================
+-- CRIAR BOTÃO
+-- ===========================================
+
+local function CreateThrowingKnifeButton()
+
+    RemoveThrowingKnifeButton()
+
+    -- GUI
+    local gui = Instance.new("ScreenGui")
+
+    gui.Name = "AstralX_ThrowingKnifeButton"
+    gui.ResetOnSpawn = false
+    gui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+    local success = pcall(function()
+        gui.Parent = CoreGui
+    end)
+
+    if not success then
+        gui.Parent = LocalPlayer:WaitForChild("PlayerGui")
+    end
+
+    ThrowingKnifeGui = gui
+
+    -- BOTÃO
+    local button = Instance.new("TextButton")
+
+    button.Name = "ThrowingKnifeButton"
+    button.Size = UDim2.fromOffset(
+        ThrowingKnifeButtonSize,
+        ThrowingKnifeButtonSize
+    )
+
+    button.Position = UDim2.new(0.5, 0, 0.70, 0)
+    button.AnchorPoint = Vector2.new(0.5, 0.5)
+
+    -- MESMA IDEIA DO BOTÃO DO KAIRIS
+    button.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
+    button.BackgroundTransparency = 0.30
+
+    button.Text = "THROW KNIFE"
+    button.TextColor3 = Color3.fromRGB(255, 255, 255)
+    button.Font = Enum.Font.GothamBold
+    button.TextSize = 15
+
+    button.AutoButtonColor = false
+    button.Active = true
+    button.Draggable = false
+
+    button.Parent = gui
+
+    ThrowingKnifeButton = button
+
+    -- ===========================================
+    -- CANTOS
+    -- ===========================================
+
+    local corner = Instance.new("UICorner")
+
+    corner.Name = "ThrowingKnifeCorner"
+    corner.CornerRadius = UDim.new(0, 10)
+    corner.Parent = button
+
+    -- ===========================================
+    -- BORDA VERMELHA
+    -- ===========================================
+
+    local stroke = Instance.new("UIStroke")
+
+    stroke.Name = "ThrowingKnifeStroke"
+    stroke.Color = Color3.fromRGB(255, 50, 50)
+    stroke.Thickness = 2
+    stroke.Transparency = 0
+    stroke.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+
+    stroke.Parent = button
+
+    -- ===========================================
+    -- ANIMAÇÃO DA BORDA
+    -- ===========================================
+
+    task.spawn(function()
+
+        while button and button.Parent do
+
+            local tween1 = TweenService:Create(
+                stroke,
+                TweenInfo.new(
+                    0.8,
+                    Enum.EasingStyle.Sine,
+                    Enum.EasingDirection.InOut
+                ),
+                {
+                    Color = Color3.fromRGB(255, 20, 20)
+                }
+            )
+
+            tween1:Play()
+            task.wait(0.8)
+
+            if not button.Parent then
+                break
+            end
+
+            local tween2 = TweenService:Create(
+                stroke,
+                TweenInfo.new(
+                    0.8,
+                    Enum.EasingStyle.Sine,
+                    Enum.EasingDirection.InOut
+                ),
+                {
+                    Color = Color3.fromRGB(180, 0, 0)
+                }
+            )
+
+            tween2:Play()
+            task.wait(0.8)
+
+        end
+
+    end)
+
+    -- ===========================================
+    -- UISCALE
+    -- ===========================================
+
+    local scale = Instance.new("UIScale")
+
+    scale.Name = "ThrowingKnifeScale"
+    scale.Scale = 1
+    scale.Parent = button
+
+    ThrowingKnifeScale = scale
+
+    -- ===========================================
+    -- ATUALIZAR FORMATO
+    -- ===========================================
+
+    AtualizarThrowingKnifeButton()
+
+    -- ===========================================
+    -- DRAG MOBILE / PC
+    -- ===========================================
+
+    button.InputBegan:Connect(function(input)
+
+        if input.UserInputType == Enum.UserInputType.MouseButton1
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+            ThrowingKnifeDragging = true
+
+            ThrowingKnifeDragStart = input.Position
+            ThrowingKnifeStartPosition = button.Position
+
+        end
+
+    end)
+
+    button.InputChanged:Connect(function(input)
+
+        if input.UserInputType == Enum.UserInputType.MouseMovement
+        or input.UserInputType == Enum.UserInputType.Touch then
+
+            if ThrowingKnifeDragging then
+
+                local delta =
+                    input.Position - ThrowingKnifeDragStart
+
+                button.Position = UDim2.new(
+                    ThrowingKnifeStartPosition.X.Scale,
+                    ThrowingKnifeStartPosition.X.Offset + delta.X,
+
+                    ThrowingKnifeStartPosition.Y.Scale,
+                    ThrowingKnifeStartPosition.Y.Offset + delta.Y
+                )
+
+            end
+
+        end
+
+    end)
+
+    ThrowingKnifeDragConnection =
+        UserInputService.InputChanged:Connect(function(input)
+
+            if not ThrowingKnifeDragging then
+                return
+            end
+
+            if input.UserInputType ~= Enum.UserInputType.MouseMovement
+            and input.UserInputType ~= Enum.UserInputType.Touch then
+                return
+            end
+
+            local delta =
+                input.Position - ThrowingKnifeDragStart
+
+            button.Position = UDim2.new(
+                ThrowingKnifeStartPosition.X.Scale,
+                ThrowingKnifeStartPosition.X.Offset + delta.X,
+
+                ThrowingKnifeStartPosition.Y.Scale,
+                ThrowingKnifeStartPosition.Y.Offset + delta.Y
+            )
+
+        end)
+
+    ThrowingKnifeEndConnection =
+        UserInputService.InputEnded:Connect(function(input)
+
+            if input.UserInputType == Enum.UserInputType.MouseButton1
+            or input.UserInputType == Enum.UserInputType.Touch then
+
+                ThrowingKnifeDragging = false
+
+            end
+
+        end)
+
+    -- ===========================================
+    -- ANIMAÇÃO AO CLICAR
+    -- ===========================================
+
+    button.MouseButton1Click:Connect(function()
+
+        if not ThrowingKnifeScale then
+            return
+        end
+
+        -- volta ao tamanho normal antes da animação
+        ThrowingKnifeScale.Scale = 1
+
+        local diminuir = TweenService:Create(
+            ThrowingKnifeScale,
+            TweenInfo.new(
+                0.08,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Scale = 0.88
+            }
+        )
+
+        diminuir:Play()
+
+        diminuir.Completed:Once(function()
+
+            if not ThrowingKnifeScale then
+                return
+            end
+
+            local voltar = TweenService:Create(
+                ThrowingKnifeScale,
+                TweenInfo.new(
+                    0.12,
+                    Enum.EasingStyle.Back,
+                    Enum.EasingDirection.Out
+                ),
+                {
+                    Scale = 1
+                }
+            )
+
+            voltar:Play()
+
+        end)
+
+        -- NÃO EXISTE FUNÇÃO DE THROW AQUI.
+        -- O BOTÃO É SOMENTE VISUAL.
+
+    end)
+
+end
+
+-- ===========================================
+-- MOSTRAR / ESCONDER
+-- ===========================================
+
+local function SetThrowingKnifeButtonVisible(Value)
+
+    ThrowingKnifeButtonVisible = Value
+
+    if Value then
+
+        CreateThrowingKnifeButton()
+
+    else
+
+        RemoveThrowingKnifeButton()
+
+    end
+
+end
+
 -- ====================================================
 -- SISTEMA DA ABA SHERIFF
 -- ====================================================
@@ -4266,6 +4664,7 @@ Aba_ConfigButtons:Slider({
 
 -- ===========================================
 -- 🔪 THROWING KNIFE
+-- CONFIG BUTTONS
 -- ===========================================
 
 Aba_ConfigButtons:Section({
@@ -4274,14 +4673,9 @@ Aba_ConfigButtons:Section({
     TextSize = 18,
 })
 
-
 -- FORMATO
-
 Aba_ConfigButtons:Dropdown({
-
     Title = "Formato do Throwing Knife",
-
-    Desc = "Escolha o formato do botão",
 
     Values = {
         "Quadrado",
@@ -4295,67 +4689,44 @@ Aba_ConfigButtons:Dropdown({
 
         ThrowingKnifeButtonStyle = Value
 
-        if ThrowingKnifeButton then
-            AtualizarThrowingKnifeButton()
-        end
+        -- chama a função de atualização
+        AtualizarThrowingKnifeButton()
 
     end
 })
 
-
 -- MOSTRAR BOTÃO
-
 Aba_ConfigButtons:Toggle({
-
     Title = "Mostrar Throwing Knife",
-
-    Desc = "Mostra ou esconde o botão flutuante",
 
     Default = false,
 
-    Callback = function(Ativo)
+    Callback = function(Value)
 
-        ThrowingKnifeButtonVisible = Ativo
-
-        if Ativo then
-
-            CreateThrowingKnifeButton()
-
-        else
-
-            RemoveThrowingKnifeButton()
-
-        end
+        -- chama a função de mostrar/esconder
+        SetThrowingKnifeButtonVisible(Value)
 
     end
 })
 
-
 -- TAMANHO
-
 Aba_ConfigButtons:Slider({
-
     Title = "Tamanho do Throwing Knife",
-
-    Desc = "Escolha o tamanho do botão",
-
-    Value = {
-
-        Min = 40,
-        Max = 200,
-        Default = 75
-
-    },
 
     Step = 1,
 
-    Callback = function(Valor)
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
 
-        ThrowingKnifeButtonSize = Valor
+    Callback = function(Value)
 
-        if ThrowingKnifeButton then
-            AtualizarThrowingKnifeButton()
-        end
+        ThrowingKnifeButtonSize = Value
+
+        -- chama a função de atualização
+        AtualizarThrowingKnifeButton()
 
     end
 })
