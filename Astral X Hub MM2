@@ -1399,6 +1399,190 @@ local function SoltarJogador()
     end
 end
 
+-- ===========================================
+-- 🗡️ THROW KNIFE - BOTÃO 100% VISUAL
+-- ===========================================
+
+local ThrowKnifeGui = nil
+local ThrowKnifeButton = nil
+
+local ThrowKnifeSize = 75
+local ThrowKnifeStyle = "Quadrado"
+
+-- CRIAR BOTÃO
+local function CriarThrowKnifeButton()
+
+    if ThrowKnifeGui then
+        return
+    end
+
+    local Players = game:GetService("Players")
+    local UserInputService = game:GetService("UserInputService")
+    local TweenService = game:GetService("TweenService")
+
+    local player = Players.LocalPlayer
+    local PlayerGui = player:WaitForChild("PlayerGui")
+
+    ThrowKnifeGui = Instance.new("ScreenGui")
+    ThrowKnifeGui.Name = "AstralX_ThrowKnifeVisual"
+    ThrowKnifeGui.ResetOnSpawn = false
+    ThrowKnifeGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    ThrowKnifeGui.Parent = PlayerGui
+
+    ThrowKnifeButton = Instance.new("TextButton")
+    ThrowKnifeButton.Name = "ThrowKnifeButton"
+    ThrowKnifeButton.Size = UDim2.fromOffset(ThrowKnifeSize, ThrowKnifeSize)
+    ThrowKnifeButton.Position = UDim2.new(0.5, 0, 0.82, 0)
+    ThrowKnifeButton.AnchorPoint = Vector2.new(0.5, 0.5)
+
+    ThrowKnifeButton.BackgroundColor3 = Color3.fromRGB(150, 20, 20)
+    ThrowKnifeButton.BackgroundTransparency = 0.25
+
+    ThrowKnifeButton.Text = "Throw Knife"
+    ThrowKnifeButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    ThrowKnifeButton.TextSize = 15
+    ThrowKnifeButton.Font = Enum.Font.GothamBold
+
+    ThrowKnifeButton.AutoButtonColor = false
+    ThrowKnifeButton.Parent = ThrowKnifeGui
+
+    -- Borda
+    local Stroke = Instance.new("UIStroke")
+    Stroke.Color = Color3.fromRGB(255, 50, 50)
+    Stroke.Thickness = 2
+    Stroke.Parent = ThrowKnifeButton
+
+    -- Formato
+    local Corner = Instance.new("UICorner")
+    Corner.Parent = ThrowKnifeButton
+
+    local function AtualizarFormato()
+
+        if ThrowKnifeStyle == "Círculo" then
+            Corner.CornerRadius = UDim.new(1, 0)
+
+        elseif ThrowKnifeStyle == "Retângulo" then
+            Corner.CornerRadius = UDim.new(0, 12)
+
+        else
+            Corner.CornerRadius = UDim.new(0, 10)
+        end
+    end
+
+    AtualizarFormato()
+
+    -- =========================
+    -- ARRASTAR
+    -- =========================
+
+    local Arrastando = false
+    local Inicio
+    local PosicaoInicial
+
+    ThrowKnifeButton.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+            Arrastando = true
+            Inicio = Input.Position
+            PosicaoInicial = ThrowKnifeButton.Position
+        end
+    end)
+
+    UserInputService.InputChanged:Connect(function(Input)
+
+        if not Arrastando then
+            return
+        end
+
+        if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+            local Delta = Input.Position - Inicio
+
+            ThrowKnifeButton.Position = UDim2.new(
+                PosicaoInicial.X.Scale,
+                PosicaoInicial.X.Offset + Delta.X,
+                PosicaoInicial.Y.Scale,
+                PosicaoInicial.Y.Offset + Delta.Y
+            )
+        end
+    end)
+
+    UserInputService.InputEnded:Connect(function(Input)
+
+        if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+            Arrastando = false
+        end
+    end)
+
+    -- =========================
+    -- ANIMAÇÃO AO CLICAR
+    -- =========================
+
+    ThrowKnifeButton.Activated:Connect(function()
+
+        if not ThrowKnifeButton then
+            return
+        end
+
+        local TamanhoNormal = UDim2.fromOffset(
+            ThrowKnifeSize,
+            ThrowKnifeSize
+        )
+
+        local TamanhoPequeno = UDim2.fromOffset(
+            math.floor(ThrowKnifeSize * 0.88),
+            math.floor(ThrowKnifeSize * 0.88)
+        )
+
+        local Diminuir = TweenService:Create(
+            ThrowKnifeButton,
+            TweenInfo.new(0.08, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = TamanhoPequeno
+            }
+        )
+
+        local Voltar = TweenService:Create(
+            ThrowKnifeButton,
+            TweenInfo.new(0.10, Enum.EasingStyle.Quad, Enum.EasingDirection.Out),
+            {
+                Size = TamanhoNormal
+            }
+        )
+
+        Diminuir:Play()
+
+        Diminuir.Completed:Connect(function()
+            if ThrowKnifeButton then
+                Voltar:Play()
+            end
+        end)
+
+        -- NÃO EXECUTA NADA AQUI.
+        -- É SOMENTE A ANIMAÇÃO VISUAL.
+    end)
+
+    return AtualizarFormato
+end
+
+
+-- REMOVER BOTÃO
+
+local function RemoverThrowKnifeButton()
+
+    if ThrowKnifeGui then
+        ThrowKnifeGui:Destroy()
+    end
+
+    ThrowKnifeGui = nil
+    ThrowKnifeButton = nil
+end
+
 -- ====================================================
 -- SISTEMA DA ABA SHERIFF
 -- ====================================================
@@ -4265,48 +4449,89 @@ Aba_ConfigButtons:Slider({
 })
 
 -- ===========================================
--- 🗡️ THROW KNIFE - CONTROLES DE TESTE
+-- CONTROLES
 -- ===========================================
-
-Aba_ConfigButtons:Section({
-    Title = "THROW KNIFE",
-    TextSize = 18,
-})
 
 Aba_ConfigButtons:Dropdown({
     Title = "Formato do Throw Knife",
     Desc = "Escolha o formato do botão",
+
     Values = {
         "Quadrado",
         "Retângulo",
         "Círculo"
     },
+
     Value = "Quadrado",
+
     Callback = function(Value)
-        print("Throw Knife - Formato:", Value)
+
+        ThrowKnifeStyle = Value
+
+        if ThrowKnifeButton then
+
+            local Corner = ThrowKnifeButton:FindFirstChildOfClass("UICorner")
+
+            if Corner then
+
+                if Value == "Círculo" then
+                    Corner.CornerRadius = UDim.new(1, 0)
+
+                elseif Value == "Retângulo" then
+                    Corner.CornerRadius = UDim.new(0, 12)
+
+                else
+                    Corner.CornerRadius = UDim.new(0, 10)
+                end
+
+            end
+        end
     end
 })
+
 
 Aba_ConfigButtons:Slider({
     Title = "Tamanho do Throw Knife",
     Desc = "Escolha o tamanho do botão",
+
     Step = 1,
+
     Value = {
         Min = 40,
         Max = 200,
         Default = 75
     },
+
     Callback = function(Value)
-        print("Throw Knife - Tamanho:", Value)
+
+        ThrowKnifeSize = Value
+
+        if ThrowKnifeButton then
+
+            ThrowKnifeButton.Size = UDim2.fromOffset(
+                Value,
+                Value
+            )
+
+        end
     end
 })
+
 
 Aba_ConfigButtons:Toggle({
     Title = "Mostrar Throw Knife",
     Desc = "Mostrar ou esconder o botão",
+
     Value = false,
+
     Callback = function(Value)
-        print("Throw Knife - Mostrar:", Value)
+
+        if Value then
+            CriarThrowKnifeButton()
+        else
+            RemoverThrowKnifeButton()
+        end
+
     end
 })
 
