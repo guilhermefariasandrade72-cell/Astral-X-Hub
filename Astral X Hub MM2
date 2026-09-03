@@ -4680,15 +4680,12 @@ Aba_ConfigButtons:Section({
     TextSize = 18,
 })
 
-
 -- ===========================================
--- 🔵 FORMATO
+-- 🔲 FORMATO
 -- ===========================================
 
 Aba_ConfigButtons:Dropdown({
-
     Title = "Formato do Throwing Knife",
-
     Desc = "Escolha o formato do botão",
 
     Values = {
@@ -4701,8 +4698,7 @@ Aba_ConfigButtons:Dropdown({
 
     Callback = function(Value)
 
-        ThrowingKnifeButtonStyle =
-            Value
+        ThrowingKnifeButtonStyle = Value
 
         if ThrowingKnifeButtonGui then
             AtualizarThrowingKnifeButton()
@@ -4711,15 +4707,12 @@ Aba_ConfigButtons:Dropdown({
     end
 })
 
-
 -- ===========================================
 -- 📏 TAMANHO
 -- ===========================================
 
 Aba_ConfigButtons:Slider({
-
     Title = "Tamanho do Throwing Knife",
-
     Desc = "Escolha o tamanho do botão",
 
     Value = {
@@ -4732,8 +4725,7 @@ Aba_ConfigButtons:Slider({
 
     Callback = function(Valor)
 
-        ThrowingKnifeButtonSize =
-            Valor
+        ThrowingKnifeButtonSize = Valor
 
         if ThrowingKnifeButtonGui then
             AtualizarThrowingKnifeButton()
@@ -4742,15 +4734,12 @@ Aba_ConfigButtons:Slider({
     end
 })
 
-
 -- ===========================================
 -- 👁️ MOSTRAR BOTÃO
 -- ===========================================
 
 Aba_ConfigButtons:Toggle({
-
     Title = "Mostrar Throwing Knife",
-
     Desc = "Mostra ou esconde o botão flutuante",
 
     Default = false,
@@ -4758,13 +4747,9 @@ Aba_ConfigButtons:Toggle({
     Callback = function(Ativo)
 
         if Ativo then
-
             CreateThrowingKnifeButton()
-
         else
-
             RemoveThrowingKnifeButton()
-
         end
 
     end
