@@ -4264,6 +4264,52 @@ Aba_ConfigButtons:Slider({
 
 })
 
+-- ===========================================
+-- 🗡️ THROW KNIFE - CONTROLES DE TESTE
+-- ===========================================
+
+Aba_ConfigButtons:Section({
+    Title = "THROW KNIFE",
+    TextSize = 18,
+})
+
+Aba_ConfigButtons:Dropdown({
+    Title = "Formato do Throw Knife",
+    Desc = "Escolha o formato do botão",
+    Values = {
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+    },
+    Value = "Quadrado",
+    Callback = function(Value)
+        print("Throw Knife - Formato:", Value)
+    end
+})
+
+Aba_ConfigButtons:Slider({
+    Title = "Tamanho do Throw Knife",
+    Desc = "Escolha o tamanho do botão",
+    Step = 1,
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
+    Callback = function(Value)
+        print("Throw Knife - Tamanho:", Value)
+    end
+})
+
+Aba_ConfigButtons:Toggle({
+    Title = "Mostrar Throw Knife",
+    Desc = "Mostrar ou esconder o botão",
+    Value = false,
+    Callback = function(Value)
+        print("Throw Knife - Mostrar:", Value)
+    end
+})
+
 -- ==================================
 -- BOTOES DA ABA CONFIG UI
 -- ==================================
