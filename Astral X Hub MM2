@@ -1399,80 +1399,22 @@ local function SoltarJogador()
     end
 end
 
+
 -- =========================================================
--- 🗡️ THROWING KNIFE - BOTÃO FLUTUANTE
+-- 🗡️ THROWING KNIFE - APENAS BOTÃO FLUTUANTE
 -- =========================================================
 
 local TweenService = game:GetService("TweenService")
 local CoreGui = game:GetService("CoreGui")
+local UserInputService = game:GetService("UserInputService")
 
 local ThrowingKnifeButtonGui = nil
 local ThrowingKnifeButtonStyle = "Quadrado"
 local ThrowingKnifeButtonSize = 75
 
 local isDraggingThrowingKnife = false
-local buttonStartPosThrowingKnife = nil
 local dragStartPosThrowingKnife = nil
-
--- ===========================================
--- 🎯 ENCONTRAR JOGADOR MAIS PRÓXIMO
--- ===========================================
-
-local function GetClosestPlayerForKnife()
-    local Char = player.Character
-    if not Char then
-        return nil, nil
-    end
-
-    local MyHRP = Char:FindFirstChild("HumanoidRootPart")
-    if not MyHRP then
-        return nil, nil
-    end
-
-    local ClosestPlayer = nil
-    local ClosestDistance = math.huge
-
-    for _, Target in ipairs(Players:GetPlayers()) do
-
-        if Target ~= player
-            and Target.Character
-            and Target.Character:FindFirstChild("HumanoidRootPart")
-            and Target.Character:FindFirstChildOfClass("Humanoid") then
-
-            local Humanoid =
-                Target.Character:FindFirstChildOfClass("Humanoid")
-
-            if Humanoid.Health > 0 then
-
-                local TargetHRP =
-                    Target.Character.HumanoidRootPart
-
-                local Distance =
-                    (MyHRP.Position - TargetHRP.Position).Magnitude
-
-                if Distance < ClosestDistance then
-                    ClosestDistance = Distance
-                    ClosestPlayer = Target
-                end
-            end
-        end
-    end
-
-    if not ClosestPlayer then
-        return nil, nil
-    end
-
-    local TargetHRP =
-        ClosestPlayer.Character:FindFirstChild("HumanoidRootPart")
-
-    if not TargetHRP then
-        return nil, nil
-    end
-
-    return TargetHRP.CFrame +
-        (TargetHRP.CFrame.LookVector * 2),
-        TargetHRP.CFrame
-end
+local buttonStartPosThrowingKnife = nil
 
 
 -- ===========================================
@@ -1485,14 +1427,17 @@ local function AtualizarThrowingKnifeButton()
         return
     end
 
-    local Btn =
-        ThrowingKnifeButtonGui:FindFirstChild("ThrowingKnifeButton")
+    local Btn = ThrowingKnifeButtonGui:FindFirstChild(
+        "ThrowingKnifeButton"
+    )
 
     if not Btn then
         return
     end
 
+
     -- TAMANHO
+
     if ThrowingKnifeButtonStyle == "Quadrado"
         or ThrowingKnifeButtonStyle == "Círculo" then
 
@@ -1507,17 +1452,24 @@ local function AtualizarThrowingKnifeButton()
             ThrowingKnifeButtonSize + 35,
             math.floor(ThrowingKnifeButtonSize * 0.55)
         )
+
     end
 
+
     -- FORMATO
-    local Corner =
-        Btn:FindFirstChild("ThrowingKnifeCorner")
+
+    local Corner = Btn:FindFirstChild(
+        "ThrowingKnifeCorner"
+    )
 
     if not Corner then
+
         Corner = Instance.new("UICorner")
         Corner.Name = "ThrowingKnifeCorner"
         Corner.Parent = Btn
+
     end
+
 
     if ThrowingKnifeButtonStyle == "Círculo" then
 
@@ -1528,7 +1480,9 @@ local function AtualizarThrowingKnifeButton()
 
         Corner.CornerRadius =
             UDim.new(0, 10)
+
     end
+
 end
 
 
@@ -1542,14 +1496,16 @@ local function CreateThrowingKnifeButton()
         return
     end
 
+
     local ParentGui = CoreGui
 
     if not ParentGui then
-        ParentGui = player:WaitForChild("PlayerGui")
+        ParentGui =
+            player:WaitForChild("PlayerGui")
     end
 
-    local GuiBtn =
-        Instance.new("ScreenGui")
+
+    local GuiBtn = Instance.new("ScreenGui")
 
     GuiBtn.Name =
         "AstralX_ThrowingKnifeButton"
@@ -1569,7 +1525,7 @@ local function CreateThrowingKnifeButton()
     -- ===========================================
 
     local Btn =
-        Instance.new("ImageButton")
+        Instance.new("TextButton")
 
     Btn.Name =
         "ThrowingKnifeButton"
@@ -1596,6 +1552,18 @@ local function CreateThrowingKnifeButton()
 
     Btn.BackgroundTransparency =
         0.3
+
+    Btn.Text =
+        "Throw Knife"
+
+    Btn.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Btn.TextSize =
+        15
+
+    Btn.Font =
+        Enum.Font.GothamBold
 
     Btn.AutoButtonColor =
         false
@@ -1645,42 +1613,7 @@ local function CreateThrowingKnifeButton()
 
 
     -- ===========================================
-    -- 📝 TEXTO
-    -- ===========================================
-
-    local Texto =
-        Instance.new("TextLabel")
-
-    Texto.Name =
-        "ThrowingKnifeText"
-
-    Texto.Size =
-        UDim2.new(1, 0, 1, 0)
-
-    Texto.BackgroundTransparency =
-        1
-
-    Texto.Text =
-        "Throw Knife"
-
-    Texto.TextColor3 =
-        Color3.fromRGB(255, 255, 255)
-
-    Texto.TextSize =
-        15
-
-    Texto.Font =
-        Enum.Font.GothamBold
-
-    Texto.TextScaled =
-        false
-
-    Texto.Parent =
-        Btn
-
-
-    -- ===========================================
-    -- 🎬 ANIMAÇÃO
+    -- 🎬 ESCALA DA ANIMAÇÃO
     -- ===========================================
 
     local ButtonScale =
@@ -1697,75 +1630,92 @@ local function CreateThrowingKnifeButton()
 
 
     -- ===========================================
-    -- 🖐️ ARRASTAR
+    -- 🖐️ COMEÇAR A ARRASTAR
     -- ===========================================
 
     Btn.InputBegan:Connect(function(Input)
 
         if Input.UserInputType ==
-            Enum.UserInputType.Touch
+            Enum.UserInputType.MouseButton1
 
             or Input.UserInputType ==
-            Enum.UserInputType.MouseButton1 then
+            Enum.UserInputType.Touch then
 
             isDraggingThrowingKnife = true
-
-            buttonStartPosThrowingKnife =
-                Btn.Position
 
             dragStartPosThrowingKnife =
                 Input.Position
 
-            Input.Changed:Connect(function()
+            buttonStartPosThrowingKnife =
+                Btn.Position
 
-                if Input.UserInputState ==
-                    Enum.UserInputState.End then
-
-                    isDraggingThrowingKnife = false
-                end
-
-            end)
         end
+
     end)
 
 
-    Btn.InputChanged:Connect(function(Input)
+    -- ===========================================
+    -- 🖐️ TERMINAR ARRASTO
+    -- ===========================================
 
-        if isDraggingThrowingKnife
+    Btn.InputEnded:Connect(function(Input)
 
-            and (
-                Input.UserInputType ==
-                    Enum.UserInputType.Touch
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseButton1
 
-                or Input.UserInputType ==
-                    Enum.UserInputType.MouseMovement
-            ) then
+            or Input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+            isDraggingThrowingKnife = false
+
+        end
+
+    end)
+
+
+    -- ===========================================
+    -- 🖐️ MOVIMENTAR BOTÃO
+    -- ===========================================
+
+    UserInputService.InputChanged:Connect(function(Input)
+
+        if not isDraggingThrowingKnife then
+            return
+        end
+
+
+        if Input.UserInputType ==
+            Enum.UserInputType.MouseMovement
+
+            or Input.UserInputType ==
+            Enum.UserInputType.Touch then
+
+
+            local Delta =
+                Input.Position
+                - dragStartPosThrowingKnife
+
 
             Btn.Position =
                 buttonStartPosThrowingKnife
                 + UDim2.fromOffset(
-                    Input.Position.X
-                        - dragStartPosThrowingKnife.X,
-
-                    Input.Position.Y
-                        - dragStartPosThrowingKnife.Y
+                    Delta.X,
+                    Delta.Y
                 )
+
         end
+
     end)
 
 
     -- ===========================================
-    -- 👆 CLIQUE
+    -- 👆 CLIQUE = APENAS ANIMAÇÃO
     -- ===========================================
 
     Btn.MouseButton1Click:Connect(function()
 
-        if isDraggingThrowingKnife then
-            return
-        end
-
-        -- animação
         ButtonScale.Scale = 1
+
 
         local Encolher =
             TweenService:Create(
@@ -1782,6 +1732,7 @@ local function CreateThrowingKnifeButton()
                 }
             )
 
+
         local Crescer =
             TweenService:Create(
                 ButtonScale,
@@ -1797,64 +1748,44 @@ local function CreateThrowingKnifeButton()
                 }
             )
 
+
         Encolher:Play()
 
-        Encolher.Completed:Once(function()
-            Crescer:Play()
+
+        -- Sem :Once()
+        -- para evitar o erro do seu console
+
+        task.delay(0.08, function()
+
+            if ButtonScale
+                and ButtonScale.Parent then
+
+                Crescer:Play()
+
+            end
+
         end)
 
+        -- ⚠️ NÃO HÁ NENHUMA FUNÇÃO AQUI.
+        -- O BOTÃO APENAS ANIMA.
 
-        -- ===========================================
-        -- 🗡️ THROWING KNIFE
-        -- ===========================================
-
-        local Knife =
-            player.Character
-            and player.Character:FindFirstChild("Knife")
-
-            or player.Backpack
-            and player.Backpack:FindFirstChild("Knife")
-
-        if not Knife then
-            return
-        end
-
-        local Events =
-            Knife:FindFirstChild("Events")
-
-        if not Events then
-            return
-        end
-
-        local KnifeThrown =
-            Events:FindFirstChild("KnifeThrown")
-
-        if not KnifeThrown then
-            return
-        end
-
-        local FrontTarget, ExactTarget =
-            GetClosestPlayerForKnife()
-
-        if FrontTarget and ExactTarget then
-
-            pcall(function()
-
-                KnifeThrown:FireServer(
-                    FrontTarget,
-                    ExactTarget
-                )
-
-            end)
-
-        end
     end)
 
+
+    -- ===========================================
+    -- 💾 SALVAR GUI
+    -- ===========================================
 
     ThrowingKnifeButtonGui =
         GuiBtn
 
+
+    -- ===========================================
+    -- ⭐ APLICAR CONFIGURAÇÃO
+    -- ===========================================
+
     AtualizarThrowingKnifeButton()
+
 end
 
 
@@ -1869,7 +1800,9 @@ local function RemoveThrowingKnifeButton()
         ThrowingKnifeButtonGui:Destroy()
 
         ThrowingKnifeButtonGui = nil
+
     end
+
 end
 
 -- ====================================================
