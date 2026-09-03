@@ -4089,11 +4089,27 @@ Aba_Murderer:Toggle({
 
 })
 
-Aba_Murderer:Button({
+Aba_Murderer:Toggle({
+
     Title = "Mostrar Throwing Knife",
-    Desc = "Cria o botão flutuante para lançar a faca",
-    Callback = function()
-        CreateThrowingKnifeButton()
+
+    Desc = "Mostra ou esconde o botão flutuante",
+
+    Default = false,
+
+    Callback = function(Ativo)
+
+        ThrowingKnifeButtonVisible =
+            Ativo
+
+        if Ativo then
+
+            CreateThrowingKnifeButton()
+
+        else
+
+            RemoveThrowingKnifeButton()
+        end
     end
 })
 
@@ -4783,6 +4799,69 @@ Aba_ConfigButtons:Slider({
 
     end
 
+})
+
+-- ===========================================
+-- 🔪 THROWING KNIFE
+-- CONFIGURAÇÃO DO BOTÃO
+-- ===========================================
+-- ===========================================
+-- 🔲 FORMATO
+-- ===========================================
+
+Aba_ConfigButtons:Dropdown({
+
+    Title = "Formato do Throwing Knife",
+
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+    },
+
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        ThrowingKnifeButtonStyle =
+            Value
+
+        if ThrowingKnifeButton then
+            AtualizarThrowingKnifeButton()
+        end
+    end
+})
+
+-- ===========================================
+-- 📏 TAMANHO
+-- ===========================================
+
+Aba_ConfigButtons:Slider({
+
+    Title = "Tamanho do Throwing Knife",
+
+    Desc = "Escolha o tamanho do botão",
+
+    Value = {
+
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
+
+    Step = 1,
+
+    Callback = function(Valor)
+
+        ThrowingKnifeButtonSize =
+            Valor
+
+        if ThrowingKnifeButton then
+            AtualizarThrowingKnifeButton()
+        end
+    end
 })
 
 Aba_ConfigButtons:Section({
