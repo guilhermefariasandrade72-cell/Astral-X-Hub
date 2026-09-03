@@ -2921,92 +2921,6 @@ local function RemoveAutoFarmButton()
     AutoFarmAtivo = false
 end
 
-
--- ===========================================
--- 📋 LISTA / DROPDOWN
--- ===========================================
-
-Aba_Settings:Dropdown({
-
-    Title = "Formato do botão",
-
-    Desc = "Escolha o formato do botão",
-
-    Values = {
-        "Quadrado",
-        "Círculo",
-        "Retângulo"
-    },
-
-    -- ⭐ JÁ COMEÇA SELECIONADO
-    Default = "Quadrado",
-
-    Callback = function(Value)
-
-        AutoFarmButtonStyle = Value
-
-        -- Atualiza imediatamente
-        if AutoFarmButtonGui then
-            AtualizarAutoFarmButton()
-        end
-    end
-})
-
-
--- ===========================================
--- 📏 SLIDER DO TAMANHO
--- ===========================================
-
-Aba_Settings:Slider({
-
-    Title = "Tamanho do botão",
-
-    Desc = "Escolha o tamanho do botão",
-
-    Min = 40,
-
-    Max = 200,
-
-    Default = 75,
-
-    Callback = function(Value)
-
-        AutoFarmButtonSize = Value
-
-        -- Atualiza imediatamente
-        if AutoFarmButtonGui then
-            AtualizarAutoFarmButton()
-        end
-    end
-})
-
-
--- ===========================================
--- 👁️ TOGGLE — MOSTRAR BOTÃO
--- ===========================================
-
-Aba_Settings:Toggle({
-
-    Title = "Mostrar botão Auto Farm",
-
-    Desc = "Mostra ou esconde o botão na tela",
-
-    Default = false,
-
-    Callback = function(Value)
-
-        if Value then
-
-            CreateAutoFarmButton()
-
-        else
-
-            RemoveAutoFarmButton()
-
-        end
-    end
-})
-
 -- ==================================
 -- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
 -- ==================================
@@ -4127,19 +4041,6 @@ Aba_AutoFarm:Section({
 })
 
 Aba_AutoFarm:Toggle({
-    Title = "Auto Farm Coin Button",
-    Desc = "Adiciona um botão de Farm na tela",
-    Default = false,
-    Callback = function(Ativo)
-        if Ativo then
-            CreateAutoFarmButton()
-        else
-            RemoveAutoFarmButton()
-        end
-    end
-})
-
-Aba_AutoFarm:Toggle({
     Title = "Auto Farm Coin",
     Desc = "Voa ate as moedas mas proxima e para ao coletar o max de moedas",
     Default = false,
@@ -4721,6 +4622,90 @@ Aba_ConfigButtons:Toggle({
     end
 })
 
+-- ===========================================
+-- 📋 LISTA / DROPDOWN
+-- ===========================================
+
+Aba_ConfigButtons:Dropdown({
+
+    Title = "Formato do botão",
+
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Círculo",
+        "Retângulo"
+    },
+
+    -- ⭐ JÁ COMEÇA SELECIONADO
+    Default = "Quadrado",
+
+    Callback = function(Value)
+
+        AutoFarmButtonStyle = Value
+
+        -- Atualiza imediatamente
+        if AutoFarmButtonGui then
+            AtualizarAutoFarmButton()
+        end
+    end
+})
+
+
+-- ===========================================
+-- 📏 SLIDER DO TAMANHO
+-- ===========================================
+
+Aba_ConfigButtons:Slider({
+
+    Title = "Tamanho do botão",
+
+    Desc = "Escolha o tamanho do botão",
+
+    Min = 40,
+
+    Max = 200,
+
+    Default = 75,
+
+    Callback = function(Value)
+
+        AutoFarmButtonSize = Value
+
+        -- Atualiza imediatamente
+        if AutoFarmButtonGui then
+            AtualizarAutoFarmButton()
+        end
+    end
+})
+
+
+-- ===========================================
+-- 👁️ TOGGLE — MOSTRAR BOTÃO
+-- ===========================================
+
+Aba_ConfigButtons:Toggle({
+
+    Title = "Mostrar botão Auto Farm",
+
+    Desc = "Mostra ou esconde o botão na tela",
+
+    Default = false,
+
+    Callback = function(Value)
+
+        if Value then
+
+            CreateAutoFarmButton()
+
+        else
+
+            RemoveAutoFarmButton()
+
+        end
+    end
+})
 
 -- ==================================
 -- BOTOES DA ABA CONFIG UI
