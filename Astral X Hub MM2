@@ -4623,75 +4623,88 @@ Aba_ConfigButtons:Toggle({
 })
 
 -- ===========================================
--- 📋 LISTA / DROPDOWN
+-- 🟢 CONFIG BUTTONS - AUTO FARM
+-- ===========================================
+
+Aba_ConfigButtons:Section({
+    Title = "AUTO FARM COIN",
+    Box = false,
+    TextSize = 18,
+})
+
+
+-- ===========================================
+-- 📋 FORMATO DO BOTÃO
 -- ===========================================
 
 Aba_ConfigButtons:Dropdown({
 
-    Title = "Formato do botão",
+    Title = "Formato do Auto Farm",
 
     Desc = "Escolha o formato do botão",
 
     Values = {
         "Quadrado",
-        "Círculo",
-        "Retângulo"
+        "Retângulo",
+        "Círculo"
     },
 
-    -- ⭐ JÁ COMEÇA SELECIONADO
-    Default = "Quadrado",
+    -- ⭐ PADRÃO
+    Value = "Quadrado",
 
     Callback = function(Value)
 
         AutoFarmButtonStyle = Value
 
-        -- Atualiza imediatamente
         if AutoFarmButtonGui then
             AtualizarAutoFarmButton()
         end
+
     end
 })
 
 
 -- ===========================================
--- 📏 SLIDER DO TAMANHO
+-- 📏 TAMANHO
 -- ===========================================
 
 Aba_ConfigButtons:Slider({
 
-    Title = "Tamanho do botão",
+    Title = "Tamanho do Auto Farm",
 
-    Desc = "Escolha o tamanho do botão",
+    Desc = "Ajuste o tamanho do botão",
 
-    Min = 40,
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
 
-    Max = 200,
-
-    Default = 75,
+    Step = 1,
 
     Callback = function(Value)
 
         AutoFarmButtonSize = Value
 
-        -- Atualiza imediatamente
         if AutoFarmButtonGui then
             AtualizarAutoFarmButton()
         end
+
     end
 })
 
 
 -- ===========================================
--- 👁️ TOGGLE — MOSTRAR BOTÃO
+-- 👁️ MOSTRAR BOTÃO
 -- ===========================================
 
 Aba_ConfigButtons:Toggle({
 
-    Title = "Mostrar botão Auto Farm",
+    Title = "Mostrar Auto Farm",
 
-    Desc = "Mostra ou esconde o botão na tela",
+    Desc = "Mostrar ou esconder o botão flutuante",
 
-    Default = false,
+    Value = false,
 
     Callback = function(Value)
 
@@ -4704,6 +4717,7 @@ Aba_ConfigButtons:Toggle({
             RemoveAutoFarmButton()
 
         end
+
     end
 })
 
