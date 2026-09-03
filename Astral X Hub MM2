@@ -1740,6 +1740,282 @@ RunService.Heartbeat:Connect(function()
 end)
 
 -- ===========================================
+-- 🎨 GRAB GUN - BOTÃO FLUTUANTE PERSONALIZÁVEL
+-- ===========================================
+
+local GrabGunButtonGui = nil
+
+-- CONFIGURAÇÕES
+local GrabGunButtonSize = 75
+local GrabGunButtonStyle = "Quadrado"
+
+-- ===========================================
+-- 🔄 ATUALIZAR APARÊNCIA
+-- ===========================================
+
+local function AtualizarGrabGunButton()
+
+    if not GrabGunButtonGui then return end
+
+    local Btn = GrabGunButtonGui:FindFirstChild("GrabGunButton")
+    if not Btn then return end
+
+    if GrabGunButtonStyle == "Retângulo" then
+
+        Btn.Size = UDim2.fromOffset(
+            GrabGunButtonSize + 35,
+            math.floor(GrabGunButtonSize * 0.55)
+        )
+
+        local Corner = Btn:FindFirstChildOfClass("UICorner")
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 10)
+        end
+
+    elseif GrabGunButtonStyle == "Círculo" then
+
+        Btn.Size = UDim2.fromOffset(
+            GrabGunButtonSize,
+            GrabGunButtonSize
+        )
+
+        local Corner = Btn:FindFirstChildOfClass("UICorner")
+        if Corner then
+            Corner.CornerRadius = UDim.new(1, 0)
+        end
+
+    else
+
+        Btn.Size = UDim2.fromOffset(
+            GrabGunButtonSize,
+            GrabGunButtonSize
+        )
+
+        local Corner = Btn:FindFirstChildOfClass("UICorner")
+        if Corner then
+            Corner.CornerRadius = UDim.new(0, 10)
+        end
+    end
+end
+
+-- ===========================================
+-- ➕ CRIAR BOTÃO
+-- ===========================================
+
+local function CreateGrabGunButton()
+
+    if GrabGunButtonGui then
+        GrabGunButtonGui:Destroy()
+        GrabGunButtonGui = nil
+    end
+
+    local ParentGui = CoreGui
+
+    pcall(function()
+        if not ParentGui then
+            ParentGui = player:WaitForChild("PlayerGui")
+        end
+    end)
+
+    local GuiBtn = Instance.new("ScreenGui")
+    GuiBtn.Name = "AstralX_GrabGunButton"
+    GuiBtn.ResetOnSpawn = false
+    GuiBtn.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    GuiBtn.Parent = ParentGui
+
+    local Btn = Instance.new("ImageButton")
+    Btn.Name = "GrabGunButton"
+    Btn.Size = UDim2.fromOffset(
+        GrabGunButtonSize,
+        GrabGunButtonSize
+    )
+    Btn.Position = UDim2.new(0.5, 0, 0.5, 0)
+    Btn.AnchorPoint = Vector2.new(0.5, 0.5)
+
+    Btn.BackgroundColor3 = Color3.fromRGB(20, 100, 150)
+    Btn.BackgroundTransparency = 0.3
+
+    Btn.AutoButtonColor = false
+    Btn.Image = ""
+    Btn.Parent = GuiBtn
+
+    -- =======================================
+    -- 🔵 CANTOS
+    -- =======================================
+
+    local Corner = Instance.new("UICorner")
+    Corner.CornerRadius = UDim.new(0, 10)
+    Corner.Parent = Btn
+
+    -- =======================================
+    -- 🔷 BORDA
+    -- =======================================
+
+    local Borda = Instance.new("UIStroke")
+    Borda.Name = "Borda"
+    Borda.Color = Color3.fromRGB(50, 180, 255)
+    Borda.Thickness = 2
+    Borda.ApplyStrokeMode = Enum.ApplyStrokeMode.Border
+    Borda.Parent = Btn
+
+    -- =======================================
+    -- 📝 TEXTO
+    -- =======================================
+
+    local Texto = Instance.new("TextLabel")
+    Texto.Name = "Texto"
+    Texto.Size = UDim2.new(1, 0, 1, 0)
+    Texto.BackgroundTransparency = 1
+    Texto.Text = "Grab Gun"
+    Texto.TextColor3 = Color3.fromRGB(255, 255, 255)
+    Texto.TextSize = 15
+    Texto.Font = Enum.Font.GothamBold
+    Texto.TextScaled = false
+    Texto.Parent = Btn
+
+    -- =======================================
+    -- 📏 ESCALA PARA ANIMAÇÃO
+    -- =======================================
+
+    local UIScale = Instance.new("UIScale")
+    UIScale.Name = "ButtonScale"
+    UIScale.Scale = 1
+    UIScale.Parent = Btn
+
+    -- =======================================
+    -- 🖐️ ARRASTAR
+    -- =======================================
+
+    local dragging = false
+    local dragStart
+    local startPosition
+    local moved = false
+
+    Btn.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+            dragging = true
+            moved = false
+
+            dragStart = Input.Position
+            startPosition = Btn.Position
+
+            Input.Changed:Connect(function()
+
+                if Input.UserInputState == Enum.UserInputState.End then
+                    dragging = false
+                end
+
+            end)
+        end
+    end)
+
+    Btn.InputChanged:Connect(function(Input)
+
+        if not dragging then
+            return
+        end
+
+        if Input.UserInputType == Enum.UserInputType.Touch
+        or Input.UserInputType == Enum.UserInputType.MouseMovement then
+
+            local Delta = Input.Position - dragStart
+
+            if math.abs(Delta.X) > 5
+            or math.abs(Delta.Y) > 5 then
+                moved = true
+            end
+
+            Btn.Position =
+                startPosition +
+                UDim2.fromOffset(
+                    Delta.X,
+                    Delta.Y
+                )
+        end
+    end)
+
+    -- =======================================
+    -- ✨ ANIMAÇÃO DE CLIQUE
+    -- =======================================
+
+    Btn.MouseButton1Click:Connect(function()
+
+        if moved then
+            return
+        end
+
+        -- Somente animação visual.
+        -- Nenhuma função de obtenção/movimentação de arma é chamada.
+
+        local TweenService = game:GetService("TweenService")
+
+        local Diminuir = TweenService:Create(
+            UIScale,
+            TweenInfo.new(
+                0.08,
+                Enum.EasingStyle.Quad,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Scale = 0.88
+            }
+        )
+
+        local Voltar = TweenService:Create(
+            UIScale,
+            TweenInfo.new(
+                0.10,
+                Enum.EasingStyle.Back,
+                Enum.EasingDirection.Out
+            ),
+            {
+                Scale = 1
+            }
+        )
+
+        Diminuir:Play()
+
+        Diminuir.Completed:Connect(function()
+            Voltar:Play()
+        end)
+    end)
+
+    GrabGunButtonGui = GuiBtn
+
+    AtualizarGrabGunButton()
+end
+
+-- ===========================================
+-- ❌ REMOVER BOTÃO
+-- ===========================================
+
+local function RemoveGrabGunButton()
+
+    if GrabGunButtonGui then
+        GrabGunButtonGui:Destroy()
+        GrabGunButtonGui = nil
+    end
+
+    -- Remove possíveis restos caso o script tenha sido
+    -- executado novamente.
+
+    pcall(function()
+
+        local antigo = CoreGui:FindFirstChild(
+            "AstralX_GrabGunButton"
+        )
+
+        if antigo then
+            antigo:Destroy()
+        end
+
+    end)
+end
+
+-- ===========================================
 -- 🔫 BOTÃO FLUTUANTE & SISTEMA GRAB GUN (UNIFICADO)
 -- ===========================================
 local function CreateGrabGunButton()
@@ -4262,6 +4538,68 @@ Aba_ConfigButtons:Slider({
 
     end
 
+})
+
+Aba_ConfigButtons:Dropdown({
+    Title = "Formato do Grab Gun",
+    Desc = "Escolha o formato do botão",
+
+    Values = {
+        "Quadrado",
+        "Retângulo",
+        "Círculo"
+    },
+
+    Value = "Quadrado",
+
+    Callback = function(Value)
+
+        GrabGunButtonStyle = Value
+
+        if GrabGunButtonGui then
+            AtualizarGrabGunButton()
+        end
+
+    end
+})
+
+Aba_ConfigButtons:Slider({
+    Title = "Tamanho do Grab Gun",
+    Desc = "Ajuste o tamanho do botão",
+
+    Step = 1,
+    Value = {
+        Min = 40,
+        Max = 200,
+        Default = 75
+    },
+
+    Callback = function(Value)
+
+        GrabGunButtonSize = Value
+
+        if GrabGunButtonGui then
+            AtualizarGrabGunButton()
+        end
+
+    end
+})
+
+Aba_ConfigButtons:Toggle({
+    Title = "Mostrar Grab Gun",
+    Desc = "Mostrar ou esconder o botão flutuante",
+
+    Value = false,
+
+    Callback = function(Value)
+
+        if Value then
+            CreateGrabGunButton()
+        else
+            RemoveGrabGunButton()
+        end
+
+    end
 })
 
 -- ==================================
