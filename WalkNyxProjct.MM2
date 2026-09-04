@@ -10,17 +10,18 @@
 -- 05. VARIÁVEIS DO AUTO FARM
 -- 06. VARIÁVEIS DO ESP
 -- 07. VARIÁVEIS DO LOCAL PLAYER
--- 08. SISTEMAS / FUNÇÕES
--- 09. INTERFACE
--- 10. BOTÕES MURDERER
--- 11. BOTÕES SHERIFF
--- 12. BOTÕES AUTO FARM
--- 13. BOTÕES ESP
--- 14. BOTÕES LOCAL PLAYER
--- 15. BOTÕES INFO
--- 16. BOTÃO FLUTUANTE NYX
--- 17. ARRASTAR / MINIMIZAR / FECHAR
--- 18. FINAL
+-- 08. SISTEMA DO AUTO FARM
+-- 09. SISTEMAS DO ESP
+-- 10. INTERFACE
+-- 11. BOTÕES MURDERER
+-- 12. BOTÕES SHERIFF
+-- 13. BOTÕES AUTO FARM
+-- 14. BOTÕES ESP
+-- 15. BOTÕES LOCAL PLAYER
+-- 16. BOTÕES INFO
+-- 17. BOTÃO FLUTUANTE NYX
+-- 18. ARRASTAR / MINIMIZAR / FECHAR
+-- 19. FINAL
 --==================================================
 
 
@@ -110,6 +111,9 @@ local UltimaChecagemCargo = 0
 local Players = game:GetService("Players")
 local XRayAtivo = false
 local ValoresOriginais = {}
+
+local MoedasHighlightAtivo = false
+local MoedasDestacadas = {}
 
 --==================================================
 -- 07. VARIÁVEIS DO LOCAL PLAYER
@@ -381,6 +385,51 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 💰 SISTEMA DO HIGHLIGHT DE MOEDAS
+-- ==================================
+local function DestacarMoedas()
+    for _, Descendente in ipairs(workspace:GetDescendants()) do
+        if Descendente:IsA("BasePart") then
+            local Nome = Descendente.Name:lower()
+            
+            -- Encontra moedas
+            if string.find(Nome, "coin") or string.find(Nome, "Coin") then
+                if not MoedasDestacadas[Descendente] then
+                    local Highlight = Instance.new("Highlight")
+                    Highlight.Name = "Moeda_Highlight"
+                    Highlight.FillTransparency = 0.3
+                    Highlight.OutlineTransparency = 0
+                    Highlight.FillColor = Color3.fromRGB(255, 215, 0)  -- 💰 AMARELO
+                    Highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                    Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    Highlight.Adornee = Descendente
+                    Highlight.Parent = Descendente
+                    MoedasDestacadas[Descendente] = Highlight
+                end
+            end
+        end
+    end
+end
+
+local function RemoverDestaqueMoedas()
+    for Parte, Highlight in pairs(MoedasDestacadas) do
+        if Highlight and Highlight.Parent then
+            Highlight:Destroy()
+        end
+    end
+    table.clear(MoedasDestacadas)
+end
+
+-- 🔄 ATUALIZAÇÃO CONTÍNUA
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if MoedasHighlightAtivo then
+            DestacarMoedas()
+        end
+    end
+end)
 
 
 
@@ -1360,6 +1409,19 @@ CreateToggleESP(
     end
 )
 
+CreateToggleESP(
+    Pages["ESP"],
+    "Highlight Coins",
+    "MoedasHighlightAtivo",
+    function()
+        MoedasHighlightAtivo = true
+        DestacarMoedas()
+    end,
+    function()
+        MoedasHighlightAtivo = false
+        RemoverDestaqueMoedas()
+    end
+)
 
 --==================================================
 -- 14. BOTÕES LOCAL PLAYER
