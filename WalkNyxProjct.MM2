@@ -326,22 +326,25 @@ end)
 local function AplicarXRay()
     if XRayAtivo then return end
     XRayAtivo = true
-    
+    table.clear(ValoresOriginais)
+
     for _, Descendente in ipairs(workspace:GetDescendants()) do
         if Descendente:IsA("BasePart") and not Descendente:IsA("Terrain") then
-            local Nome = Descendente.Name:lower()
-            local Caminho = Descendente:GetFullName()
             
-            -- Ignora partes do jogador, armas, moedas e itens
-            if not string.find(Caminho, player.Name, 1, true) 
-            and not string.find(Nome, "coin") 
-            and not string.find(Nome, "gun")
-            and not string.find(Nome, "knife")
-            and not string.find(Nome, "drop")
-            and Descendente.Transparency < 0.5 then
-                
-                PartesOriginais[Descendente] = Descendente.Transparency
-                Descendente.Transparency = 0.5
+            -- ✅ IGNORA JOGADORES E SEUS OBJETOS
+            local EhJogador = false
+            for _, Jogador in ipairs(Players:GetPlayers()) do
+                if string.find(Descendente:GetFullName(), Jogador.Name, 1, true) then
+                    EhJogador = true
+                    break
+                end
+            end
+            if EhJogador then continue end
+
+            -- Só muda se não estiver já transparente
+            if Descendente.Transparency < 0.8 then
+                ValoresOriginais[Descendente] = Descendente.Transparency
+                Descendente.Transparency = 0.65 -- 65% transparente → enxerga bem
                 Descendente.LocalTransparencyModifier = 0
             end
         end
@@ -351,24 +354,26 @@ end
 local function RemoverXRay()
     if not XRayAtivo then return end
     XRayAtivo = false
-    
-    for Parte, TranspOriginal in pairs(PartesOriginais) do
+
+    for Parte, TranspOriginal in pairs(ValoresOriginais) do
         if Parte and Parte.Parent then
             Parte.Transparency = TranspOriginal
+            Parte.LocalTransparencyModifier = 0
         end
     end
-    table.clear(PartesOriginais)
+    table.clear(ValoresOriginais)
 end
 
--- Atualiza em tempo real
+-- 🔄 ATUALIZAÇÃO CONTÍNUA
 task.spawn(function()
     while true do
-        task.wait(0.5)
+        task.wait(0.3)
         if XRayAtivo then
             AplicarXRay()
         end
     end
 end)
+
 
 
 
