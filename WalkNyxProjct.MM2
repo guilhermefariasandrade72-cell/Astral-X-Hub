@@ -1047,4 +1047,372 @@ AddStroke(FloatingButton, 0.15, 1.5)
 
 --==================================================
 -- ABRIR / FECHAR NYX
--- S
+-- SEM ANIMAÇÃO
+--==================================================
+
+FloatingButton.MouseButton1Click:Connect(function()
+
+    Main.Visible = not Main.Visible
+
+end)
+
+
+--==================================================
+-- ARRASTAR BOTÃO NYX
+--==================================================
+
+local DraggingNyx = false
+
+local NyxDragStart
+local NyxStartPosition
+
+
+FloatingButton.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        DraggingNyx = true
+
+        NyxDragStart = Input.Position
+        NyxStartPosition = FloatingButton.Position
+
+        Input.Changed:Connect(function()
+
+            if Input.UserInputState == Enum.UserInputState.End then
+
+                DraggingNyx = false
+
+            end
+
+        end)
+
+    end
+
+end)
+
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not DraggingNyx then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta = Input.Position - NyxDragStart
+
+        FloatingButton.Position = UDim2.new(
+
+            NyxStartPosition.X.Scale,
+
+            NyxStartPosition.X.Offset + Delta.X,
+
+            NyxStartPosition.Y.Scale,
+
+            NyxStartPosition.Y.Offset + Delta.Y
+
+        )
+
+    end
+
+end)
+
+
+--==================================================
+-- 17. ARRASTAR / MINIMIZAR / FECHAR
+--==================================================
+
+
+--==================================================
+-- ARRASTAR JANELA PRINCIPAL
+--==================================================
+
+local DraggingWindow = false
+
+local WindowDragStart
+local WindowStartPosition
+
+
+TopBar.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        DraggingWindow = true
+
+        WindowDragStart = Input.Position
+        WindowStartPosition = Main.Position
+
+        Input.Changed:Connect(function()
+
+            if Input.UserInputState == Enum.UserInputState.End then
+
+                DraggingWindow = false
+
+            end
+
+        end)
+
+    end
+
+end)
+
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not DraggingWindow then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta = Input.Position - WindowDragStart
+
+        Main.Position = UDim2.new(
+
+            WindowStartPosition.X.Scale,
+
+            WindowStartPosition.X.Offset + Delta.X,
+
+            WindowStartPosition.Y.Scale,
+
+            WindowStartPosition.Y.Offset + Delta.Y
+
+        )
+
+    end
+
+end)
+
+
+--==================================================
+-- MINIMIZAR
+--==================================================
+
+local Minimized = false
+
+
+Minimize.MouseButton1Click:Connect(function()
+
+    Minimized = not Minimized
+
+    if Minimized then
+
+        Content.Visible = false
+
+        Main.Size = UDim2.fromOffset(
+            WINDOW_WIDTH,
+            52
+        )
+
+    else
+
+        Main.Size = UDim2.fromOffset(
+            WINDOW_WIDTH,
+            WINDOW_HEIGHT
+        )
+
+        Content.Visible = true
+
+    end
+
+end)
+
+
+--==================================================
+-- CONFIRMAÇÃO DE FECHAMENTO
+--==================================================
+
+local ConfirmFrame
+
+
+local function CreateConfirmation()
+
+    if ConfirmFrame then
+        return
+    end
+
+
+    ConfirmFrame = Instance.new("Frame")
+
+    ConfirmFrame.Size =
+        UDim2.fromOffset(270, 135)
+
+    ConfirmFrame.Position =
+        UDim2.new(
+            0.5,
+            -135,
+            0.5,
+            -67
+        )
+
+    ConfirmFrame.BackgroundColor3 =
+        Color3.fromRGB(12, 12, 15)
+
+    ConfirmFrame.BorderSizePixel = 0
+
+    ConfirmFrame.ZIndex = 100
+
+    ConfirmFrame.Parent = ScreenGui
+
+    Round(ConfirmFrame, 14)
+
+    AddStroke(
+        ConfirmFrame,
+        0.15,
+        1.5
+    )
+
+
+    --==================================================
+    -- TEXTO DE CONFIRMAÇÃO
+    --==================================================
+
+    local Text = Instance.new("TextLabel")
+
+    Text.BackgroundTransparency = 1
+
+    Text.Position =
+        UDim2.fromOffset(15, 15)
+
+    Text.Size =
+        UDim2.new(
+            1,
+            -30,
+            0,
+            45
+        )
+
+    Text.Text =
+        "Deseja fechar o Walk Nyx Project?"
+
+    Text.TextColor3 = White
+    Text.TextSize = 14
+    Text.Font = Enum.Font.GothamMedium
+
+    Text.TextWrapped = true
+
+    Text.ZIndex = 101
+
+    Text.Parent = ConfirmFrame
+
+
+    --==================================================
+    -- BOTÃO SIM
+    --==================================================
+
+    local Yes = Instance.new("TextButton")
+
+    Yes.Size =
+        UDim2.fromOffset(105, 35)
+
+    Yes.Position =
+        UDim2.fromOffset(25, 82)
+
+    Yes.BackgroundColor3 =
+        White
+
+    Yes.BorderSizePixel = 0
+
+    Yes.Text = "Sim"
+
+    Yes.TextColor3 =
+        Color3.fromRGB(0, 0, 0)
+
+    Yes.TextSize = 13
+
+    Yes.Font =
+        Enum.Font.GothamBold
+
+    Yes.ZIndex = 101
+
+    Yes.Parent = ConfirmFrame
+
+    Round(Yes, 9)
+
+
+    --==================================================
+    -- BOTÃO NÃO
+    --==================================================
+
+    local No = Instance.new("TextButton")
+
+    No.Size =
+        UDim2.fromOffset(105, 35)
+
+    No.Position =
+        UDim2.fromOffset(140, 82)
+
+    No.BackgroundColor3 =
+        ButtonColor
+
+    No.BorderSizePixel = 0
+
+    No.Text = "Não"
+
+    No.TextColor3 =
+        White
+
+    No.TextSize = 13
+
+    No.Font =
+        Enum.Font.GothamBold
+
+    No.ZIndex = 101
+
+    No.Parent = ConfirmFrame
+
+    Round(No, 9)
+
+    AddStroke(
+        No,
+        0.45,
+        1
+    )
+
+
+    --==================================================
+    -- AÇÃO: SIM
+    --==================================================
+
+    Yes.MouseButton1Click:Connect(function()
+
+        ScreenGui:Destroy()
+
+    end)
+
+
+    --==================================================
+    -- AÇÃO: NÃO
+    --==================================================
+
+    No.MouseButton1Click:Connect(function()
+
+        ConfirmFrame:Destroy()
+
+        ConfirmFrame = nil
+
+    end)
+
+end
+
+
+--==================================================
+-- ATIVAR CONFIRMAÇÃO NO X
+--==================================================
+
+Close.MouseButton1Click:Connect(function()
+
+    CreateConfirmation()
+
+end)
+
+
+--==================================================
+-- 18. FINAL
+--==================================================
+
+print("Walk Nyx Project carregado com sucesso!")
