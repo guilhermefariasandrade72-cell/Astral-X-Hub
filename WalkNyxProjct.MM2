@@ -179,6 +179,9 @@ task.spawn(function()
 end)
 
 -- 🌪️ WALK FLING — VARIÁVEIS
+local WalkFlingAtivo = false
+local FlingConnection = nil
+local FlingPower = 99999
 
 
 --==================================================
@@ -395,9 +398,59 @@ player.CharacterAdded:Connect(function()
 end)
 
 -- ==================================
--- 🌪️ SISTEMA DE WALK FLING (SEU CÓDIGO EXATO)
+-- 🌪️ SISTEMA DE WALK FLING (SEU CÓDIGO NOVO)
 -- ==================================
+local function ToggleWalkFling(state)
+    WalkFlingAtivo = state
 
+    if not WalkFlingAtivo then
+        if FlingConnection then
+            FlingConnection:Disconnect()
+            FlingConnection = nil
+        end
+        return
+    end
+
+    FlingConnection = RunService.Heartbeat:Connect(function()
+        if not WalkFlingAtivo then return end
+
+        local char = player.Character
+        local hrp = char and char:FindFirstChild("HumanoidRootPart")
+        local humanoid = char and char:FindFirstChildOfClass("Humanoid")
+
+        if hrp and humanoid then
+            for _, part in ipairs(char:GetChildren()) do
+                if part:IsA("BasePart") then
+                    part.CanCollide = false
+                end
+            end
+
+            local oldCFrame = hrp.CFrame
+            local vel = hrp.AssemblyLinearVelocity
+
+            -- Aplica a velocidade fixa extrema
+            hrp.CFrame = oldCFrame * CFrame.Angles(0, math.rad(math.random(1, 360)), 0)
+            hrp.AssemblyAngularVelocity = Vector3.new(0, FlingPower, 0)
+
+            RunService.RenderStepped:Wait()
+            if hrp then
+                hrp.AssemblyAngularVelocity = Vector3.new(0, 0, 0)
+                if humanoid.MoveDirection.Magnitude > 0 then
+                    hrp.AssemblyLinearVelocity = vel
+                else
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+                end
+            end
+        end
+    end)
+end
+
+player.CharacterAdded:Connect(function()
+    if WalkFlingAtivo then
+        task.wait(1.5)
+        ToggleWalkFling(true)
+    end
+end)
 
 -- ==================================
 -- 🛡️ SISTEMA DO ANTI-FLING (SEU CÓDIGO)
@@ -2233,6 +2286,84 @@ end)
 -- ==================================
 -- 🌪️ BOTÃO WALK FLING
 -- ==================================
+
+-- SEÇÃO WALK FLING
+local Sec_WalkFling = Instance.new("Frame")
+Sec_WalkFling.Name = "Secao_WalkFling"
+Sec_WalkFling.Size = UDim2.new(1, -6, 0, 55)
+Sec_WalkFling.Position = UDim2.new(0, 0, 0, 530)
+Sec_WalkFling.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_WalkFling.BackgroundTransparency = 0.15
+Sec_WalkFling.Parent = Pages["Local Player"]
+Round(Sec_WalkFling, 9)
+AddStroke(Sec_WalkFling, 0.65, 1)
+
+-- BOTÃO ATIVAR WALK FLING
+local WalkFlingBtnContainer = Instance.new("Frame")
+WalkFlingBtnContainer.Name = "WalkFlingContainer"
+WalkFlingBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+WalkFlingBtnContainer.BackgroundTransparency = 1
+WalkFlingBtnContainer.Position = UDim2.new(0, 0, 0, 7)
+WalkFlingBtnContainer.Parent = Sec_WalkFling
+
+local WalkFlingLabel = Instance.new("TextLabel")
+WalkFlingLabel.Name = "Texto"
+WalkFlingLabel.BackgroundTransparency = 1
+WalkFlingLabel.Position = UDim2.new(0, 12, 0, 0)
+WalkFlingLabel.Size = UDim2.new(1, -55, 1, 0)
+WalkFlingLabel.Text = "Walk Fling"
+WalkFlingLabel.TextColor3 = White
+WalkFlingLabel.TextSize = 13
+WalkFlingLabel.Font = Enum.Font.GothamMedium
+WalkFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
+WalkFlingLabel.Parent = WalkFlingBtnContainer
+
+local WalkFlingToggle = Instance.new("TextButton")
+WalkFlingToggle.Name = "Toggle"
+WalkFlingToggle.Size = UDim2.fromOffset(32, 26)
+WalkFlingToggle.Position = UDim2.new(1, -40, 0.5, -13)
+WalkFlingToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+WalkFlingToggle.BorderSizePixel = 0
+WalkFlingToggle.Text = ""
+WalkFlingToggle.AutoButtonColor = false
+WalkFlingToggle.ZIndex = 7
+WalkFlingToggle.Parent = WalkFlingBtnContainer
+Round(WalkFlingToggle, 7)
+
+local WalkFlingIndic = Instance.new("Frame")
+WalkFlingIndic.Name = "Indicador"
+WalkFlingIndic.Size = UDim2.fromOffset(20, 20)
+WalkFlingIndic.Position = UDim2.new(0, 2, 0.5, -10)
+WalkFlingIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+WalkFlingIndic.BorderSizePixel = 0
+WalkFlingIndic.Parent = WalkFlingToggle
+Round(WalkFlingIndic, 5)
+
+local WalkFlingLigado = false
+
+local function AtualizarWalkFlingToggle()
+    if WalkFlingLigado then
+        TweenService:Create(WalkFlingIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        WalkFlingToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        ToggleWalkFling(true)
+    else
+        TweenService:Create(WalkFlingIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        WalkFlingToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        ToggleWalkFling(false)
+    end
+end
+
+WalkFlingToggle.MouseButton1Click:Connect(function()
+    WalkFlingLigado = not WalkFlingLigado
+    AtualizarWalkFlingToggle()
+end)
+
 
 -- ==================================
 -- 🛡️ BOTÃO ANTI-FLING
