@@ -240,9 +240,6 @@ end)
 -- ==================================
 -- 🏃 SISTEMA — VELOCIDADE E PULO (VERIFICAÇÃO CONSTANTE)
 -- ==================================
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
 
 -- Salva valores originais ao carregar
 task.spawn(function()
@@ -302,9 +299,6 @@ end)
 -- ==================================
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
-local Players = game:GetService("Players")
-local RunService = game:GetService("RunService")
-local player = Players.LocalPlayer
 
 -- ✅ DETECTA O MURDERER
 local function ObterMurderer()
