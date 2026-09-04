@@ -137,17 +137,14 @@ local player =
 -- 07. VARIÁVEIS LOCAL PLAYER
 --==================================================
 
--- >>> COLOQUE AS VARIÁVEIS DO LOCAL PLAYER AQUI <<<
---
--- Exemplo:
---
--- local SpeedAtivo = false
--- local SpeedValor = 16
--- local JumpAtivo = false
--- local JumpValor = 50
--- local FlyAtivo = false
---
---==================================================
+-- 🏃 SPEED E PULO — VARIÁVEIS
+local SpeedAtivo = false
+local SpeedValor = 16
+local JumpAtivo = false
+local JumpValor = 50
+local WalkSpeedOriginal = 16
+local JumpPowerOriginal = 50
+
 
 
 
@@ -155,18 +152,59 @@ local player =
 -- 08. SISTEMAS
 --==================================================
 
--- >>> COLOQUE OS SISTEMAS AQUI <<<
---
--- SISTEMA MURDERER
--- SISTEMA SHERIFF
--- SISTEMA AUTO FARM
--- SISTEMA ESP
--- SISTEMA LOCAL PLAYER
---
--- IMPORTANTE:
--- OS SISTEMAS FICAM AQUI.
--- NÃO DENTRO DAS ABAS.
---==================================================
+-- ==================================
+-- 🏃 SISTEMA — SPEED E PULO
+-- ==================================
+
+-- Salva valores originais ao carregar
+task.spawn(function()
+    repeat task.wait(0.1) until player.Character
+    local hum = player.Character:WaitForChild("Humanoid")
+    WalkSpeedOriginal = hum.WalkSpeed
+    JumpPowerOriginal = hum.JumpPower
+end)
+
+-- Aplica e verifica constantemente
+RunService.Heartbeat:Connect(function()
+    local char = player.Character
+    if not char or not char:FindFirstChild("Humanoid") then return end
+    local hum = char.Humanoid
+    
+    -- 🏃 SPEED — Corrige se não estiver igual ao slider
+    if SpeedAtivo then
+        if hum.WalkSpeed ~= SpeedValor then
+            hum.WalkSpeed = SpeedValor
+        end
+    else
+        if hum.WalkSpeed ~= WalkSpeedOriginal then
+            hum.WalkSpeed = WalkSpeedOriginal
+        end
+    end
+    
+    -- 🦘 PULO — Corrige se não estiver igual ao slider
+    if JumpAtivo then
+        if hum.JumpPower ~= JumpValor then
+            hum.JumpPower = JumpValor
+        end
+    else
+        if hum.JumpPower ~= JumpPowerOriginal then
+            hum.JumpPower = JumpPowerOriginal
+        end
+    end
+end)
+
+-- Reseta ao respawnar
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    local char = player.Character
+    if not char then return end
+    local hum = char:WaitForChild("Humanoid")
+    WalkSpeedOriginal = hum.WalkSpeed
+    JumpPowerOriginal = hum.JumpPower
+    task.wait(0.2)
+    if SpeedAtivo then hum.WalkSpeed = SpeedValor end
+    if JumpAtivo then hum.JumpPower = JumpValor end
+end)
 
 
 
@@ -1317,13 +1355,334 @@ end
 --==================================================
 -- 14. BOTÕES LOCAL PLAYER
 --==================================================
--- >>> COLOQUE OS BOTÕES DO LOCAL PLAYER AQUI <<<
---
--- A página é:
---
--- Pages["Local Player"]
---
---==================================================
+-- ==================================
+-- 🏃 BOTÕES + SLIDERS — SPEED E PULO
+-- ==================================
+
+-- ═══════════════ VELOCIDADE ═══════════════
+local Sec_Speed = Instance.new("Frame")
+Sec_Speed.Name = "Secao_Velocidade"
+Sec_Speed.Size = UDim2.new(1, -6, 0, 110)
+Sec_Speed.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_Speed.BackgroundTransparency = 0.15
+Sec_Speed.Parent = Pages["Local Player"]
+Round(Sec_Speed, 9)
+AddStroke(Sec_Speed, 0.65, 1)
+
+-- Botão Ativar Velocidade
+local SpeedBtnContainer = Instance.new("Frame")
+SpeedBtnContainer.Name = "SpeedContainer"
+SpeedBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+SpeedBtnContainer.BackgroundTransparency = 1
+SpeedBtnContainer.Parent = Sec_Speed
+
+local SpeedLabel = Instance.new("TextLabel")
+SpeedLabel.Name = "Texto"
+SpeedLabel.BackgroundTransparency = 1
+SpeedLabel.Position = UDim2.new(0, 12, 0, 0)
+SpeedLabel.Size = UDim2.new(1, -55, 1, 0)
+SpeedLabel.Text = "Velocidade Personalizada"
+SpeedLabel.TextColor3 = White
+SpeedLabel.TextSize = 13
+SpeedLabel.Font = Enum.Font.GothamMedium
+SpeedLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedLabel.Parent = SpeedBtnContainer
+
+local SpeedToggle = Instance.new("TextButton")
+SpeedToggle.Name = "Toggle"
+SpeedToggle.Size = UDim2.fromOffset(32, 26)
+SpeedToggle.Position = UDim2.new(1, -40, 0.5, -13)
+SpeedToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpeedToggle.BorderSizePixel = 0
+SpeedToggle.Text = ""
+SpeedToggle.AutoButtonColor = false
+SpeedToggle.ZIndex = 7
+SpeedToggle.Parent = SpeedBtnContainer
+Round(SpeedToggle, 7)
+
+local SpeedIndic = Instance.new("Frame")
+SpeedIndic.Name = "Indicador"
+SpeedIndic.Size = UDim2.fromOffset(20, 20)
+SpeedIndic.Position = UDim2.new(0, 2, 0.5, -10)
+SpeedIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+SpeedIndic.BorderSizePixel = 0
+SpeedIndic.Parent = SpeedToggle
+Round(SpeedIndic, 5)
+
+local SpeedLigado = false
+
+local function AtualizarSpeedToggle()
+    if SpeedLigado then
+        TweenService:Create(SpeedIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        SpeedToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        SpeedAtivo = true
+    else
+        TweenService:Create(SpeedIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        SpeedToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        SpeedAtivo = false
+    end
+end
+
+SpeedToggle.MouseButton1Click:Connect(function()
+    SpeedLigado = not SpeedLigado
+    AtualizarSpeedToggle()
+end)
+
+-- Slider Velocidade (16 a 45)
+local SpeedSliderContainer = Instance.new("Frame")
+SpeedSliderContainer.Name = "SliderVelocidade"
+SpeedSliderContainer.Size = UDim2.new(1, -12, 0, 60)
+SpeedSliderContainer.Position = UDim2.new(0, 6, 0, 45)
+SpeedSliderContainer.BackgroundTransparency = 1
+SpeedSliderContainer.Parent = Sec_Speed
+
+local SpeedSliderTexto = Instance.new("TextLabel")
+SpeedSliderTexto.Name = "Texto"
+SpeedSliderTexto.BackgroundTransparency = 1
+SpeedSliderTexto.Position = UDim2.new(0, 6, 0, 0)
+SpeedSliderTexto.Size = UDim2.new(1, 0, 0, 20)
+SpeedSliderTexto.Text = "Velocidade: " .. SpeedValor
+SpeedSliderTexto.TextColor3 = White
+SpeedSliderTexto.TextSize = 12
+SpeedSliderTexto.Font = Enum.Font.GothamMedium
+SpeedSliderTexto.TextXAlignment = Enum.TextXAlignment.Left
+SpeedSliderTexto.Parent = SpeedSliderContainer
+
+local SpeedBarraFundo = Instance.new("Frame")
+SpeedBarraFundo.Name = "Fundo"
+SpeedBarraFundo.Size = UDim2.new(1, -12, 0, 8)
+SpeedBarraFundo.Position = UDim2.new(0, 6, 0, 28)
+SpeedBarraFundo.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpeedBarraFundo.Parent = SpeedSliderContainer
+Round(SpeedBarraFundo, 4)
+
+local SpeedBarraProg = Instance.new("Frame")
+SpeedBarraProg.Name = "Progresso"
+SpeedBarraProg.Size = UDim2.new((SpeedValor - 16) / 29, 0, 1, 0)
+SpeedBarraProg.BackgroundColor3 = Color3.fromRGB(90, 190, 120)
+SpeedBarraProg.Parent = SpeedBarraFundo
+Round(SpeedBarraProg, 4)
+
+local SpeedSliderBtn = Instance.new("TextButton")
+SpeedSliderBtn.Name = "Botao"
+SpeedSliderBtn.Size = UDim2.fromOffset(22, 22)
+SpeedSliderBtn.Position = UDim2.new((SpeedValor - 16) / 29, -11, 0.5, -11)
+SpeedSliderBtn.BackgroundColor3 = White
+SpeedSliderBtn.BorderSizePixel = 0
+SpeedSliderBtn.Text = ""
+SpeedSliderBtn.AutoButtonColor = false
+SpeedSliderBtn.ZIndex = 10
+SpeedSliderBtn.Parent = SpeedBarraFundo
+Round(SpeedSliderBtn, 11)
+
+local SpeedArrastando = false
+
+local function AtualizarSpeedSlider(X)
+    local AbsPos = SpeedBarraFundo.AbsolutePosition
+    local AbsSize = SpeedBarraFundo.AbsoluteSize.X
+    local PosX = math.clamp(X - AbsPos.X, 0, AbsSize)
+    local Valor = 16 + (PosX / AbsSize) * 29
+    Valor = math.floor(Valor + 0.5)
+    
+    SpeedValor = Valor
+    
+    SpeedSliderTexto.Text = "Velocidade: " .. Valor
+    SpeedBarraProg.Size = UDim2.new(PosX / AbsSize, 0, 1, 0)
+    SpeedSliderBtn.Position = UDim2.new(PosX / AbsSize, -11, 0.5, -11)
+end
+
+SpeedSliderBtn.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        SpeedArrastando = true
+    end
+end)
+SpeedBarraFundo.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        SpeedArrastando = true
+        AtualizarSpeedSlider(Input.Position.X)
+    end
+end)
+UserInputService.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        SpeedArrastando = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(Input)
+    if SpeedArrastando then
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            AtualizarSpeedSlider(Input.Position.X)
+        end
+    end
+end)
+
+-- ═══════════════ PULO ALTO ═══════════════
+local Sec_Jump = Instance.new("Frame")
+Sec_Jump.Name = "Secao_Pulo"
+Sec_Jump.Size = UDim2.new(1, -6, 0, 110)
+Sec_Jump.Position = UDim2.new(0, 0, 0, 118)
+Sec_Jump.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_Jump.BackgroundTransparency = 0.15
+Sec_Jump.Parent = Pages["Local Player"]
+Round(Sec_Jump, 9)
+AddStroke(Sec_Jump, 0.65, 1)
+
+-- Botão Ativar Pulo
+local JumpBtnContainer = Instance.new("Frame")
+JumpBtnContainer.Name = "JumpContainer"
+JumpBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+JumpBtnContainer.BackgroundTransparency = 1
+JumpBtnContainer.Parent = Sec_Jump
+
+local JumpLabel = Instance.new("TextLabel")
+JumpLabel.Name = "Texto"
+JumpLabel.BackgroundTransparency = 1
+JumpLabel.Position = UDim2.new(0, 12, 0, 0)
+JumpLabel.Size = UDim2.new(1, -55, 1, 0)
+JumpLabel.Text = "Pulo Alto Personalizado"
+JumpLabel.TextColor3 = White
+JumpLabel.TextSize = 13
+JumpLabel.Font = Enum.Font.GothamMedium
+JumpLabel.TextXAlignment = Enum.TextXAlignment.Left
+JumpLabel.Parent = JumpBtnContainer
+
+local JumpToggle = Instance.new("TextButton")
+JumpToggle.Name = "Toggle"
+JumpToggle.Size = UDim2.fromOffset(32, 26)
+JumpToggle.Position = UDim2.new(1, -40, 0.5, -13)
+JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+JumpToggle.BorderSizePixel = 0
+JumpToggle.Text = ""
+JumpToggle.AutoButtonColor = false
+JumpToggle.ZIndex = 7
+JumpToggle.Parent = JumpBtnContainer
+Round(JumpToggle, 7)
+
+local JumpIndic = Instance.new("Frame")
+JumpIndic.Name = "Indicador"
+JumpIndic.Size = UDim2.fromOffset(20, 20)
+JumpIndic.Position = UDim2.new(0, 2, 0.5, -10)
+JumpIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+JumpIndic.BorderSizePixel = 0
+JumpIndic.Parent = JumpToggle
+Round(JumpIndic, 5)
+
+local JumpLigado = false
+
+local function AtualizarJumpToggle()
+    if JumpLigado then
+        TweenService:Create(JumpIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        JumpToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        JumpAtivo = true
+    else
+        TweenService:Create(JumpIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        JumpToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        JumpAtivo = false
+    end
+end
+
+JumpToggle.MouseButton1Click:Connect(function()
+    JumpLigado = not JumpLigado
+    AtualizarJumpToggle()
+end)
+
+-- Slider Pulo (50 a 100)
+local JumpSliderContainer = Instance.new("Frame")
+JumpSliderContainer.Name = "SliderPulo"
+JumpSliderContainer.Size = UDim2.new(1, -12, 0, 60)
+JumpSliderContainer.Position = UDim2.new(0, 6, 0, 45)
+JumpSliderContainer.BackgroundTransparency = 1
+JumpSliderContainer.Parent = Sec_Jump
+
+local JumpSliderTexto = Instance.new("TextLabel")
+JumpSliderTexto.Name = "Texto"
+JumpSliderTexto.BackgroundTransparency = 1
+JumpSliderTexto.Position = UDim2.new(0, 6, 0, 0)
+JumpSliderTexto.Size = UDim2.new(1, 0, 0, 20)
+JumpSliderTexto.Text = "Força do Pulo: " .. JumpValor
+JumpSliderTexto.TextColor3 = White
+JumpSliderTexto.TextSize = 12
+JumpSliderTexto.Font = Enum.Font.GothamMedium
+JumpSliderTexto.TextXAlignment = Enum.TextXAlignment.Left
+JumpSliderTexto.Parent = JumpSliderContainer
+
+local JumpBarraFundo = Instance.new("Frame")
+JumpBarraFundo.Name = "Fundo"
+JumpBarraFundo.Size = UDim2.new(1, -12, 0, 8)
+JumpBarraFundo.Position = UDim2.new(0, 6, 0, 28)
+JumpBarraFundo.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+JumpBarraFundo.Parent = JumpSliderContainer
+Round(JumpBarraFundo, 4)
+
+local JumpBarraProg = Instance.new("Frame")
+JumpBarraProg.Name = "Progresso"
+JumpBarraProg.Size = UDim2.new((JumpValor - 50) / 50, 0, 1, 0)
+JumpBarraProg.BackgroundColor3 = Color3.fromRGB(90, 190, 120)
+JumpBarraProg.Parent = JumpBarraFundo
+Round(JumpBarraProg, 4)
+
+local JumpSliderBtn = Instance.new("TextButton")
+JumpSliderBtn.Name = "Botao"
+JumpSliderBtn.Size = UDim2.fromOffset(22, 22)
+JumpSliderBtn.Position = UDim2.new((JumpValor - 50) / 50, -11, 0.5, -11)
+JumpSliderBtn.BackgroundColor3 = White
+JumpSliderBtn.BorderSizePixel = 0
+JumpSliderBtn.Text = ""
+JumpSliderBtn.AutoButtonColor = false
+JumpSliderBtn.ZIndex = 10
+JumpSliderBtn.Parent = JumpBarraFundo
+Round(JumpSliderBtn, 11)
+
+local JumpArrastando = false
+
+local function AtualizarJumpSlider(X)
+    local AbsPos = JumpBarraFundo.AbsolutePosition
+    local AbsSize = JumpBarraFundo.AbsoluteSize.X
+    local PosX = math.clamp(X - AbsPos.X, 0, AbsSize)
+    local Valor = 50 + (PosX / AbsSize) * 50
+    Valor = math.floor(Valor + 0.5)
+    
+    JumpValor = Valor
+    
+    JumpSliderTexto.Text = "Força do Pulo: " .. Valor
+    JumpBarraProg.Size = UDim2.new(PosX / AbsSize, 0, 1, 0)
+    JumpSliderBtn.Position = UDim2.new(PosX / AbsSize, -11, 0.5, -11)
+end
+
+JumpSliderBtn.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        JumpArrastando = true
+    end
+end)
+JumpBarraFundo.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        JumpArrastando = true
+        AtualizarJumpSlider(Input.Position.X)
+    end
+end)
+UserInputService.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        JumpArrastando = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(Input)
+    if JumpArrastando then
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            AtualizarJumpSlider(Input.Position.X)
+        end
+    end
+end)
 
 
 
