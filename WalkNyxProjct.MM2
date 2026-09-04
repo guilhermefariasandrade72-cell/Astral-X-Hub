@@ -146,8 +146,10 @@ local WalkSpeedOriginal = 16
 local JumpPowerOriginal = 50
 
 -- PULO INFINITO 
+local player = Players.LocalPlayer
 local InfiniteJumpEnabled = false
 local InfiniteJumpConnection = nil
+local UltimoPulo = 0
 
 -- NOCLIP — VARIÁVEIS
 local NoclipAtivo = false
@@ -214,50 +216,49 @@ player.CharacterAdded:Connect(function()
 end)
 
 -- ==================================
--- 🦘 SISTEMA DO PULO INFINITO (PERFEITO)
+-- 🦘 PULO INFINITO — VARIÁVEIS
 -- ==================================
-local ultimoEstadoNoChao = true
-local ultimoPulo = 0
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
 
+-- ==================================
+-- 🦘 SISTEMA DO PULO INFINITO
+-- ==================================
 local function ToggleInfiniteJump(state)
     InfiniteJumpEnabled = state
 
-    if state then
-        if InfiniteJumpConnection then
-            InfiniteJumpConnection:Disconnect()
-            InfiniteJumpConnection = nil
-        end
+    if InfiniteJumpConnection then
+        InfiniteJumpConnection:Disconnect()
+        InfiniteJumpConnection = nil
+    end
 
-        InfiniteJumpConnection = RunService.Heartbeat:Connect(function()
+    if state then
+        InfiniteJumpConnection = UserInputService.JumpRequest:Connect(function()
             if not InfiniteJumpEnabled then return end
+
+            -- Limita a frequência para evitar múltiplos impulsos em um único clique (Debounce de 0.15s)
+            if tick() - UltimoPulo < 0.15 then return end
 
             local character = player.Character
             local humanoid = character and character:FindFirstChildOfClass("Humanoid")
-            if not humanoid then return end
+            local hrp = character and character:FindFirstChild("HumanoidRootPart")
 
-            local estaNoChao = humanoid.FloorMaterial ~= Enum.Material.Air
-            local agora = os.clock()
-
-            -- ✅ Só pula NO MOMENTO que toca o chão + pequeno delay
-            if estaNoChao and not ultimoEstadoNoChao and agora - ultimoPulo > 0.1 then
-                humanoid.Jump = true
-                ultimoPulo = agora
+            if humanoid and hrp then
+                UltimoPulo = tick()
+                
+                -- Mantém a velocidade horizontal atual (X e Z) e aplica força apenas na vertical (Y)
+                hrp.AssemblyLinearVelocity = Vector3.new(
+                    hrp.AssemblyLinearVelocity.X,
+                    humanoid.JumpPower > 0 and humanoid.JumpPower or 50, -- Força padrão de pulo
+                    hrp.AssemblyLinearVelocity.Z
+                )
             end
-
-            ultimoEstadoNoChao = estaNoChao
         end)
-
-    else
-        if InfiniteJumpConnection then
-            InfiniteJumpConnection:Disconnect()
-            InfiniteJumpConnection = nil
-        end
     end
 end
 
--- Reativa ao respawnar
+-- Reativa automaticamente ao respawnar
 player.CharacterAdded:Connect(function()
-    ultimoEstadoNoChao = true
     task.wait(0.5)
     if InfiniteJumpEnabled then
         ToggleInfiniteJump(true)
@@ -1777,7 +1778,7 @@ UserInputService.InputChanged:Connect(function(Input)
 end)
 
 -- ==================================
--- 🦘 BOTÃO PULO INFINITO
+-- 🦘 BOTÃO PULO INFINITO (ARRUMADO)
 -- ==================================
 
 -- SEÇÃO PULO INFINITO
