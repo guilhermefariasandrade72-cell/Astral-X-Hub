@@ -107,6 +107,9 @@ local TracersESP = {}
 local DadosCargos = {}
 local UltimaChecagemCargo = 0
 
+local XRayAtivo = false
+local PartesOriginais = {}
+
 
 --==================================================
 -- 07. VARIÁVEIS DO LOCAL PLAYER
@@ -317,6 +320,55 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 🧱 SISTEMA DO X-RAY
+-- ==================================
+local function AplicarXRay()
+    if XRayAtivo then return end
+    XRayAtivo = true
+    
+    for _, Descendente in ipairs(workspace:GetDescendants()) do
+        if Descendente:IsA("BasePart") and not Descendente:IsA("Terrain") then
+            local Nome = Descendente.Name:lower()
+            local Caminho = Descendente:GetFullName()
+            
+            -- Ignora partes do jogador, armas, moedas e itens
+            if not string.find(Caminho, player.Name, 1, true) 
+            and not string.find(Nome, "coin") 
+            and not string.find(Nome, "gun")
+            and not string.find(Nome, "knife")
+            and not string.find(Nome, "drop")
+            and Descendente.Transparency < 0.5 then
+                
+                PartesOriginais[Descendente] = Descendente.Transparency
+                Descendente.Transparency = 0.5
+                Descendente.LocalTransparencyModifier = 0
+            end
+        end
+    end
+end
+
+local function RemoverXRay()
+    if not XRayAtivo then return end
+    XRayAtivo = false
+    
+    for Parte, TranspOriginal in pairs(PartesOriginais) do
+        if Parte and Parte.Parent then
+            Parte.Transparency = TranspOriginal
+        end
+    end
+    table.clear(PartesOriginais)
+end
+
+-- Atualiza em tempo real
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if XRayAtivo then
+            AplicarXRay()
+        end
+    end
+end)
 
 
 
@@ -1284,6 +1336,17 @@ CreateToggleESP(
     end
 )
 
+CreateToggleESP(
+    Pages["ESP"],
+    "X-Ray",
+    "XRayAtivo",
+    function()
+        AplicarXRay()
+    end,
+    function()
+        RemoverXRay()
+    end
+)
 
 
 --==================================================
