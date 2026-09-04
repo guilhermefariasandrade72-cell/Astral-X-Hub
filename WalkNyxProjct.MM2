@@ -1493,7 +1493,7 @@ BotaoToggle.MouseButton1Click:Connect(function()
 end)
 
 -- ==================================
--- 🎚️ SLIDER DE VELOCIDADE (16 a 25)
+-- 🎚️ SLIDER DE VELOCIDADE — ARRUMADO
 -- ==================================
 local SliderContainer = Instance.new("Frame")
 SliderContainer.Name = "VelocidadeFarmContainer"
@@ -1535,58 +1535,61 @@ Round(BarraProgresso, 4)
 
 local BotaoSlider = Instance.new("TextButton")
 BotaoSlider.Name = "Botao"
-BotaoSlider.Size = UDim2.fromOffset(18, 18)
-BotaoSlider.Position = UDim2.new((VelocidadeFarmAtual - 16) / 9, -9, 0.5, -9)
+BotaoSlider.Size = UDim2.fromOffset(22, 22)
+BotaoSlider.Position = UDim2.new((VelocidadeFarmAtual - 16) / 9, -11, 0.5, -11)
 BotaoSlider.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
 BotaoSlider.BorderSizePixel = 0
 BotaoSlider.Text = ""
 BotaoSlider.AutoButtonColor = false
 BotaoSlider.ZIndex = 10
 BotaoSlider.Parent = BarraFundo
-Round(BotaoSlider, 9)
+Round(BotaoSlider, 11)
 
 local UserInputService = game:GetService("UserInputService")
 local Arrastando = false
 
 local function AtualizarSlider(X)
-    local Largura = BarraFundo.AbsoluteSize.X
-    local PosX = math.clamp(X - BarraFundo.AbsolutePosition.X, 0, Largura)
-    local Valor = 16 + (PosX / Largura) * 9
+    local AbsPos = BarraFundo.AbsolutePosition
+    local AbsSize = BarraFundo.AbsoluteSize.X
+    local PosX = math.clamp(X - AbsPos.X, 0, AbsSize)
+    local Valor = 16 + (PosX / AbsSize) * 9
     Valor = math.floor(Valor + 0.5)
     
     VelocidadeFarmAtual = Valor
     CONFIG_FARM.velocidade = Valor
     
     SliderTexto.Text = "Velocidade: " .. Valor
-    BarraProgresso.Size = UDim2.new(PosX / Largura, 0, 1, 0)
-    BotaoSlider.Position = UDim2.new(PosX / Largura, -9, 0.5, -9)
+    BarraProgresso.Size = UDim2.new(PosX / AbsSize, 0, 1, 0)
+    BotaoSlider.Position = UDim2.new(PosX / AbsSize, -11, 0.5, -11)
 end
 
-BotaoSlider.MouseButton1Down:Connect(function() Arrastando = true end)
-UserInputService.InputEnded:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
-        Arrastando = false
-    end
-end)
-UserInputService.InputChanged:Connect(function(Input)
-    if Arrastando and Input.UserInputType == Enum.UserInputType.MouseMovement then
-        AtualizarSlider(Input.Position.X)
+-- ✅ MELHOR DETECÇÃO DE TOQUE — FUNCIONA NO MOBILE!
+BotaoSlider.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        Arrastando = true
     end
 end)
 
 BarraFundo.InputBegan:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         Arrastando = true
         AtualizarSlider(Input.Position.X)
     end
 end)
-BarraFundo.InputEnded:Connect(function(Input)
-    if Input.UserInputType == Enum.UserInputType.MouseButton1 then
+
+UserInputService.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
         Arrastando = false
     end
 end)
 
-
+UserInputService.InputChanged:Connect(function(Input)
+    if Arrastando then
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            AtualizarSlider(Input.Position.X)
+        end
+    end
+end)
 
 --==================================================
 -- 13. BOTÕES ESP
