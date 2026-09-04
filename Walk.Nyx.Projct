@@ -468,7 +468,7 @@ local ConexaoGrabLocal = nil
 -- ===========================
 -- VARIÁVEIS DA ABA AUTO FARM
 -- ===========================
-
+-- Services
 local Players = game:GetService("Players")
 local RunService = game:GetService("RunService")
 local Workspace = game:GetService("Workspace")
@@ -476,10 +476,11 @@ local ReplicatedStorage = game:GetService("ReplicatedStorage")
 
 local player = Players.LocalPlayer
 
+-- Configurações Base do Auto Farm
 local CONFIG_FARM = {
     velocidade = 18,
     alcance_maximo = 500,
-    raio_perigo_murder = 30
+    raio_perigo_murder = 30 -- Raio de distância do Murderer
 }
 
 local AutoFarmAtivo = false
@@ -491,13 +492,24 @@ local cachedCoinContainer = nil
 local ultimoCheckBolsa = 0
 local resultadoUltimoCheckBolsa = false
 
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+
+local player = Players.LocalPlayer
+
 local TPSafeAoEncher = false
 local SafePlatform = nil
 local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
 
-local KillAllAoEncher = false
-local AutoResetAoEncher = false
-local AutoShootAtivo = false
+local Players = game:GetService("Players")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+AutoShootAtivo = false
+local ExecutandoShoot = false
+local PRECISAO_FIXA = 50
 
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
@@ -912,16 +924,20 @@ end
 -- SISTEMA DA ABA AUTO FARM
 -- ====================================================
 
+
+-- ==================================
+-- 🔍 DETECTOR DO MURDERER
+-- ==================================
 local function ObterMurderer()
     for _, p in ipairs(Players:GetPlayers()) do
         if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
             local char = p.Character
             local hum = char:FindFirstChild("Humanoid")
-
+            
             if hum and hum.Health > 0 then
                 local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
                 local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
-
+                
                 if eMurder then
                     return char
                 end
@@ -931,6 +947,9 @@ local function ObterMurderer()
     return nil
 end
 
+-- ==================================
+-- 1. RESETS AUTOMÁTICOS DE RODADA (SOMENTE NA PRÓXIMA PARTIDA)
+-- ==================================
 local function ResetarEstadoFarm()
     BolsaCheia = false
     table.clear(collectedCoins)
@@ -946,6 +965,9 @@ player:GetAttributeChangedSignal("Alive"):Connect(function()
     end
 end)
 
+-- ==================================
+-- 👻 LOOP DE INVISIBILIDADE AUTOMÁTICA
+-- ==================================
 task.spawn(function()
     while true do
         task.wait(0.1)
@@ -972,10 +994,13 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 2. DETECTOR DE BOLSA CHEIA
+-- ==================================
 local function VerificarTextoBolsaCheia()
     local agora = os.clock()
-    if agora - ultimoCheckBolsa < 0.5 then
-        return resultadoUltimoCheckBolsa
+    if agora - ultimoCheckBolsa < 0.5 then 
+        return resultadoUltimoCheckBolsa 
     end
     ultimoCheckBolsa = agora
 
@@ -988,9 +1013,9 @@ local function VerificarTextoBolsaCheia()
     for _, gui in ipairs(mainGui:GetDescendants()) do
         if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
             local texto = string.lower(gui.Text)
-            if (string.find(texto, "saco") and string.find(texto, "cheio")) or
+            if (string.find(texto, "saco") and string.find(texto, "cheio")) or 
                (string.find(texto, "bag") and string.find(texto, "full")) or
-               string.find(texto, "full coin") or string.find(texto, "max coins") then
+               string.find(texto, "full coin") or string.find(texto, "max coins") then 
                 resultadoUltimoCheckBolsa = true
                 return true
             end
@@ -1001,6 +1026,7 @@ local function VerificarTextoBolsaCheia()
     return false
 end
 
+-- Detecção via Remote Event nativo
 task.spawn(function()
     local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
     if Remotes then
@@ -1017,45 +1043,54 @@ task.spawn(function()
     end
 end)
 
+-- ==================================
+-- 3. VERIFICAÇÃO DE PARTIDA RIGOROSA
+-- ==================================
 local function EmPartida()
     local c = player.Character
     if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
     if not c:FindFirstChild("HumanoidRootPart") then return false end
-
+    
+    -- Checa se o jogador está realmente vivo no status do MM2
     local aliveAttr = player:GetAttribute("Alive")
     if aliveAttr ~= nil and aliveAttr == false then
         return false
     end
-
+    
+    -- Evita coletar moedas se estiver preso no Lobby
     if Workspace:FindFirstChild("Lobby") then
         local distLobby = (c.HumanoidRootPart.Position - Workspace.Lobby:GetPivot().Position).Magnitude
         if distLobby < 100 then
             return false
         end
     end
-
+    
     return true
 end
 
+-- ==================================
+-- 4. BUSCA DE MOEDA MAIS PRÓXIMA
+-- ==================================
 local function getNearestCoin(minhaPos)
     local melhorMoeda, menorDistancia = nil, math.huge
 
     if not cachedCoinContainer or not cachedCoinContainer.Parent then
         cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
     end
-
+    
     if not cachedCoinContainer then return nil end
 
     local charMurderer = ObterMurderer()
     local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
 
     for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
-        if moeda:IsA("BasePart")
+        if moeda:IsA("BasePart") 
         and moeda.Name == "Coin_Server"
-        and moeda:FindFirstChild("TouchInterest")
-        and not collectedCoins[moeda]
+        and moeda:FindFirstChild("TouchInterest") 
+        and not collectedCoins[moeda] 
         and not moeda:GetAttribute("Collected") then
 
+            -- 1. FILTRO: Ignora moedas a menos de 30 studs do Murderer
             if hrpMurderer then
                 local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
                 if distMurder <= CONFIG_FARM.raio_perigo_murder then
@@ -1063,6 +1098,7 @@ local function getNearestCoin(minhaPos)
                 end
             end
 
+            -- 2. FILTRO: Ignora moedas marcadas por invisibilidade
             if moedasIgnoradasInvisivel[moeda] then
                 if not InvisivelAtivo then
                     moedasIgnoradasInvisivel[moeda] = nil
@@ -1078,21 +1114,25 @@ local function getNearestCoin(minhaPos)
             end
         end
     end
-
     return melhorMoeda
 end
 
+-- ==================================
+-- 5. LOOP PRINCIPAL DE MOVIMENTAÇÃO TERRESTRE
+-- ==================================
 task.spawn(function()
     while true do
         if AutoFarmAtivo then
             local c = player.Character
             local hrp = c and c:FindFirstChild("HumanoidRootPart")
 
+            -- Se não está em partida, apenas espera sem resetar a bolsa
             if not EmPartida() or not hrp then
                 task.wait(0.5)
                 continue
             end
 
+            -- Aguarda se a bolsa estiver cheia
             if BolsaCheia or VerificarTextoBolsaCheia() then
                 BolsaCheia = true
                 task.wait(0.5)
@@ -1104,13 +1144,13 @@ task.spawn(function()
             if alvo then
                 local tempoPassadoNaMoeda = 0
 
-                while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent
+                while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent 
                 and not BolsaCheia and not VerificarTextoBolsaCheia()
-                and not alvo:GetAttribute("Collected")
+                and not alvo:GetAttribute("Collected") 
                 and not collectedCoins[alvo] do
-
+                    
                     local minhaPosAtual = hrp.Position
-
+                    
                     local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
                     if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
                         alvo = moedaMaisPertoAgora
@@ -1153,10 +1193,250 @@ task.spawn(function()
                 task.wait(0.2)
             end
         else
+            -- Quando desliga o botão, apenas aguarda sem limpar a bolsa
             task.wait(0.5)
         end
     end
 end)
+
+-- ==================================
+-- 📌 CONFIGURAÇÕES E VARIÁVEIS
+-- ==================================
+
+
+-- ==================================
+-- 🛡️ FUNÇÃO TELEPORTE SAFE
+-- ==================================
+local function TeleportarParaSafe()
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    if not hrp then return end
+
+    -- Cria a plataforma se não existir
+    if not SafePlatform or not SafePlatform.Parent then
+        SafePlatform = Instance.new("Part")
+        SafePlatform.Name = "AstralX_SafePlatform"
+        SafePlatform.Size = Vector3.new(20, 2, 20)
+        SafePlatform.Position = SafePosition
+        SafePlatform.Anchored = true
+        SafePlatform.Color = Color3.fromRGB(0, 0, 0)
+        SafePlatform.Transparency = 0.5
+        SafePlatform.Material = Enum.Material.SmoothPlastic
+        SafePlatform.CanCollide = true
+        SafePlatform.Parent = Workspace
+    end
+
+    -- Teleporta o jogador para cima da plataforma
+    hrp.CFrame = CFrame.new(SafePosition + Vector3.new(0, 3, 0))
+end
+
+-- ==================================
+-- 🛡️ MONITOR DE BOLSA CHEIA -> TP SAFE (COM DELAY DE 2s)
+-- ==================================
+task.spawn(function()
+    while true do
+        if TPSafeAoEncher then
+            -- Verifica se a bolsa encheu
+            if (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) and EmPartida() then
+                print("⏳ Bolsa cheia detectada! Aguardando 1 segundos para TP...")
+                
+                -- ⏳ Espera 2 segundos antes de teleportar
+                task.wait(0.2)
+                
+                -- Confirma se ainda está vivo e no jogo antes de teleportar
+                if TPSafeAoEncher and EmPartida() then
+                    TeleportarParaSafe()
+                    print("📍 Teleportado para a plataforma Safe!")
+                end
+                
+                -- Aguarda a partida acabar ou o reset da bolsa para rearmar
+                repeat
+                    RunService.Heartbeat:Wait()
+                until not TPSafeAoEncher or not EmPartida() or not (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())) or player:GetAttribute("Alive") ~= true
+            end
+        end
+        RunService.Heartbeat:Wait()
+    end
+end)
+
+-- ==================================
+-- 🔪 KILL ALL AUTOMÁTICO (ASSASSINO + BOLSA CHEIA)
+-- ==================================
+
+-- Função para verificar e equipar a faca
+local function EquiparFaca()
+    local Char = player.Character
+    if not Char then return nil end
+    
+    local Faca = Char:FindFirstChild("Knife") or (player:FindFirstChild("Backpack") and player.Backpack:FindFirstChild("Knife"))
+    if Faca then
+        if Faca.Parent ~= Char then
+            Faca.Parent = Char -- Puxa a faca para a mão
+            task.wait(0.1)
+        end
+        return Faca
+    end
+    return nil
+end
+
+local JaDisparouNestaRodada = false
+
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        
+        local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
+        
+        -- Reset da trava se a partida acabar ou a bolsa esvaziar
+        if not EmPartida() or not estaComBolsaCheia then
+            JaDisparouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não disparou ainda + Em Partida + Bolsa Cheia
+        if KillAllAoEncher and not JaDisparouNestaRodada and EmPartida() and estaComBolsaCheia then
+            -- Tenta equipar a faca (se conseguir, confirma que é o Assassino)
+            local facaEquipada = EquiparFaca()
+            
+            if facaEquipada then
+                JaDisparouNestaRodada = true -- Bloqueia execuções repetidas
+                print("⏳ Bolsa cheia e Assassino confirmado! Aguardando 1 segundo...")
+
+                -- ⏳ Espera 1 segundo antes do ataque
+                task.wait(0.3)
+
+                -- Confirma se continua vivo antes de atacar
+                if EmPartida() then
+                    print("🔪 Executando Kill All via Remotes...")
+                    
+                    local Faca = EquiparFaca()
+                    if Faca then
+                        local Eventos = Faca:FindFirstChild("Events")
+                        
+                        if Eventos then
+                            -- Ataca a cabeça de todos os alvos vivos na partida
+                            for _, Alvo in ipairs(Players:GetPlayers()) do
+                                if Alvo ~= player and Alvo.Character and Alvo.Character:FindFirstChild("Head") then
+                                    local hum = Alvo.Character:FindFirstChildOfClass("Humanoid")
+                                    if hum and hum.Health > 0 then
+                                        pcall(function()
+                                            Eventos.KnifeStabbed:FireServer()
+                                            Eventos.HandleTouched:FireServer(Alvo.Character.Head)
+                                        end)
+                                    end
+                                end
+                            end
+                        end
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 🔄 AUTO RESET AO ENCHER A BOLSA
+-- ==================================
+local AutoResetAoEncher = false -- Alterne para false se quiser desativar via UI
+local JaResetouNestaRodada = false
+
+task.spawn(function()
+    while true do
+        task.wait(0.3)
+        
+        local estaComBolsaCheia = BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia())
+        
+        -- Reseta a trava se a partida acabar ou a bolsa esvaziar
+        if not EmPartida() or not estaComBolsaCheia then
+            JaResetouNestaRodada = false
+        end
+
+        -- Validações: Toggle ativo + Não resetou ainda + Em Partida + Bolsa Cheia
+        if AutoResetAoEncher and not JaResetouNestaRodada and EmPartida() and estaComBolsaCheia then
+            JaResetouNestaRodada = true -- Evita múltiplos agendamentos de reset
+            print("💰 Bolsa cheia! Aguardando 2.5 segundos para dar Reset...")
+
+            -- ⏳ Espera os 2.5 segundos solicitados
+            task.wait(0.3)
+
+            -- Confirma se ainda está vivo e na partida antes de resetar
+            if EmPartida() then
+                print("🔄 Executando Reset...")
+                local char = player.Character
+                if char then
+                    local humanoid = char:FindFirstChildOfClass("Humanoid")
+                    if humanoid then
+                        humanoid.Health = 0 -- Reseta o personagem
+                    end
+                end
+            end
+        end
+    end
+end)
+
+-- ==================================
+-- 🎯 AUTO SHOOT + CHAMADA DIRETA DA VARIÁVEL DE INVISIBILIDADE
+-- ==================================
+
+-- 🔍 BUSCAR MURDERER NA PARTIDA
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+            
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+                
+                if eMurder then
+                    return char
+                end
+            end
+        end
+    end
+    return nil
+end
+
+-- 🔍 BUSCAR A ARMA (MÃO OU BACKPACK)
+local function ObterArma()
+    local char = player.Character
+    if not char then return nil end
+    
+    local arma = char:FindFirstChild("Gun")
+    if not arma then
+        local backpack = player:FindFirstChild("Backpack")
+        if backpack then
+            arma = backpack:FindFirstChild("Gun")
+        end
+    end
+    return arma
+end
+
+-- 🚀 LÓGICA PRINCIPAL DO SHOOT
+local function IniciarSequenciaShoot()
+    if ExecutandoShoot then return end
+
+    -- 1. Checa se a bolsa encheu e se está em partida
+    local bolsaEncheu = (BolsaCheia or (VerificarTextoBolsaCheia and VerificarTextoBolsaCheia()))
+    local emJogo = (EmPartida and EmPartida()) or true
+
+    if not (bolsaEncheu and emJogo) then
+        return
+    end
+
+    -- 2. Checa se possui a arma
+    local arma = ObterArma()
+    if not arma then return end
+
+    local char = player.Character
+    local hrp = char and char:FindFirstChild("HumanoidRootPart")
+    local hum = char and char:FindFirstChildOfClass("Humanoid")
+    local backpack = player:FindFirstChild("Backpack")
+    if not hrp or not hum or not backpack then return end
+
+    local charMurderer = ObterMurderer()
+    if not charMurderer then return end
+
 
 -- ==================================
 -- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
