@@ -107,9 +107,9 @@ local TracersESP = {}
 local DadosCargos = {}
 local UltimaChecagemCargo = 0
 
+local Players = game:GetService("Players")
 local XRayAtivo = false
-local PartesOriginais = {}
-
+local ValoresOriginais = {}
 
 --==================================================
 -- 07. VARIÁVEIS DO LOCAL PLAYER
@@ -324,31 +324,38 @@ end)
 -- 🧱 SISTEMA DO X-RAY
 -- ==================================
 local function AplicarXRay()
-    if XRayAtivo then return end
-    XRayAtivo = true
-    table.clear(ValoresOriginais)
-
     for _, Descendente in ipairs(workspace:GetDescendants()) do
         if Descendente:IsA("BasePart") and not Descendente:IsA("Terrain") then
             
-            -- ✅ IGNORA JOGADORES E SEUS OBJETOS
+            -- ✅ IGNORA PERSONAGENS DE JOGADORES (Muito mais rápido que GetFullName)
             local EhJogador = false
             for _, Jogador in ipairs(Players:GetPlayers()) do
-                if string.find(Descendente:GetFullName(), Jogador.Name, 1, true) then
+                if Jogador.Character and Descendente:IsDescendantOf(Jogador.Character) then
                     EhJogador = true
                     break
                 end
             end
-            if EhJogador then continue end
+            
+            if not EhJogador then
+                -- Salva a transparência original apenas se a parte ainda não foi salva
+                if ValoresOriginais[Descendente] == nil then
+                    ValoresOriginais[Descendente] = Descendente.Transparency
+                end
 
-            -- Só muda se não estiver já transparente
-            if Descendente.Transparency < 0.8 then
-                ValoresOriginais[Descendente] = Descendente.Transparency
-                Descendente.Transparency = 0.65 -- 65% transparente → enxerga bem
-                Descendente.LocalTransparencyModifier = 0
+                -- Aplica a transparência
+                if Descendente.Transparency < 0.65 then
+                    Descendente.Transparency = 0.65
+                    Descendente.LocalTransparencyModifier = 0
+                end
             end
         end
     end
+end
+
+local function AtivarXRay()
+    if XRayAtivo then return end
+    XRayAtivo = true
+    AplicarXRay()
 end
 
 local function RemoverXRay()
@@ -364,10 +371,10 @@ local function RemoverXRay()
     table.clear(ValoresOriginais)
 end
 
--- 🔄 ATUALIZAÇÃO CONTÍNUA
+-- 🔄 ATUALIZAÇÃO CONTÍNUA (Mapeia novas partes sem travar o código)
 task.spawn(function()
     while true do
-        task.wait(0.3)
+        task.wait(0.5)
         if XRayAtivo then
             AplicarXRay()
         end
@@ -1346,7 +1353,7 @@ CreateToggleESP(
     "X-Ray",
     "XRayAtivo",
     function()
-        AplicarXRay()
+        AtivarXRay()
     end,
     function()
         RemoverXRay()
