@@ -465,7 +465,31 @@ local CirculoAdornment = nil
 local JogadorSelecionado = nil
 local ConexaoGrabLocal = nil
 
+-- ====================================================
+-- VARIÁVEIS DA ABA SHERIFF
+-- ====================================================
 
+local AutoShoot = false
+local AutoGrabGun = false
+local ShootPredictMultiplier = 1
+
+local ShootButtonGui
+local isDragging
+local buttonStartPos
+local dragStartPos
+
+local Pressionado = false
+
+local GrabGunButtonGui = nil
+local isDraggingGrab = false
+local buttonStartPosGrab
+local dragStartPosGrab
+
+local LockCameraAtivo = false
+local MostrarCirculo = false
+local RaioFOV = 150
+
+local FOVCircle = nil
 
 
 -- ============================================================
@@ -858,6 +882,702 @@ local function SoltarJogador()
 end
 
 -- ====================================================
+-- SISTEMA DA ABA SHERIFF
+-- ====================================================
+
+local LockCameraAtivo = false
+local MostrarCirculo = false
+local RaioFOV = 150
+
+local FOVCircle = nil
+
+task.spawn(function()
+
+    local Players = game:GetService("Players")
+    local CoreGui = game:GetService("CoreGui")
+    local localPlayer = Players.LocalPlayer or Players.PlayerAdded:Wait()
+
+    local parentGui =
+        localPlayer:WaitForChild("PlayerGui", 5)
+        or CoreGui
+
+    local FOVScreen = Instance.new("ScreenGui")
+    FOVScreen.Name = "FOVCircleGui"
+    FOVScreen.ResetOnSpawn = false
+    FOVScreen.IgnoreGuiInset = true
+    FOVScreen.Parent = parentGui
+
+    FOVCircle = Instance.new("Frame")
+    FOVCircle.Name = "Circle"
+    FOVCircle.AnchorPoint = Vector2.new(0.5, 0.5)
+    FOVCircle.Position = UDim2.new(0.5, 0, 0.5, 0)
+    FOVCircle.Size = UDim2.new(0, RaioFOV, 0, RaioFOV)
+    FOVCircle.BackgroundTransparency = 1
+    FOVCircle.Visible = false
+    FOVCircle.Parent = FOVScreen
+
+    local UIStroke = Instance.new("UIStroke")
+    UIStroke.Color = Color3.fromRGB(255, 255, 255)
+    UIStroke.Thickness = 1.5
+    UIStroke.Parent = FOVCircle
+
+    local UICorner = Instance.new("UICorner")
+    UICorner.CornerRadius = UDim.new(1, 0)
+    UICorner.Parent = FOVCircle
+
+end)
+
+
+-- ==================================
+-- DETECÇÃO DA ARMA
+-- ==================================
+
+local function TemArma()
+
+    local localPlayer =
+        game:GetService("Players").LocalPlayer
+
+    if not localPlayer then
+        return false
+    end
+
+    local char = localPlayer.Character
+
+    if not char then
+        return false
+    end
+
+    local armaNoChar =
+        char:FindFirstChild("Gun")
+
+    if not armaNoChar then
+
+        for _, item in ipairs(char:GetChildren()) do
+
+            if item:IsA("Tool")
+                and item.Name:lower():find("gun") then
+
+                armaNoChar = item
+                break
+
+            end
+
+        end
+
+    end
+
+    if armaNoChar then
+        return true
+    end
+
+    local backpack =
+        localPlayer:FindFirstChild("Backpack")
+
+    if backpack then
+
+        local armaNaMochila =
+            backpack:FindFirstChild("Gun")
+
+        if not armaNaMochila then
+
+            for _, item in ipairs(backpack:GetChildren()) do
+
+                if item:IsA("Tool")
+                    and item.Name:lower():find("gun") then
+
+                    armaNaMochila = item
+                    break
+
+                end
+
+            end
+
+        end
+
+        if armaNaMochila then
+            return true
+        end
+
+    end
+
+    return false
+
+end
+
+
+-- ==================================
+-- ENCONTRAR MURDERER
+-- ==================================
+
+local function ObterMurderer()
+
+    local localPlayer =
+        game:GetService("Players").LocalPlayer
+
+    if not localPlayer then
+        return nil
+    end
+
+    for _, p in ipairs(
+        game:GetService("Players"):GetPlayers()
+    ) do
+
+        if p ~= localPlayer
+            and p.Character then
+
+            local char = p.Character
+
+            local hum =
+                char:FindFirstChildOfClass("Humanoid")
+
+            local hrp =
+                char:FindFirstChild("HumanoidRootPart")
+
+            if hum
+                and hum.Health > 0
+                and hrp then
+
+                local temFaca =
+                    char:FindFirstChild("Knife")
+                    or (
+                        p:FindFirstChild("Backpack")
+                        and p.Backpack:FindFirstChild("Knife")
+                    )
+
+                local eMurder =
+                    (p:GetAttribute("Role") == "Murderer")
+                    or (temFaca ~= nil)
+
+                if eMurder then
+                    return hrp
+                end
+
+            end
+
+        end
+
+    end
+
+    return nil
+
+end
+
+
+-- ==================================
+-- VERIFICAR FOV
+-- ==================================
+
+local function EstaDentroDoFOV(posicao3D)
+
+    local camera =
+        workspace.CurrentCamera
+
+    if not camera then
+        return false
+    end
+
+    local posTela, visivel =
+        camera:WorldToViewportPoint(posicao3D)
+
+    if not visivel then
+        return false
+    end
+
+    local centroTela =
+        Vector2.new(
+            camera.ViewportSize.X / 2,
+            camera.ViewportSize.Y / 2
+        )
+
+    local posAlvo2D =
+        Vector2.new(
+            posTela.X,
+            posTela.Y
+        )
+
+    local distanciaPixels =
+        (posAlvo2D - centroTela).Magnitude
+
+    return distanciaPixels <= (RaioFOV / 2)
+
+end
+
+
+-- ==================================
+-- AIMBOT / CÂMERA
+-- ==================================
+
+game:GetService("RunService").RenderStepped:Connect(function()
+
+    if not LockCameraAtivo
+        or not TemArma() then
+
+        return
+    end
+
+    local hrpMurderer =
+        ObterMurderer()
+
+    if hrpMurderer
+        and EstaDentroDoFOV(hrpMurderer.Position) then
+
+        local camera =
+            workspace.CurrentCamera
+
+        if camera then
+
+            local posAlvo =
+                hrpMurderer.Position
+                + Vector3.new(0, 0.5, 0)
+
+            camera.CFrame =
+                CFrame.new(
+                    camera.CFrame.Position,
+                    posAlvo
+                )
+
+        end
+
+    end
+
+end)
+
+
+-- ===========================================
+-- SHOOT MURDERER
+-- ===========================================
+
+local function GetPing()
+
+    local ok, value =
+        pcall(function()
+
+            return Stats
+                .Network
+                .ServerStatsItem["Data Ping"]
+                :GetValue()
+
+        end)
+
+    return ok and value or 100
+
+end
+
+
+local function GetMurderer()
+
+    local DataRemote =
+        ReplicatedStorage:FindFirstChild(
+            "GetPlayerData",
+            true
+        )
+
+    if not DataRemote then
+        return nil
+    end
+
+    local ok, Data =
+        pcall(function()
+            return DataRemote:InvokeServer()
+        end)
+
+    if not ok or not Data then
+        return nil
+    end
+
+    for _, Player in ipairs(
+        Players:GetPlayers()
+    ) do
+
+        if Player ~= player
+            and Player.Character
+            and Player.Character:FindFirstChild(
+                "HumanoidRootPart"
+            ) then
+
+            local Info =
+                Data[Player.Name]
+
+            if Info
+                and not Info.Killed
+                and not Info.Dead
+                and Info.Role == "Murderer" then
+
+                return Player
+
+            end
+
+        end
+
+    end
+
+    return nil
+
+end
+
+
+local function ShootMurderer()
+
+    if Pressionado then
+        return
+    end
+
+    Pressionado = true
+
+    local Char =
+        player.Character
+
+    if not Char
+        or not Char:FindFirstChild(
+            "HumanoidRootPart"
+        ) then
+
+        Pressionado = false
+        return
+    end
+
+    local Gun =
+        Char:FindFirstChild("Gun")
+        or (
+            player.Backpack
+            and player.Backpack:FindFirstChild("Gun")
+        )
+
+    if not Gun then
+        Pressionado = false
+        return
+    end
+
+    if Gun.Parent ~= Char then
+
+        Gun.Parent = Char
+        task.wait(0.05)
+
+    end
+
+    local Murderer =
+        GetMurderer()
+
+    if not Murderer
+        or not Murderer.Character then
+
+        Pressionado = false
+        return
+    end
+
+    local TargetHRP =
+        Murderer.Character:FindFirstChild(
+            "HumanoidRootPart"
+        )
+
+    local TargetTorso =
+        Murderer.Character:FindFirstChild("Torso")
+        or Murderer.Character:FindFirstChild(
+            "UpperTorso"
+        )
+
+    if not TargetHRP
+        or not TargetTorso then
+
+        Pressionado = false
+        return
+    end
+
+    local Ping =
+        GetPing()
+
+    local PredictionTime =
+        (Ping / 1000)
+        * (ShootPredictMultiplier or 1)
+
+    local Velocity =
+        TargetHRP.Velocity
+
+    local PredictedPos =
+        Velocity.Magnitude < 1
+        and TargetTorso.Position
+        or TargetTorso.Position
+            + (Velocity * PredictionTime)
+
+    local MyPos =
+        Char.HumanoidRootPart.Position
+
+    local RayDirection =
+        (PredictedPos - MyPos)
+
+    local RayParams =
+        RaycastParams.new()
+
+    RayParams.FilterType =
+        Enum.RaycastFilterType.Exclude
+
+    RayParams.FilterDescendantsInstances =
+        {
+            Char,
+            Murderer.Character
+        }
+
+    RayParams.IgnoreWater = true
+
+    local RayResult =
+        Workspace:Raycast(
+            MyPos,
+            RayDirection,
+            RayParams
+        )
+
+    local OriginCFrame
+
+    if RayResult then
+
+        local SafeOriginPos =
+            RayResult.Position
+            + (RayDirection.Unit * 1.5)
+
+        OriginCFrame =
+            CFrame.new(
+                SafeOriginPos,
+                PredictedPos
+            )
+
+    else
+
+        OriginCFrame =
+            CFrame.new(
+                MyPos,
+                PredictedPos
+            )
+
+    end
+
+    local ShootEvent =
+        Gun:FindFirstChild(
+            "ShootEvent",
+            true
+        )
+        or Gun:FindFirstChild(
+            "Shoot",
+            true
+        )
+        or ReplicatedStorage:FindFirstChild(
+            "Shoot",
+            true
+        )
+
+    if ShootEvent then
+
+        if ShootEvent:IsA("RemoteEvent") then
+
+            ShootEvent:FireServer(
+                OriginCFrame,
+                CFrame.new(PredictedPos)
+            )
+
+        elseif ShootEvent:IsA("RemoteFunction") then
+
+            ShootEvent:InvokeServer(
+                OriginCFrame,
+                CFrame.new(PredictedPos)
+            )
+
+        end
+
+    end
+
+    task.wait(0.3)
+
+    Pressionado = false
+
+end
+
+-- =============================
+-- BOTAO SHOOT MURDERER 
+-- =============================
+local function CreateShootButton()
+
+    if ShootButtonGui then
+        return
+    end
+
+    local ParentGui = CoreGui
+
+    pcall(function()
+
+        if not CoreGui then
+            ParentGui =
+                player:WaitForChild("PlayerGui")
+        end
+
+    end)
+
+    local GuiBtn =
+        Instance.new("ScreenGui")
+
+    GuiBtn.Name =
+        "AstralX_ShootButton"
+
+    GuiBtn.ResetOnSpawn = false
+
+    GuiBtn.ZIndexBehavior =
+        Enum.ZIndexBehavior.Sibling
+
+    GuiBtn.Parent = ParentGui
+
+
+    local Btn =
+        Instance.new("ImageButton")
+
+    Btn.Size =
+        UDim2.new(0, 110, 0, 42)
+
+    Btn.Position =
+        UDim2.new(
+            0.5,
+            -55,
+            0.6,
+            -21
+        )
+
+    Btn.BackgroundColor3 =
+        Color3.fromRGB(0, 0, 0)
+
+    Btn.BackgroundTransparency =
+        0.4
+
+    Btn.Parent = GuiBtn
+
+
+    local Corner =
+        Instance.new("UICorner")
+
+    Corner.CornerRadius =
+        UDim.new(0, 10)
+
+    Corner.Parent = Btn
+
+
+    local Borda =
+        Instance.new("UIStroke")
+
+    Borda.Color =
+        Color3.fromRGB(0, 0, 0)
+
+    Borda.Thickness = 2
+
+    Borda.ApplyStrokeMode =
+        Enum.ApplyStrokeMode.Border
+
+    Borda.Parent = Btn
+
+
+    local Texto =
+        Instance.new("TextLabel")
+
+    Texto.Size =
+        UDim2.new(1, 0, 1, 0)
+
+    Texto.BackgroundTransparency = 1
+
+    Texto.Text =
+        "Silent AIM"
+
+    Texto.TextColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Texto.TextSize = 15
+
+    Texto.Font =
+        Enum.Font.GothamBold
+
+    Texto.Parent = Btn
+
+
+    -- Arrastar
+    Btn.InputBegan:Connect(function(Input)
+
+        if Input.UserInputType ==
+            Enum.UserInputType.Touch
+            or Input.UserInputType ==
+            Enum.UserInputType.MouseButton1 then
+
+            isDragging = true
+
+            buttonStartPos =
+                Btn.Position
+
+            dragStartPos =
+                Input.Position
+
+            Input.Changed:Connect(function()
+
+                if Input.UserInputState ==
+                    Enum.UserInputState.End then
+
+                    isDragging = false
+
+                end
+
+            end)
+
+        end
+
+    end)
+
+
+    Btn.InputChanged:Connect(function(Input)
+
+        if isDragging
+            and (
+                Input.UserInputType ==
+                    Enum.UserInputType.Touch
+                or Input.UserInputType ==
+                    Enum.UserInputType.MouseMovement
+            ) then
+
+            Btn.Position =
+                buttonStartPos
+                + UDim2.fromOffset(
+                    Input.Position.X
+                        - dragStartPos.X,
+
+                    Input.Position.Y
+                        - dragStartPos.Y
+                )
+
+        end
+
+    end)
+
+
+    -- Clique
+    Btn.MouseButton1Click:Connect(function()
+
+        if not isDragging then
+            ShootMurderer()
+        end
+
+    end)
+
+
+    ShootButtonGui =
+        GuiBtn
+
+end
+
+
+local function RemoveShootButton()
+
+    if ShootButtonGui then
+
+        ShootButtonGui:Destroy()
+
+        ShootButtonGui = nil
+
+    end
+
+end
+
+-- ====================================================
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
 
@@ -1027,4 +1747,131 @@ Aba_Murderer:Toggle({
     end
 })
 
+-- ===================================
+-- BOTOES DA ABA SHERIFF
+-- ===================================
+Aba_Sheriff:Section({
+    Title = "SHERIFF",
+    Box = false,
+    TextSize = 18,
+})
 
+Aba_Sheriff:Toggle({
+    Title = "Silent AIM Button",
+    Desc = "Adiciona um botão na tela que ao clicar atira no assassino",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        AutoShoot = Ativo
+
+        if Ativo then
+            CreateShootButton()
+        else
+            RemoveShootButton()
+        end
+
+    end
+})
+
+
+Aba_Sheriff:Toggle({
+    Title = "Instant Shoot Beta!",
+    Desc = "Adiciona um botão na tela que ao clicar teleporta atras do assassino e atira nele",
+    Default = false,
+
+    Callback = function(State)
+
+        InstantShootAtivo = State
+
+    end
+})
+
+
+Aba_Sheriff:Toggle({
+    Title = "Grab Gun Button",
+    Desc = "Adicionar um botão na tela que ao clicar traz a Gun para seu personagem",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        if Ativo then
+            CreateGrabGunButton()
+        else
+            RemoveGrabGunButton()
+        end
+
+    end
+})
+
+
+Aba_Sheriff:Toggle({
+    Title = "Grab Gun",
+    Desc = "Verifca se a Gun esta no chão e traz ela pra você",
+    Default = false,
+
+    Callback = function(Ativo)
+
+        AutoGrabGun = Ativo
+
+    end
+})
+
+
+Aba_Sheriff:Toggle({
+    Title = "Aimbot",
+    Desc = "Centraliza a mira no peito do assassino",
+    Default = false,
+
+    Callback = function(State)
+
+        LockCameraAtivo = State
+
+    end
+})
+
+
+Aba_Sheriff:Slider({
+    Title = "FOV",
+    Desc = "Ajuste o Aimbot",
+
+    Value = {
+        Min = 50,
+        Max = 500,
+        Default = 150,
+        Step = 5
+    },
+
+    Callback = function(Valor)
+
+        RaioFOV = Valor
+
+        if FOVCircle then
+            FOVCircle.Size =
+                UDim2.new(
+                    0,
+                    Valor,
+                    0,
+                    Valor
+                )
+        end
+
+    end
+})
+
+
+Aba_Sheriff:Toggle({
+    Title = "FOV Cicle",
+    Desc = "Adiciona o Fov na tela",
+    Default = false,
+
+    Callback = function(State)
+
+        MostrarCirculo = State
+
+        if FOVCircle then
+            FOVCircle.Visible = State
+        end
+
+    end
+})
