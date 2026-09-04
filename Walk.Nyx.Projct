@@ -1,0 +1,526 @@
+-- ============================================================
+-- 🌹 ASTRAL X HUB — INTERFACE
+-- SOMENTE INTERFACE
+-- ============================================================
+
+local Players = game:GetService("Players")
+
+local player = Players.LocalPlayer
+
+-- ============================================================
+-- 📦 CARREGAR WINDUI
+-- ============================================================
+
+local WindUI = loadstring(game:HttpGet(
+    "https://raw.githubusercontent.com/Footagesus/WindUI/refs/heads/main/dist/main.lua"
+))()
+
+-- ============================================================
+-- 🌈 GRADIENTE
+-- ============================================================
+
+local function gradient(text, startColor, endColor)
+
+    local result = ""
+    local length = #text
+
+    for i = 1, length do
+
+        local t =
+            (i - 1) /
+            math.max(length - 1, 1)
+
+        local r = math.floor(
+            (startColor.R +
+            (endColor.R - startColor.R) * t) * 255
+        )
+
+        local g = math.floor(
+            (startColor.G +
+            (endColor.G - startColor.G) * t) * 255
+        )
+
+        local b = math.floor(
+            (startColor.B +
+            (endColor.B - startColor.B) * t) * 255
+        )
+
+        result =
+            result
+            .. '<font color="rgb('
+            .. r .. ", "
+            .. g .. ", "
+            .. b
+            .. ')">'
+            .. text:sub(i, i)
+            .. "</font>"
+
+    end
+
+    return result
+
+end
+
+-- ============================================================
+-- 🎨 CONFIGURAÇÃO VISUAL
+-- ============================================================
+
+local WindowTransparency = 0.95
+
+local MainColor =
+    Color3.fromHex("#000000")
+
+-- ============================================================
+-- 🎨 TEMAS
+-- ============================================================
+
+local CoresAstral = {
+
+    ["Dark"] = {
+        Accent = "#FFFFFF",
+        Button = "#FFFFFF",
+        Icon = "#FFFFFF",
+    },
+
+    ["Ruby"] = {
+        Accent = "#E53935",
+        Button = "#E53935",
+        Icon = "#E53935",
+    },
+
+    ["Ametista"] = {
+        Accent = "#B026FF",
+        Button = "#B026FF",
+        Icon = "#B026FF",
+    },
+
+    ["Verde Água"] = {
+        Accent = "#2EE6A6",
+        Button = "#2EE6A6",
+        Icon = "#2EE6A6",
+    },
+
+    ["Azul Gelo"] = {
+        Accent = "#A5F2F3",
+        Button = "#A5F2F3",
+        Icon = "#A5F2F3",
+    },
+
+    ["Roxo Neon"] = {
+        Accent = "#BF00FF",
+        Button = "#BF00FF",
+        Icon = "#BF00FF",
+    },
+
+    ["Rosa Neon"] = {
+        Accent = "#FF1493",
+        Button = "#FF1493",
+        Icon = "#FF1493",
+    },
+
+    ["Laranja Neon"] = {
+        Accent = "#FF5F00",
+        Button = "#FF5F00",
+        Icon = "#FF5F00",
+    },
+
+    ["Amarelo Neon"] = {
+        Accent = "#FFFF00",
+        Button = "#FFFF00",
+        Icon = "#FFFF00",
+    },
+
+    ["Turquesa"] = {
+        Accent = "#40E0D0",
+        Button = "#40E0D0",
+        Icon = "#40E0D0",
+    },
+
+    ["Lavanda"] = {
+        Accent = "#B57EDC",
+        Button = "#B57EDC",
+        Icon = "#B57EDC",
+    },
+
+    ["Coral"] = {
+        Accent = "#FF7F50",
+        Button = "#FF7F50",
+        Icon = "#FF7F50",
+    },
+
+    ["Dourado"] = {
+        Accent = "#FFD700",
+        Button = "#FFD700",
+        Icon = "#FFD700",
+    },
+
+    ["Violeta"] = {
+        Accent = "#7F00FF",
+        Button = "#7F00FF",
+        Icon = "#7F00FF",
+    },
+
+    ["Pink"] = {
+        Accent = "#FF69B4",
+        Button = "#FF69B4",
+        Icon = "#FF69B4",
+    },
+
+    ["Verde"] = {
+        Accent = "#1BF2B2",
+        Button = "#1BF2B2",
+        Icon = "#1BF2B2",
+    },
+
+    ["Azul"] = {
+        Accent = "#1B9CF2",
+        Button = "#1B9CF2",
+        Icon = "#1B9CF2",
+    },
+
+    ["Roxo"] = {
+        Accent = "#9B5CFF",
+        Button = "#9B5CFF",
+        Icon = "#9B5CFF",
+    },
+
+    ["Rosa"] = {
+        Accent = "#FF4FA3",
+        Button = "#FF4FA3",
+        Icon = "#FF4FA3",
+    },
+
+    ["Vermelho"] = {
+        Accent = "#FF4545",
+        Button = "#FF4545",
+        Icon = "#FF4545",
+    },
+
+    ["Laranja"] = {
+        Accent = "#FF8A00",
+        Button = "#FF8A00",
+        Icon = "#FF8A00",
+    },
+
+    ["Amarelo"] = {
+        Accent = "#FFD21F",
+        Button = "#FFD21F",
+        Icon = "#FFD21F",
+    },
+
+    ["Ciano"] = {
+        Accent = "#00D9FF",
+        Button = "#00D9FF",
+        Icon = "#00D9FF",
+    },
+
+    ["Prata"] = {
+        Accent = "#C0C0C0",
+        Button = "#C0C0C0",
+        Icon = "#C0C0C0",
+    },
+
+}
+
+-- ============================================================
+-- 🎨 REGISTRAR TEMAS
+-- ============================================================
+
+for Nome, Cor in pairs(CoresAstral) do
+
+    WindUI:AddTheme({
+
+        Name = "Astral_" .. Nome,
+
+        Background = "#18181B",
+
+        Accent = Cor.Accent,
+        Button = Cor.Button,
+        Icon = Cor.Icon,
+
+        Text = "#FFFFFF",
+        Placeholder = "#888888",
+        Outline = "#303036",
+
+    })
+
+end
+
+-- ============================================================
+-- ❤️ TEMA INICIAL
+-- ============================================================
+
+local CorSelecionada = "Ruby"
+
+-- ============================================================
+-- 🪟 WINDOW
+-- ============================================================
+
+local Window = WindUI:CreateWindow({
+
+    Title = gradient(
+        "Walker Nyx Project",
+        Color3.fromHex("#FFFFFF"),
+        Color3.fromHex("#CCCCCC")
+    ),
+
+    Icon = "star",
+
+    Author = gradient(
+        "Script MM2 Keyless",
+        Color3.fromHex("#1BF2B2"),
+        Color3.fromHex("#1BCBF2")
+    ),
+
+    Size = UDim2.fromOffset(480, 340),
+
+    MinSize = Vector2.new(420, 300),
+
+    Transparent = true,
+
+    Transparency = WindowTransparency,
+
+    Theme = "Astral_Ruby",
+
+    SideBarWidth = 120,
+
+    HasOutline = true,
+
+    HideSearchBar = true,
+
+})
+
+-- ============================================================
+-- 🎨 CONFIGURAR WINDOW
+-- ============================================================
+
+pcall(function()
+
+    if Window.UIElements then
+
+        if Window.UIElements.Main then
+
+            Window.UIElements.Main.BackgroundColor3 =
+                MainColor
+
+            Window.UIElements.Main.BackgroundTransparency =
+                WindowTransparency
+
+        end
+
+        if Window.UIElements.SideBar then
+
+            Window.UIElements.SideBar.BackgroundColor3 =
+                Color3.fromHex("#141417")
+
+            Window.UIElements.SideBar.BackgroundTransparency =
+                WindowTransparency
+
+            Window.UIElements.SideBar.ClipsDescendants =
+                true
+
+            local Corner =
+                Window.UIElements.SideBar
+                :FindFirstChildOfClass("UICorner")
+
+            if Corner then
+
+                Corner.CornerRadius =
+                    UDim.new(0, 18)
+
+            else
+
+                Corner =
+                    Instance.new("UICorner")
+
+                Corner.CornerRadius =
+                    UDim.new(0, 18)
+
+                Corner.Parent =
+                    Window.UIElements.SideBar
+
+            end
+
+        end
+
+    elseif Window.Frame then
+
+        Window.Frame.BackgroundColor3 =
+            MainColor
+
+        Window.Frame.BackgroundTransparency =
+            WindowTransparency
+
+    end
+
+end)
+
+-- ============================================================
+-- 🖼️ IMAGEM DE FUNDO
+-- ============================================================
+
+pcall(function()
+
+    if not Window.UIElements
+        or not Window.UIElements.Main then
+
+        return
+
+    end
+
+    local Main =
+        Window.UIElements.Main
+
+    local Background =
+        Instance.new("ImageLabel")
+
+    Background.Name =
+        "AstralXBackground"
+
+    Background.Size =
+        UDim2.new(1, 0, 1, 0)
+
+    Background.Position =
+        UDim2.new(0, 0, 0, 0)
+
+    Background.BackgroundTransparency =
+        1
+
+    Background.BorderSizePixel =
+        0
+
+    Background.Image =
+        "rbxassetid://84578192283648"
+
+    Background.ImageTransparency =
+        0
+
+    Background.ImageColor3 =
+        Color3.fromRGB(255, 255, 255)
+
+    Background.ScaleType =
+        Enum.ScaleType.Crop
+
+    local ImageCorner =
+        Instance.new("UICorner")
+
+    ImageCorner.Name =
+        "AstralXImageCorner"
+
+    ImageCorner.CornerRadius =
+        UDim.new(0, 18)
+
+    ImageCorner.Parent =
+        Background
+
+    Background.ZIndex =
+        1
+
+    Background.Parent =
+        Main
+
+end)
+
+-- ============================================================
+-- ❤️ BOTÃO FLUTUANTE
+-- ============================================================
+
+local OpenButton =
+    Window:EditOpenButton({
+
+        Title = "Walker Nyx",
+
+        Icon = "star",
+
+        CornerRadius =
+            UDim.new(0, 12),
+
+        StrokeThickness = 2,
+
+        Color = ColorSequence.new(
+
+            Color3.fromHex("#9B111E"),
+
+            Color3.fromHex("#FF4D5A")
+
+        ),
+
+        Draggable = true,
+
+    })
+
+-- ============================================================
+-- 📑 ABAS
+-- ============================================================
+
+local Aba_Murderer = Window:Tab({
+
+    Title = "Murderer",
+
+    Icon = "swords",
+
+})
+
+local Aba_Sheriff = Window:Tab({
+
+    Title = "Sheriff",
+
+    Icon = "crosshair",
+
+})
+
+local Aba_AutoFarm = Window:Tab({
+
+    Title = "Auto Farm",
+
+    Icon = "coins",
+
+})
+
+local Aba_ESP = Window:Tab({
+
+    Title = "ESP",
+
+    Icon = "eye",
+
+})
+
+local Aba_LocalPlayer = Window:Tab({
+
+    Title = "Local Player",
+
+    Icon = "user",
+
+})
+
+local Aba_Camera = Window:Tab({
+
+    Title = "Camera",
+
+    Icon = "camera",
+
+})
+
+local Aba_Trollagem = Window:Tab({
+
+    Title = "Trollagem",
+
+    Icon = "laugh",
+
+})
+
+local Aba_Tele = Window:Tab({
+
+    Title = "Teleporte",
+
+    Icon = "globe",
+
+})
+
+local Aba_Config = Window:Tab({
+
+    Title = "Config UI",
+
+    Icon = "settings",
+
+})
