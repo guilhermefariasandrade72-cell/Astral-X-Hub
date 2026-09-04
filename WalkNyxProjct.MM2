@@ -509,16 +509,18 @@ local function AtivarSpeedGlitch()
         local r = c:FindFirstChild("HumanoidRootPart")
         if not h or not r then return end
 
-        local estaNoChao = h.FloorMaterial ~= Enum.Material.Air
+        local estaNoChao = (h.FloorMaterial ~= Enum.Material.Air)
 
-        -- ✅ SAIU DO CHÃO → AUMENTA VELOCIDADE
-        if not estaNoChao and UltimoEstadoChao then
-            h.WalkSpeed = SpeedNoAr
-        end
-
-        -- ✅ TOCOU O CHÃO → VOLTA AO NORMAL
-        if estaNoChao and not UltimoEstadoChao then
-            h.WalkSpeed = SpeedNormal
+        if not estaNoChao then
+            -- Enquanto estiver no ar, força continuamente a velocidade no ar
+            if h.WalkSpeed ~= SpeedNoAr then
+                h.WalkSpeed = SpeedNoAr
+            end
+        else
+            -- Quando estiver no chão, mantém a velocidade normal
+            if h.WalkSpeed ~= SpeedNormal then
+                h.WalkSpeed = SpeedNormal
+            end
         end
 
         UltimoEstadoChao = estaNoChao
@@ -555,6 +557,7 @@ player.CharacterAdded:Connect(function()
         AtivarSpeedGlitch()
     end
 end)
+
 
 --==================================================
 -- 09. INTERFACE WALK NYX
