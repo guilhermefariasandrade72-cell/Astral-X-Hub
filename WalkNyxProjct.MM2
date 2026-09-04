@@ -1,1 +1,1115 @@
+--==================================================
+-- WALK NYX PROJECT
+-- INTERFACE APENAS
+-- SEM SISTEMAS DENTRO DAS ABAS
+--==================================================
 
+--==================================================
+-- CONFIGURAÇÕES
+--==================================================
+
+local WINDOW_WIDTH = 550
+local WINDOW_HEIGHT = 350
+
+local GUI_NAME = "WalkNyxProject"
+
+local BackgroundColor = Color3.fromRGB(8, 8, 10)
+local SecondaryColor = Color3.fromRGB(16, 16, 19)
+local ButtonColor = Color3.fromRGB(23, 23, 27)
+local White = Color3.fromRGB(255, 255, 255)
+
+local Players = game:GetService("Players")
+local UserInputService = game:GetService("UserInputService")
+
+local player = Players.LocalPlayer
+
+
+--==================================================
+-- LIMPAR INTERFACE ANTIGA
+--==================================================
+
+pcall(function()
+
+    local Old = game.CoreGui:FindFirstChild(GUI_NAME)
+
+    if Old then
+        Old:Destroy()
+    end
+
+end)
+
+
+--==================================================
+-- FUNÇÕES VISUAIS
+--==================================================
+
+local function Round(Object, Radius)
+
+    local Corner = Instance.new("UICorner")
+
+    Corner.CornerRadius = UDim.new(0, Radius)
+
+    Corner.Parent = Object
+
+    return Corner
+end
+
+
+local function AddStroke(Object, Transparency, Thickness)
+
+    local UIStroke = Instance.new("UIStroke")
+
+    UIStroke.Color = White
+    UIStroke.Transparency = Transparency or 0
+    UIStroke.Thickness = Thickness or 1
+
+    UIStroke.Parent = Object
+
+    return UIStroke
+end
+
+
+--==================================================
+-- SCREEN GUI
+--==================================================
+
+local ScreenGui = Instance.new("ScreenGui")
+
+ScreenGui.Name = GUI_NAME
+ScreenGui.ResetOnSpawn = false
+ScreenGui.IgnoreGuiInset = true
+ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+
+ScreenGui.Parent = game.CoreGui
+
+
+--==================================================
+-- JANELA PRINCIPAL
+--==================================================
+
+local Main = Instance.new("Frame")
+
+Main.Name = "Main"
+
+Main.Size = UDim2.fromOffset(
+    WINDOW_WIDTH,
+    WINDOW_HEIGHT
+)
+
+Main.Position = UDim2.new(
+    0.5,
+    -WINDOW_WIDTH / 2,
+    0.5,
+    -WINDOW_HEIGHT / 2
+)
+
+Main.BackgroundColor3 = BackgroundColor
+Main.BorderSizePixel = 0
+Main.ClipsDescendants = true
+Main.Active = true
+
+Main.Parent = ScreenGui
+
+Round(Main, 16)
+AddStroke(Main, 0.15, 1.5)
+
+
+--==================================================
+-- TOP BAR
+--==================================================
+
+local TopBar = Instance.new("Frame")
+
+TopBar.Name = "TopBar"
+
+TopBar.Size = UDim2.new(1, 0, 0, 52)
+
+TopBar.BackgroundTransparency = 1
+TopBar.BorderSizePixel = 0
+
+TopBar.ZIndex = 10
+
+TopBar.Parent = Main
+
+
+--==================================================
+-- TÍTULO
+--==================================================
+
+local Title = Instance.new("TextLabel")
+
+Title.Name = "Title"
+
+Title.BackgroundTransparency = 1
+
+Title.Position = UDim2.fromOffset(15, 5)
+
+Title.Size = UDim2.fromOffset(300, 42)
+
+Title.Text = "Walk Nyx Project"
+
+Title.TextColor3 = White
+Title.TextSize = 19
+Title.Font = Enum.Font.GothamBold
+
+Title.TextXAlignment = Enum.TextXAlignment.Left
+
+Title.ZIndex = 11
+
+Title.Parent = TopBar
+
+
+--==================================================
+-- BOTÃO MINIMIZAR
+--==================================================
+
+local Minimize = Instance.new("TextButton")
+
+Minimize.Name = "Minimize"
+
+Minimize.Size = UDim2.fromOffset(35, 32)
+
+Minimize.Position =
+    UDim2.new(1, -82, 0, 10)
+
+Minimize.BackgroundColor3 = ButtonColor
+Minimize.BackgroundTransparency = 0.15
+Minimize.BorderSizePixel = 0
+
+Minimize.Text = "—"
+
+Minimize.TextColor3 = White
+Minimize.TextSize = 18
+Minimize.Font = Enum.Font.GothamBold
+
+Minimize.AutoButtonColor = false
+
+Minimize.ZIndex = 12
+
+Minimize.Parent = TopBar
+
+Round(Minimize, 9)
+AddStroke(Minimize, 0.45, 1)
+
+
+--==================================================
+-- BOTÃO FECHAR
+--==================================================
+
+local Close = Instance.new("TextButton")
+
+Close.Name = "Close"
+
+Close.Size = UDim2.fromOffset(35, 32)
+
+Close.Position =
+    UDim2.new(1, -42, 0, 10)
+
+Close.BackgroundColor3 = ButtonColor
+Close.BackgroundTransparency = 0.15
+Close.BorderSizePixel = 0
+
+Close.Text = "X"
+
+Close.TextColor3 = White
+Close.TextSize = 14
+Close.Font = Enum.Font.GothamBold
+
+Close.AutoButtonColor = false
+
+Close.ZIndex = 12
+
+Close.Parent = TopBar
+
+Round(Close, 9)
+AddStroke(Close, 0.45, 1)
+
+
+--==================================================
+-- CONTEÚDO
+--==================================================
+
+local Content = Instance.new("Frame")
+
+Content.Name = "Content"
+
+Content.Position = UDim2.fromOffset(8, 58)
+
+Content.Size = UDim2.new(
+    1,
+    -16,
+    1,
+    -66
+)
+
+Content.BackgroundTransparency = 1
+Content.BorderSizePixel = 0
+
+Content.ZIndex = 2
+
+Content.Parent = Main
+
+
+--==================================================
+-- SIDEBAR
+--==================================================
+
+local Sidebar = Instance.new("Frame")
+
+Sidebar.Name = "Sidebar"
+
+Sidebar.Size = UDim2.fromOffset(145, 284)
+
+Sidebar.Position = UDim2.fromOffset(0, 0)
+
+Sidebar.BackgroundColor3 = SecondaryColor
+Sidebar.BackgroundTransparency = 0.12
+
+Sidebar.BorderSizePixel = 0
+
+Sidebar.ZIndex = 3
+
+Sidebar.Parent = Content
+
+Round(Sidebar, 12)
+AddStroke(Sidebar, 0.55, 1)
+
+
+--==================================================
+-- PERFIL
+--==================================================
+
+local Profile = Instance.new("Frame")
+
+Profile.Name = "Profile"
+
+Profile.Size =
+    UDim2.new(1, -14, 0, 52)
+
+Profile.Position =
+    UDim2.fromOffset(7, 7)
+
+Profile.BackgroundColor3 = ButtonColor
+Profile.BackgroundTransparency = 0.15
+
+Profile.BorderSizePixel = 0
+
+Profile.ZIndex = 4
+
+Profile.Parent = Sidebar
+
+Round(Profile, 10)
+
+
+--==================================================
+-- AVATAR
+--==================================================
+
+local Avatar = Instance.new("ImageLabel")
+
+Avatar.Name = "Avatar"
+
+Avatar.Size = UDim2.fromOffset(38, 38)
+
+Avatar.Position =
+    UDim2.fromOffset(7, 7)
+
+Avatar.BackgroundColor3 =
+    Color3.fromRGB(30, 30, 35)
+
+Avatar.BorderSizePixel = 0
+
+Avatar.ZIndex = 5
+
+Avatar.Parent = Profile
+
+Round(Avatar, 10)
+
+pcall(function()
+
+    Avatar.Image =
+        "https://www.roblox.com/headshot-thumbnail/image?userId="
+        .. player.UserId
+        .. "&width=420&height=420&format=png"
+
+end)
+
+
+--==================================================
+-- NOME
+--==================================================
+
+local ProfileName = Instance.new("TextLabel")
+
+ProfileName.Name = "ProfileName"
+
+ProfileName.BackgroundTransparency = 1
+
+ProfileName.Position =
+    UDim2.fromOffset(52, 5)
+
+ProfileName.Size =
+    UDim2.new(1, -57, 0, 22)
+
+ProfileName.Text =
+    player.DisplayName
+
+ProfileName.TextColor3 = White
+ProfileName.TextSize = 13
+ProfileName.Font = Enum.Font.GothamBold
+
+ProfileName.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+ProfileName.ZIndex = 5
+
+ProfileName.Parent = Profile
+
+
+--==================================================
+-- USERNAME
+--==================================================
+
+local Username = Instance.new("TextLabel")
+
+Username.Name = "Username"
+
+Username.BackgroundTransparency = 1
+
+Username.Position =
+    UDim2.fromOffset(52, 26)
+
+Username.Size =
+    UDim2.new(1, -57, 0, 18)
+
+Username.Text =
+    "@" .. player.Name
+
+Username.TextColor3 =
+    Color3.fromRGB(160, 160, 165)
+
+Username.TextSize = 10
+Username.Font = Enum.Font.Gotham
+
+Username.TextXAlignment =
+    Enum.TextXAlignment.Left
+
+Username.ZIndex = 5
+
+Username.Parent = Profile
+
+
+--==================================================
+-- SCROLL DAS ABAS
+--==================================================
+
+local TabScroll = Instance.new("ScrollingFrame")
+
+TabScroll.Name = "TabScroll"
+
+TabScroll.Position =
+    UDim2.fromOffset(7, 66)
+
+TabScroll.Size =
+    UDim2.new(1, -14, 1, -73)
+
+TabScroll.BackgroundTransparency = 1
+
+TabScroll.BorderSizePixel = 0
+
+TabScroll.ScrollBarThickness = 3
+
+TabScroll.ScrollBarImageColor3 = White
+TabScroll.ScrollBarImageTransparency = 0.45
+
+TabScroll.CanvasSize =
+    UDim2.new(0, 0, 0, 0)
+
+TabScroll.AutomaticCanvasSize =
+    Enum.AutomaticSize.Y
+
+TabScroll.ScrollingDirection =
+    Enum.ScrollingDirection.Y
+
+TabScroll.ZIndex = 4
+
+TabScroll.Parent = Sidebar
+
+
+--==================================================
+-- LAYOUT DAS ABAS
+--==================================================
+
+local TabLayout = Instance.new("UIListLayout")
+
+TabLayout.Padding =
+    UDim.new(0, 6)
+
+TabLayout.HorizontalAlignment =
+    Enum.HorizontalAlignment.Center
+
+TabLayout.SortOrder =
+    Enum.SortOrder.LayoutOrder
+
+TabLayout.Parent = TabScroll
+
+
+--==================================================
+-- CONTAINER DAS PÁGINAS
+--==================================================
+
+local PageContainer = Instance.new("Frame")
+
+PageContainer.Name = "PageContainer"
+
+PageContainer.Position =
+    UDim2.fromOffset(153, 0)
+
+PageContainer.Size =
+    UDim2.new(1, -153, 1, 0)
+
+PageContainer.BackgroundColor3 =
+    SecondaryColor
+
+PageContainer.BackgroundTransparency = 0.18
+
+PageContainer.BorderSizePixel = 0
+
+PageContainer.ClipsDescendants = true
+
+PageContainer.ZIndex = 3
+
+PageContainer.Parent = Content
+
+Round(PageContainer, 12)
+AddStroke(PageContainer, 0.55, 1)
+
+
+--==================================================
+-- NOMES DAS ABAS
+--==================================================
+
+local TabNames = {
+
+    "Murderer",
+    "Sheriff",
+    "Auto Farm",
+    "ESP",
+    "Local Player",
+    "Info"
+
+}
+
+
+--==================================================
+-- PÁGINAS
+--==================================================
+
+local Pages = {}
+
+
+local function CreatePage(Name)
+
+    local Page = Instance.new("ScrollingFrame")
+
+    Page.Name =
+        Name .. "Page"
+
+    Page.Size =
+        UDim2.new(1, -10, 1, -10)
+
+    Page.Position =
+        UDim2.fromOffset(5, 5)
+
+    Page.BackgroundTransparency = 1
+
+    Page.BorderSizePixel = 0
+
+    Page.ScrollBarThickness = 3
+
+    Page.ScrollBarImageColor3 = White
+
+    Page.ScrollBarImageTransparency = 0.5
+
+    Page.CanvasSize =
+        UDim2.new(0, 0, 0, 0)
+
+    Page.AutomaticCanvasSize =
+        Enum.AutomaticSize.Y
+
+    Page.ScrollingDirection =
+        Enum.ScrollingDirection.Y
+
+    Page.Visible = false
+
+    Page.ZIndex = 4
+
+    Page.Parent = PageContainer
+
+
+    -- Layout automático
+
+    local Layout = Instance.new("UIListLayout")
+
+    Layout.Name =
+        "ContentLayout"
+
+    Layout.Padding =
+        UDim.new(0, 7)
+
+    Layout.HorizontalAlignment =
+        Enum.HorizontalAlignment.Center
+
+    Layout.SortOrder =
+        Enum.SortOrder.LayoutOrder
+
+    Layout.Parent = Page
+
+
+    -- Espaçamento
+
+    local Padding = Instance.new("UIPadding")
+
+    Padding.Name =
+        "ContentPadding"
+
+    Padding.PaddingTop =
+        UDim.new(0, 5)
+
+    Padding.PaddingBottom =
+        UDim.new(0, 5)
+
+    Padding.PaddingLeft =
+        UDim.new(0, 3)
+
+    Padding.PaddingRight =
+        UDim.new(0, 3)
+
+    Padding.Parent = Page
+
+
+    Pages[Name] = Page
+
+    return Page
+
+end
+
+
+--==================================================
+-- CRIA TODAS AS PÁGINAS
+--==================================================
+
+for _, Name in ipairs(TabNames) do
+
+    CreatePage(Name)
+
+end
+
+
+-- Primeira aba
+
+Pages["Murderer"].Visible = true
+
+
+--==================================================
+-- CRIAR BOTÕES DAS ABAS
+-- SOMENTE TEXTO
+--==================================================
+
+local function CreateTabButton(Name)
+
+    local Button = Instance.new("TextButton")
+
+    Button.Name =
+        Name .. "Tab"
+
+    Button.Size =
+        UDim2.new(1, -4, 0, 38)
+
+    Button.BackgroundColor3 =
+        ButtonColor
+
+    Button.BackgroundTransparency =
+        0.15
+
+    Button.BorderSizePixel = 0
+
+    Button.Text = Name
+
+    Button.TextColor3 =
+        White
+
+    Button.TextSize = 13
+
+    Button.Font =
+        Enum.Font.GothamMedium
+
+    Button.TextXAlignment =
+        Enum.TextXAlignment.Left
+
+    Button.AutoButtonColor = false
+
+    Button.ZIndex = 5
+
+    Button.Parent = TabScroll
+
+    Round(Button, 9)
+
+    AddStroke(Button, 0.75, 1)
+
+
+    local Padding = Instance.new("UIPadding")
+
+    Padding.PaddingLeft =
+        UDim.new(0, 12)
+
+    Padding.Parent = Button
+
+
+    Button.MouseButton1Click:Connect(function()
+
+        for PageName, Page in pairs(Pages) do
+
+            Page.Visible =
+                PageName == Name
+
+        end
+
+
+        for _, OtherButton in ipairs(
+            TabScroll:GetChildren()
+        ) do
+
+            if OtherButton:IsA("TextButton") then
+
+                OtherButton.BackgroundColor3 =
+                    ButtonColor
+
+            end
+
+        end
+
+
+        Button.BackgroundColor3 =
+            Color3.fromRGB(35, 35, 40)
+
+    end)
+
+
+    return Button
+
+end
+
+
+--==================================================
+-- CRIA AS ABAS
+--==================================================
+
+for _, Name in ipairs(TabNames) do
+
+    CreateTabButton(Name)
+
+end
+
+
+--==================================================
+-- BOTÃO FLUTUANTE NYX
+--==================================================
+
+local FloatingButton = Instance.new("TextButton")
+
+FloatingButton.Name =
+    "NyxButton"
+
+FloatingButton.Size =
+    UDim2.fromOffset(58, 58)
+
+FloatingButton.Position =
+    UDim2.new(0, 20, 0.5, -29)
+
+FloatingButton.BackgroundColor3 =
+    Color3.fromRGB(15, 15, 18)
+
+FloatingButton.BorderSizePixel = 0
+
+FloatingButton.Text =
+    "Nyx"
+
+FloatingButton.TextColor3 =
+    White
+
+FloatingButton.TextSize = 15
+
+FloatingButton.Font =
+    Enum.Font.GothamBold
+
+FloatingButton.AutoButtonColor =
+    false
+
+FloatingButton.ZIndex = 50
+
+FloatingButton.Parent =
+    ScreenGui
+
+Round(FloatingButton, 12)
+AddStroke(FloatingButton, 0.15, 1.5)
+
+
+--==================================================
+-- ABRIR / FECHAR PELO NYX
+--==================================================
+
+FloatingButton.MouseButton1Click:Connect(function()
+
+    Main.Visible = not Main.Visible
+
+end)
+
+
+--==================================================
+-- ARRASTAR BOTÃO NYX
+--==================================================
+
+local DraggingNyx = false
+
+local NyxDragStart
+local NyxStartPosition
+
+
+FloatingButton.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        DraggingNyx = true
+
+        NyxDragStart = Input.Position
+        NyxStartPosition = FloatingButton.Position
+
+        Input.Changed:Connect(function()
+
+            if Input.UserInputState ==
+                Enum.UserInputState.End then
+
+                DraggingNyx = false
+
+            end
+
+        end)
+
+    end
+
+end)
+
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not DraggingNyx then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta =
+            Input.Position - NyxDragStart
+
+        FloatingButton.Position =
+            UDim2.new(
+                NyxStartPosition.X.Scale,
+                NyxStartPosition.X.Offset + Delta.X,
+
+                NyxStartPosition.Y.Scale,
+                NyxStartPosition.Y.Offset + Delta.Y
+            )
+
+    end
+
+end)
+
+
+--==================================================
+-- ARRASTAR JANELA PRINCIPAL
+--==================================================
+
+local DraggingWindow = false
+
+local WindowDragStart
+local WindowStartPosition
+
+
+TopBar.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType == Enum.UserInputType.MouseButton1
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        DraggingWindow = true
+
+        WindowDragStart = Input.Position
+        WindowStartPosition = Main.Position
+
+        Input.Changed:Connect(function()
+
+            if Input.UserInputState ==
+                Enum.UserInputState.End then
+
+                DraggingWindow = false
+
+            end
+
+        end)
+
+    end
+
+end)
+
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not DraggingWindow then
+        return
+    end
+
+    if Input.UserInputType == Enum.UserInputType.MouseMovement
+        or Input.UserInputType == Enum.UserInputType.Touch then
+
+        local Delta =
+            Input.Position - WindowDragStart
+
+        Main.Position =
+            UDim2.new(
+                WindowStartPosition.X.Scale,
+                WindowStartPosition.X.Offset + Delta.X,
+
+                WindowStartPosition.Y.Scale,
+                WindowStartPosition.Y.Offset + Delta.Y
+            )
+
+    end
+
+end)
+
+
+--==================================================
+-- MINIMIZAR
+--==================================================
+
+local Minimized = false
+
+
+Minimize.MouseButton1Click:Connect(function()
+
+    Minimized = not Minimized
+
+    if Minimized then
+
+        Content.Visible = false
+
+        Main.Size =
+            UDim2.fromOffset(
+                WINDOW_WIDTH,
+                52
+            )
+
+    else
+
+        Main.Size =
+            UDim2.fromOffset(
+                WINDOW_WIDTH,
+                WINDOW_HEIGHT
+            )
+
+        Content.Visible = true
+
+    end
+
+end)
+
+
+--==================================================
+-- CONFIRMAÇÃO DE FECHAMENTO
+--==================================================
+
+local ConfirmFrame
+
+
+local function CreateConfirmation()
+
+    if ConfirmFrame then
+        return
+    end
+
+
+    ConfirmFrame = Instance.new("Frame")
+
+    ConfirmFrame.Size =
+        UDim2.fromOffset(270, 135)
+
+    ConfirmFrame.Position =
+        UDim2.new(
+            0.5,
+            -135,
+            0.5,
+            -67
+        )
+
+    ConfirmFrame.BackgroundColor3 =
+        Color3.fromRGB(12, 12, 15)
+
+    ConfirmFrame.BorderSizePixel = 0
+
+    ConfirmFrame.ZIndex = 100
+
+    ConfirmFrame.Parent = ScreenGui
+
+    Round(ConfirmFrame, 14)
+
+    AddStroke(
+        ConfirmFrame,
+        0.15,
+        1.5
+    )
+
+
+    -- Texto
+
+    local Text = Instance.new("TextLabel")
+
+    Text.BackgroundTransparency = 1
+
+    Text.Position =
+        UDim2.fromOffset(15, 15)
+
+    Text.Size =
+        UDim2.new(
+            1,
+            -30,
+            0,
+            45
+        )
+
+    Text.Text =
+        "Deseja fechar o Walk Nyx Project?"
+
+    Text.TextColor3 = White
+
+    Text.TextSize = 14
+
+    Text.Font =
+        Enum.Font.GothamMedium
+
+    Text.TextWrapped = true
+
+    Text.ZIndex = 101
+
+    Text.Parent = ConfirmFrame
+
+
+    -- Botão SIM
+
+    local Yes = Instance.new("TextButton")
+
+    Yes.Size =
+        UDim2.fromOffset(105, 35)
+
+    Yes.Position =
+        UDim2.fromOffset(25, 82)
+
+    Yes.BackgroundColor3 =
+        White
+
+    Yes.BorderSizePixel = 0
+
+    Yes.Text = "Sim"
+
+    Yes.TextColor3 =
+        Color3.fromRGB(0, 0, 0)
+
+    Yes.TextSize = 13
+
+    Yes.Font =
+        Enum.Font.GothamBold
+
+    Yes.ZIndex = 101
+
+    Yes.Parent = ConfirmFrame
+
+    Round(Yes, 9)
+
+
+    -- Botão NÃO
+
+    local No = Instance.new("TextButton")
+
+    No.Size =
+        UDim2.fromOffset(105, 35)
+
+    No.Position =
+        UDim2.fromOffset(140, 82)
+
+    No.BackgroundColor3 =
+        ButtonColor
+
+    No.BorderSizePixel = 0
+
+    No.Text = "Não"
+
+    No.TextColor3 =
+        White
+
+    No.TextSize = 13
+
+    No.Font =
+        Enum.Font.GothamBold
+
+    No.ZIndex = 101
+
+    No.Parent = ConfirmFrame
+
+    Round(No, 9)
+
+    AddStroke(
+        No,
+        0.45,
+        1
+    )
+
+
+    -- SIM
+
+    Yes.MouseButton1Click:Connect(function()
+
+        ScreenGui:Destroy()
+
+    end)
+
+
+    -- NÃO
+
+    No.MouseButton1Click:Connect(function()
+
+        ConfirmFrame:Destroy()
+
+        ConfirmFrame = nil
+
+    end)
+
+end
+
+
+--==================================================
+-- ATIVAR CONFIRMAÇÃO NO X
+--==================================================
+
+Close.MouseButton1Click:Connect(function()
+
+    CreateConfirmation()
+
+end)
+
+
+--==================================================
+-- FIM DA INTERFACE
+--==================================================
+
+print("Walk Nyx Project - Interface carregada!")
