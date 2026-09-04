@@ -149,6 +149,9 @@ local JumpPowerOriginal = 50
 local InfiniteJumpEnabled = false
 local InfiniteJumpConnection = nil
 
+-- NOCLIP — VARIÁVEIS
+local NoclipAtivo = false
+local NoclipCon = nil
 
 
 
@@ -254,6 +257,40 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- ==================================
+-- 🧱 SISTEMA DO NOCLIP
+-- ==================================
+RunService.Heartbeat:Connect(function()
+    if not NoclipAtivo then return end
+    local char = player.Character
+    if not char then return end
+    
+    -- Desativa colisão em todas as partes do corpo
+    for _, Parte in pairs(char:GetDescendants()) do
+        if Parte:IsA("BasePart") then
+            Parte.CanCollide = false
+        end
+    end
+end)
+
+-- Restaura colisão ao desligar
+local function RestaurarColisao()
+    local char = player.Character
+    if not char then return end
+    for _, Parte in pairs(char:GetDescendants()) do
+        if Parte:IsA("BasePart") and Parte.Name ~= "HumanoidRootPart" then
+            Parte.CanCollide = true
+        end
+    end
+end
+
+-- Reativa ao respawnar
+player.CharacterAdded:Connect(function()
+    task.wait(0.3)
+    if NoclipAtivo then
+        -- O Heartbeat já cuida de desativar a colisão
+    end
+end)
 
 --==================================================
 -- 09. INTERFACE WALK NYX
@@ -1812,6 +1849,87 @@ PuloInfToggle.MouseButton1Click:Connect(function()
     AtualizarPuloInfToggle()
 end)
 
+-- ==================================
+-- 🧱 BOTÃO NOCLIP
+-- ==================================
+
+-- SEÇÃO NOCLIP
+local Sec_Noclip = Instance.new("Frame")
+Sec_Noclip.Name = "Secao_Noclip"
+Sec_Noclip.Size = UDim2.new(1, -6, 0, 55)
+Sec_Noclip.Position = UDim2.new(0, 0, 0, 295)
+Sec_Noclip.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_Noclip.BackgroundTransparency = 0.15
+Sec_Noclip.Parent = Pages["Local Player"]
+Round(Sec_Noclip, 9)
+AddStroke(Sec_Noclip, 0.65, 1)
+
+-- BOTÃO ATIVAR NOCLIP
+local NoclipBtnContainer = Instance.new("Frame")
+NoclipBtnContainer.Name = "NoclipContainer"
+NoclipBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+NoclipBtnContainer.BackgroundTransparency = 1
+NoclipBtnContainer.Position = UDim2.new(0, 0, 0, 7)
+NoclipBtnContainer.Parent = Sec_Noclip
+
+local NoclipLabel = Instance.new("TextLabel")
+NoclipLabel.Name = "Texto"
+NoclipLabel.BackgroundTransparency = 1
+NoclipLabel.Position = UDim2.new(0, 12, 0, 0)
+NoclipLabel.Size = UDim2.new(1, -55, 1, 0)
+NoclipLabel.Text = "Atravessar Paredes (Noclip)"
+NoclipLabel.TextColor3 = White
+NoclipLabel.TextSize = 13
+NoclipLabel.Font = Enum.Font.GothamMedium
+NoclipLabel.TextXAlignment = Enum.TextXAlignment.Left
+NoclipLabel.Parent = NoclipBtnContainer
+
+local NoclipToggle = Instance.new("TextButton")
+NoclipToggle.Name = "Toggle"
+NoclipToggle.Size = UDim2.fromOffset(32, 26)
+NoclipToggle.Position = UDim2.new(1, -40, 0.5, -13)
+NoclipToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+NoclipToggle.BorderSizePixel = 0
+NoclipToggle.Text = ""
+NoclipToggle.AutoButtonColor = false
+NoclipToggle.ZIndex = 7
+NoclipToggle.Parent = NoclipBtnContainer
+Round(NoclipToggle, 7)
+
+local NoclipIndic = Instance.new("Frame")
+NoclipIndic.Name = "Indicador"
+NoclipIndic.Size = UDim2.fromOffset(20, 20)
+NoclipIndic.Position = UDim2.new(0, 2, 0.5, -10)
+NoclipIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+NoclipIndic.BorderSizePixel = 0
+NoclipIndic.Parent = NoclipToggle
+Round(NoclipIndic, 5)
+
+local NoclipLigado = false
+
+local function AtualizarNoclipToggle()
+    if NoclipLigado then
+        TweenService:Create(NoclipIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        NoclipToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        NoclipAtivo = true
+    else
+        TweenService:Create(NoclipIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        NoclipToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        NoclipAtivo = false
+        RestaurarColisao()
+    end
+end
+
+NoclipToggle.MouseButton1Click:Connect(function()
+    NoclipLigado = not NoclipLigado
+    AtualizarNoclipToggle()
+end)
 
 --==================================================
 -- 15. BOTÕES INFO
