@@ -465,6 +465,20 @@ local CirculoAdornment = nil
 local JogadorSelecionado = nil
 local ConexaoGrabLocal = nil
 
+-- ==================================
+-- VARIÁVEIS DA ABA ESP
+-- ==================================
+local ESPHighlightAtivo = false
+local ESPNomeAtivo = false
+local ESPDistanciaAtiva = false
+local ESPTracerAtivo = false
+
+local Highlights = {}
+local NamesESP = {}
+local DistanceESP = {}
+local TracersESP = {}
+local DadosCargos = {}
+
 
 -- ============================================================
 -- 📑 ABAS
@@ -855,6 +869,176 @@ local function SoltarJogador()
     end
 end
 
+
+
+
+
+
+
+-- ==================================
+-- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
+-- ==================================
+local UltimaChecagemCargo = 0
+
+local function PegarCargos()
+    if tick() - UltimaChecagemCargo < 2 then return end
+    UltimaChecagemCargo = tick()
+
+    task.spawn(function()
+        local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+        if not R then return end
+        local ok, d = pcall(function() return R:InvokeServer() end)
+        if ok and d then DadosCargos = d end
+    end)
+end
+
+-- 🔴 HIGHLIGHT REUTILIZÁVEL
+local function CriarHighlight(Alvo, Cor)
+    if not Alvo then return end
+    local H = Highlights[Alvo]
+    if not H or H.Parent ~= Alvo then
+        H = Instance.new("Highlight")
+        H.Name = "ESP_Highlight"
+        H.Adornee = Alvo
+        H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+        H.OutlineTransparency = 0
+        H.Parent = Alvo
+        Highlights[Alvo] = H
+    end
+    H.FillColor = Cor
+    H.OutlineColor = Cor
+    H.Enabled = true
+end
+
+-- 🟢 NOME E DISTÂNCIA EM UMA ÚNICA BILLBOARD
+local function CriarTextESP(Jogador, Cor, TextoExibido)
+    local Char = Jogador.Character
+    if not Char or not Char:FindFirstChild("Head") then return end
+    local Head = Char.Head
+
+    local Data = NamesESP[Jogador]
+    if not Data or not Data.Gui or Data.Gui.Parent ~= Head then
+        if Data and Data.Gui then Data.Gui:Destroy() end
+        
+        local BGui = Instance.new("BillboardGui")
+        BGui.Name = "ESP_Text"
+        BGui.Adornee = Head
+        BGui.Size = UDim2.new(0, 200, 0, 40)
+        BGui.StudsOffset = Vector3.new(0, 2.5, 0)
+        BGui.AlwaysOnTop = true
+
+        local TextLabel = Instance.new("TextLabel")
+        TextLabel.Name = "Label"
+        TextLabel.Size = UDim2.new(1, 0, 1, 0)
+        TextLabel.BackgroundTransparency = 1
+        TextLabel.Font = Enum.Font.SourceSansBold
+        TextLabel.TextSize = 13
+        TextLabel.TextStrokeTransparency = 0
+        TextLabel.TextStrokeColor3 = Color3.new(0, 0, 0)
+        TextLabel.Parent = BGui
+
+        BGui.Parent = Head
+        Data = {Gui = BGui, Label = TextLabel}
+        NamesESP[Jogador] = Data
+    end
+
+    Data.Label.Text = TextoExibido
+    Data.Label.TextColor3 = Cor
+    Data.Gui.Enabled = true
+end
+
+-- 🧹 LIMPEZA COMPLETA DE UM JOGADOR
+local function LimparJogadorESP(p)
+    if p and p.Character and Highlights[p.Character] then
+        Highlights[p.Character]:Destroy()
+        Highlights[p.Character] = nil
+    end
+    if p and NamesESP[p] then
+        if NamesESP[p].Gui then NamesESP[p].Gui:Destroy() end
+        NamesESP[p] = nil
+    end
+    if p and TracersESP[p] then
+        TracersESP[p].Visible = false
+        TracersESP[p]:Remove()
+        TracersESP[p] = nil
+    end
+end
+
+-- 🧹 LIMPEZA GERAL
+local function LimparTabela(Tabela)
+    for key, item in pairs(Tabela) do
+        if typeof(item) == "Instance" then
+            item:Destroy()
+        elseif type(item) == "table" and item.Gui then
+            item.Gui:Destroy()
+        elseif type(item) == "userdata" and item.Remove then
+            item.Visible = false
+            item:Remove()
+        end
+    end
+    table.clear(Tabela)
+end
+
+-- 📌 EVENTOS DE REMOÇÃO INSTANTÂNEA (Sem esperar o loop)
+Players.PlayerRemoving:Connect(function(p)
+    LimparJogadorESP(p)
+end)
+
+-- 🟡 LOOP EXCLUSIVO PARA LINHAS/TRACERS (Roda todo quadro sem lag visual)
+RunService.RenderStepped:Connect(function()
+    if not ESPTracerAtivo then
+        for p, line in pairs(TracersESP) do
+            if line then line.Visible = false end
+        end
+        return
+    end
+
+    local Cam = Workspace.CurrentCamera
+    if not Cam then return end
+
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player then
+            local Char = p.Character
+            local Humanoid = Char and Char:FindFirstChildOfClass("Humanoid")
+            local HRP = Char and Char:FindFirstChild("HumanoidRootPart")
+
+            if Char and HRP and Humanoid and Humanoid.Health > 0 then
+                local Vector, OnScreen = Cam:WorldToViewportPoint(HRP.Position)
+
+                local Line = TracersESP[p]
+                if not Line then
+                    Line = Drawing.new("Line")
+                    Line.Thickness = 1.5
+                    Line.Transparency = 0.8
+                    TracersESP[p] = Line
+                end
+
+                if OnScreen then
+                    local Info = DadosCargos[p.Name]
+                    local Cor = Color3.fromRGB(255, 255, 255)
+                    if Info and not Info.Killed and not Info.Dead then
+                        if Info.Role == "Murderer" then Cor = Color3.fromRGB(220, 50, 50)
+                        elseif Info.Role == "Sheriff" then Cor = Color3.fromRGB(0, 85, 255)
+                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0)
+                        elseif Info.Role == "Innocent" then Cor = Color3.fromRGB(60, 200, 80) end
+                    end
+
+                    Line.From = Vector2.new(Cam.ViewportSize.X / 2, Cam.ViewportSize.Y)
+                    Line.To = Vector2.new(Vector.X, Vector.Y)
+                    Line.Color = Cor
+                    Line.Visible = true
+                else
+                    Line.Visible = false
+                end
+            else
+                if TracersESP[p] then
+                    TracersESP[p].Visible = false
+                end
+            end
+        end
+    end
+end)
+
 -- ====================================================
 -- BOTOES DA ABA MURDERER 
 -- ====================================================
@@ -1025,3 +1209,55 @@ Aba_Murderer:Toggle({
     end
 })
 
+-- ==================================
+-- BOTOES DA ABA ESP
+-- ==================================
+Aba_ESP:Section({
+    Title = "ESP",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_ESP:Toggle({
+    Title = "Highlight ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPHighlightAtivo = Ativo
+        if not Ativo then
+            for _, h in pairs(Highlights) do h.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Name ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPNomeAtivo = Ativo
+        if not Ativo then
+            for _, n in pairs(NamesESP) do n.Gui.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Distance ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPDistanciaAtiva = Ativo
+        if not Ativo then
+            for _, d in pairs(DistanceESP) do d.Gui.Enabled = false end
+        end
+    end
+})
+
+Aba_ESP:Toggle({
+    Title = "Tracer ESP",
+    Default = false,
+    Callback = function(Ativo)
+        ESPTracerAtivo = Ativo
+        if not Ativo then
+            for _, t in pairs(TracersESP) do t.Visible = false end
+        end
+    end
+})
