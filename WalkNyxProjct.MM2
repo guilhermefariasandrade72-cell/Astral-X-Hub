@@ -159,6 +159,10 @@ local NoclipCon = nil
 getgenv().AntiFling = false
 local AntiFlingCon = nil
 
+-- ✈️ FLY — VARIÁVEIS
+getgenv().FlySpeed = 50
+getgenv().Flying = false
+local FlyLigado = false
 
 --==================================================
 -- 08. SISTEMAS
@@ -268,6 +272,66 @@ player.CharacterAdded:Connect(function()
     end
 end)
 
+-- ==================================
+-- ✈️ SISTEMA DE FLY UNIVERSAL (SEU CÓDIGO)
+-- ==================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local UserInputService = game:GetService("UserInputService")
+
+local LocalPlayer = Players.LocalPlayer
+local Camera = workspace.CurrentCamera
+
+local function StartFly()
+    local Character = LocalPlayer.Character or LocalPlayer.CharacterAdded:Wait()
+    local Root = Character:FindFirstChild("HumanoidRootPart")
+    local Humanoid = Character:FindFirstChildOfClass("Humanoid")
+
+    if not Root or not Humanoid then return end
+
+    local BodyVelocity = Instance.new("BodyVelocity")
+    BodyVelocity.Name = "FlyVelocity"
+    BodyVelocity.MaxForce = Vector3.new(math.huge, math.huge, math.huge)
+    BodyVelocity.Velocity = Vector3.zero
+    BodyVelocity.Parent = Root
+
+    local BodyGyro = Instance.new("BodyGyro")
+    BodyGyro.Name = "FlyGyro"
+    BodyGyro.MaxTorque = Vector3.new(math.huge, math.huge, math.huge)
+    BodyGyro.P = 9e4
+    BodyGyro.CFrame = Root.CFrame
+    BodyGyro.Parent = Root
+
+    Humanoid.GravityScale = 0  -- ✅ Sem PlatformStand = não te joga pra frente!
+    Humanoid.JumpPower = 0      -- ✅ Sem pulo estranho
+
+    task.spawn(function()
+        while getgenv().Flying and Root and Humanoid and Root:IsDescendantOf(workspace) do
+            local MoveVector = Humanoid.MoveDirection
+            local CameraCFrame = Camera.CFrame
+
+            -- Direção baseada na câmera
+            local FlyDirection = (CameraCFrame.RightVector * MoveVector.X) + (CameraCFrame.LookVector * (MoveVector.Z * -1))
+
+            BodyVelocity.Velocity = FlyDirection * getgenv().FlySpeed
+            BodyGyro.CFrame = CameraCFrame
+
+            RunService.RenderStepped:Wait()
+        end
+
+        -- Limpeza ao desativar
+        pcall(function() BodyVelocity:Destroy() end)
+        pcall(function() BodyGyro:Destroy() end)
+        if Humanoid then
+            Humanoid.GravityScale = 1
+            Humanoid.JumpPower = 50
+        end
+    end)
+end
+
+local function StopFly()
+    getgenv().Flying = false
+end
 
 -- ==================================
 -- 🧱 SISTEMA DO NOCLIP
@@ -1883,6 +1947,173 @@ end
 PuloInfToggle.MouseButton1Click:Connect(function()
     PuloInfLigado = not PuloInfLigado
     AtualizarPuloInfToggle()
+end)
+
+-- ==================================
+-- ✈️ BOTÃO + SLIDER FLY
+-- ==================================
+
+-- SEÇÃO FLY
+local Sec_Fly = Instance.new("Frame")
+Sec_Fly.Name = "Secao_Fly"
+Sec_Fly.Size = UDim2.new(1, -6, 0, 110)
+Sec_Fly.Position = UDim2.new(0, 0, 0, 415)
+Sec_Fly.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_Fly.BackgroundTransparency = 0.15
+Sec_Fly.Parent = Pages["Local Player"]
+Round(Sec_Fly, 9)
+AddStroke(Sec_Fly, 0.65, 1)
+
+-- BOTÃO ATIVAR FLY
+local FlyBtnContainer = Instance.new("Frame")
+FlyBtnContainer.Name = "FlyContainer"
+FlyBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+FlyBtnContainer.BackgroundTransparency = 1
+FlyBtnContainer.Parent = Sec_Fly
+
+local FlyLabel = Instance.new("TextLabel")
+FlyLabel.Name = "Texto"
+FlyLabel.BackgroundTransparency = 1
+FlyLabel.Position = UDim2.new(0, 12, 0, 0)
+FlyLabel.Size = UDim2.new(1, -55, 1, 0)
+FlyLabel.Text = "Ativar Fly"
+FlyLabel.TextColor3 = White
+FlyLabel.TextSize = 13
+FlyLabel.Font = Enum.Font.GothamMedium
+FlyLabel.TextXAlignment = Enum.TextXAlignment.Left
+FlyLabel.Parent = FlyBtnContainer
+
+local FlyToggle = Instance.new("TextButton")
+FlyToggle.Name = "Toggle"
+FlyToggle.Size = UDim2.fromOffset(32, 26)
+FlyToggle.Position = UDim2.new(1, -40, 0.5, -13)
+FlyToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+FlyToggle.BorderSizePixel = 0
+FlyToggle.Text = ""
+FlyToggle.AutoButtonColor = false
+FlyToggle.ZIndex = 7
+FlyToggle.Parent = FlyBtnContainer
+Round(FlyToggle, 7)
+
+local FlyIndic = Instance.new("Frame")
+FlyIndic.Name = "Indicador"
+FlyIndic.Size = UDim2.fromOffset(20, 20)
+FlyIndic.Position = UDim2.new(0, 2, 0.5, -10)
+FlyIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+FlyIndic.BorderSizePixel = 0
+FlyIndic.Parent = FlyToggle
+Round(FlyIndic, 5)
+
+local function AtualizarFlyToggle()
+    if FlyLigado then
+        TweenService:Create(FlyIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        FlyToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        getgenv().Flying = true
+        task.wait(0.05)
+        StartFly()
+    else
+        TweenService:Create(FlyIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        FlyToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        StopFly()
+    end
+end
+
+FlyToggle.MouseButton1Click:Connect(function()
+    FlyLigado = not FlyLigado
+    AtualizarFlyToggle()
+end)
+
+-- 🎚️ SLIDER DE VELOCIDADE DO FLY (16 a 120)
+local FlySliderContainer = Instance.new("Frame")
+FlySliderContainer.Name = "SliderFly"
+FlySliderContainer.Size = UDim2.new(1, -12, 0, 60)
+FlySliderContainer.Position = UDim2.new(0, 6, 0, 45)
+FlySliderContainer.BackgroundTransparency = 1
+FlySliderContainer.Parent = Sec_Fly
+
+local FlySliderTexto = Instance.new("TextLabel")
+FlySliderTexto.Name = "Texto"
+FlySliderTexto.BackgroundTransparency = 1
+FlySliderTexto.Position = UDim2.new(0, 6, 0, 0)
+FlySliderTexto.Size = UDim2.new(1, 0, 0, 20)
+FlySliderTexto.Text = "Velocidade: " .. getgenv().FlySpeed
+FlySliderTexto.TextColor3 = White
+FlySliderTexto.TextSize = 12
+FlySliderTexto.Font = Enum.Font.GothamMedium
+FlySliderTexto.TextXAlignment = Enum.TextXAlignment.Left
+FlySliderTexto.Parent = FlySliderContainer
+
+local FlyBarraFundo = Instance.new("Frame")
+FlyBarraFundo.Name = "Fundo"
+FlyBarraFundo.Size = UDim2.new(1, -12, 0, 8)
+FlyBarraFundo.Position = UDim2.new(0, 6, 0, 28)
+FlyBarraFundo.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+FlyBarraFundo.Parent = FlySliderContainer
+Round(FlyBarraFundo, 4)
+
+local FlyBarraProg = Instance.new("Frame")
+FlyBarraProg.Name = "Progresso"
+FlyBarraProg.Size = UDim2.new((getgenv().FlySpeed - 16) / 104, 0, 1, 0)
+FlyBarraProg.BackgroundColor3 = Color3.fromRGB(90, 190, 120)
+FlyBarraProg.Parent = FlyBarraFundo
+Round(FlyBarraProg, 4)
+
+local FlySliderBtn = Instance.new("TextButton")
+FlySliderBtn.Name = "Botao"
+FlySliderBtn.Size = UDim2.fromOffset(22, 22)
+FlySliderBtn.Position = UDim2.new((getgenv().FlySpeed - 16) / 104, -11, 0.5, -11)
+FlySliderBtn.BackgroundColor3 = White
+FlySliderBtn.BorderSizePixel = 0
+FlySliderBtn.Text = ""
+FlySliderBtn.AutoButtonColor = false
+FlySliderBtn.ZIndex = 10
+FlySliderBtn.Parent = FlyBarraFundo
+Round(FlySliderBtn, 11)
+
+local FlyArrastando = false
+
+local function AtualizarFlySlider(X)
+    local AbsPos = FlyBarraFundo.AbsolutePosition
+    local AbsSize = FlyBarraFundo.AbsoluteSize.X
+    local PosX = math.clamp(X - AbsPos.X, 0, AbsSize)
+    local Valor = 16 + (PosX / AbsSize) * 104
+    Valor = math.floor(Valor + 0.5)
+    
+    getgenv().FlySpeed = Valor
+    
+    FlySliderTexto.Text = "Velocidade: " .. Valor
+    FlyBarraProg.Size = UDim2.new(PosX / AbsSize, 0, 1, 0)
+    FlySliderBtn.Position = UDim2.new(PosX / AbsSize, -11, 0.5, -11)
+end
+
+FlySliderBtn.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        FlyArrastando = true
+    end
+end)
+FlyBarraFundo.InputBegan:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        FlyArrastando = true
+        AtualizarFlySlider(Input.Position.X)
+    end
+end)
+UserInputService.InputEnded:Connect(function(Input)
+    if Input.UserInputType == Enum.UserInputType.MouseButton1 or Input.UserInputType == Enum.UserInputType.Touch then
+        FlyArrastando = false
+    end
+end)
+UserInputService.InputChanged:Connect(function(Input)
+    if FlyArrastando then
+        if Input.UserInputType == Enum.UserInputType.MouseMovement or Input.UserInputType == Enum.UserInputType.Touch then
+            AtualizarFlySlider(Input.Position.X)
+        end
+    end
 end)
 
 -- ==================================
