@@ -1415,19 +1415,80 @@ end
 --==================================================
 -- 12. BOTÕES AUTO FARM
 --==================================================
-CreateToggleESP(
-    Pages["Auto Farm"],
-    "Ativar Auto Farm",
-    "AutoFarmAtivo",
-    function()
+-- ==================================
+-- 💰 BOTÃO AUTO FARM — ARRUMADO
+-- ==================================
+local BotaoContainer = Instance.new("Frame")
+BotaoContainer.Name = "AutoFarmContainer"
+BotaoContainer.Size = UDim2.new(1, -6, 0, 40)
+BotaoContainer.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+BotaoContainer.BackgroundTransparency = 0.15
+BotaoContainer.BorderSizePixel = 0
+BotaoContainer.ZIndex = 6
+BotaoContainer.Parent = Pages["Auto Farm"]
+Round(BotaoContainer, 9)
+AddStroke(BotaoContainer, 0.65, 1)
+
+local BotaoTexto = Instance.new("TextLabel")
+BotaoTexto.Name = "Texto"
+BotaoTexto.BackgroundTransparency = 1
+BotaoTexto.Position = UDim2.new(0, 12, 0, 0)
+BotaoTexto.Size = UDim2.new(1, -55, 1, 0)
+BotaoTexto.Text = "Ativar Auto Farm"
+BotaoTexto.TextColor3 = Color3.fromRGB(255, 255, 255)
+BotaoTexto.TextSize = 13
+BotaoTexto.Font = Enum.Font.GothamMedium
+BotaoTexto.TextXAlignment = Enum.TextXAlignment.Left
+BotaoTexto.Parent = BotaoContainer
+
+local BotaoToggle = Instance.new("TextButton")
+BotaoToggle.Name = "Toggle"
+BotaoToggle.Size = UDim2.fromOffset(32, 26)
+BotaoToggle.Position = UDim2.new(1, -40, 0.5, -13)
+BotaoToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
+BotaoToggle.BorderSizePixel = 0
+BotaoToggle.Text = ""
+BotaoToggle.AutoButtonColor = false
+BotaoToggle.ZIndex = 7
+BotaoToggle.Parent = BotaoContainer
+Round(BotaoToggle, 7)
+
+local Indicador = Instance.new("Frame")
+Indicador.Name = "Indicador"
+Indicador.Size = UDim2.fromOffset(20, 20)
+Indicador.Position = UDim2.new(0, 2, 0.5, -10)
+Indicador.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+Indicador.BorderSizePixel = 0
+Indicador.ZIndex = 8
+Indicador.Parent = BotaoToggle
+Round(Indicador, 5)
+
+local TweenService = game:GetService("TweenService")
+local Ligado = false
+
+local function AtualizarBotao()
+    if Ligado then
+        TweenService:Create(Indicador, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        }):Play()
+        BotaoToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
         AutoFarmAtivo = true
-        BolsaCheia = false
-    end,
-    function()
+    else
+        TweenService:Create(Indicador, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        BotaoToggle.BackgroundColor3 = Color3.fromRGB(60, 60, 70)
         AutoFarmAtivo = false
         table.clear(collectedCoins)
     end
-)
+end
+
+BotaoToggle.MouseButton1Click:Connect(function()
+    Ligado = not Ligado
+    AtualizarBotao()
+end)
 
 
 --==================================================
