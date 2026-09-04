@@ -84,6 +84,9 @@ local Player = Players.LocalPlayer
 --==================================================
 -- 05. VARIÁVEIS DO AUTO FARM
 --==================================================
+-- ==================================
+-- 💰 VARIÁVEIS DO AUTO FARM
+-- ==================================
 local AutoFarmAtivo = false
 local BolsaCheia = false
 local collectedCoins = {}
@@ -92,7 +95,6 @@ local cachedCoinContainer = nil
 local ultimoCheckBolsa = 0
 local resultadoUltimoCheckBolsa = false
 
--- CONFIGURAÇÕES
 local CONFIG_FARM = {
     velocidade = 18,
     alcance_maximo = 500,
