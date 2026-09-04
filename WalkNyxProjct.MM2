@@ -214,34 +214,37 @@ player.CharacterAdded:Connect(function()
 end)
 
 -- ==================================
--- 🦘 SISTEMA DO PULO INFINITO
+-- 🦘 SISTEMA DO PULO INFINITO (CORRIGIDO)
 -- ==================================
 local UserInputService = game:GetService("UserInputService")
+local ultimoPulo = 0
 
 local function ToggleInfiniteJump(state)
     InfiniteJumpEnabled = state
 
     if state then
-        -- Limpa conexão antiga se existir
         if InfiniteJumpConnection then
             InfiniteJumpConnection:Disconnect()
             InfiniteJumpConnection = nil
         end
 
-        -- Conecta ao evento oficial de pulo
-        InfiniteJumpConnection = UserInputService.JumpRequest:Connect(function()
+        -- ✅ Usa Heartbeat em vez de JumpRequest — evita o impulso para frente
+        InfiniteJumpConnection = RunService.Heartbeat:Connect(function()
             if not InfiniteJumpEnabled then return end
 
             local character = player.Character
             local humanoid = character and character:FindFirstChildOfClass("Humanoid")
+            if not humanoid then return end
 
-            if humanoid then
-                humanoid:ChangeState(Enum.HumanoidStateType.Jumping)
+            -- Só pula quando estiver no chão E com um pequeno delay
+            local agora = os.clock()
+            if humanoid.FloorMaterial ~= Enum.Material.Air and agora - ultimoPulo > 0.15 then
+                humanoid.Jump = true
+                ultimoPulo = agora
             end
         end)
 
     else
-        -- Desativa completamente
         if InfiniteJumpConnection then
             InfiniteJumpConnection:Disconnect()
             InfiniteJumpConnection = nil
