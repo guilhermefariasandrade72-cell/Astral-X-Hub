@@ -133,6 +133,64 @@ local WalkSpeedOriginal = 16
 local JumpPowerOriginal = 50
 
 
+-- ==================================
+-- 🏃 SISTEMA — VELOCIDADE E PULO (VERIFICAÇÃO CONSTANTE)
+-- ==================================
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local player = Players.LocalPlayer
+
+-- Salva valores originais ao carregar
+task.spawn(function()
+    repeat task.wait(0.1) until player.Character
+    local hum = player.Character:WaitForChild("Humanoid")
+    WalkSpeedOriginal = hum.WalkSpeed
+    JumpPowerOriginal = hum.JumpPower
+end)
+
+-- ✅ APLICAÇÃO COM VERIFICAÇÃO CONSTANTE
+RunService.Heartbeat:Connect(function()
+    local char = player.Character
+    if not char or not char:FindFirstChild("Humanoid") then return end
+    local hum = char.Humanoid
+    
+    -- 🏃 VELOCIDADE — Se não estiver igual ao slider, CORRIGE AGORA
+    if SpeedAtivo then
+        if hum.WalkSpeed ~= SpeedValor then
+            hum.WalkSpeed = SpeedValor
+        end
+    else
+        if hum.WalkSpeed ~= WalkSpeedOriginal then
+            hum.WalkSpeed = WalkSpeedOriginal
+        end
+    end
+    
+    -- 🦘 PULO — Se não estiver igual ao slider, CORRIGE AGORA
+    if JumpAtivo then
+        if hum.JumpPower ~= JumpValor then
+            hum.JumpPower = JumpValor
+        end
+    else
+        if hum.JumpPower ~= JumpPowerOriginal then
+            hum.JumpPower = JumpPowerOriginal
+        end
+    end
+end)
+
+-- ✅ RESETA VALORES QUANDO MORRE/RESPAWNA
+player.CharacterAdded:Connect(function()
+    task.wait(0.1)
+    local char = player.Character
+    if not char then return end
+    local hum = char:WaitForChild("Humanoid")
+    WalkSpeedOriginal = hum.WalkSpeed
+    JumpPowerOriginal = hum.JumpPower
+    
+    -- Reaplica automaticamente se estiver ativado
+    task.wait(0.2)
+    if SpeedAtivo then hum.WalkSpeed = SpeedValor end
+    if JumpAtivo then hum.JumpPower = JumpValor end
+end)
 
 -- ==================================
 -- 💰 SISTEMA DO AUTO FARM
