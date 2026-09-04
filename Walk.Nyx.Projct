@@ -465,6 +465,40 @@ local CirculoAdornment = nil
 local JogadorSelecionado = nil
 local ConexaoGrabLocal = nil
 
+-- ===========================
+-- VARIÁVEIS DA ABA AUTO FARM
+-- ===========================
+
+local Players = game:GetService("Players")
+local RunService = game:GetService("RunService")
+local Workspace = game:GetService("Workspace")
+local ReplicatedStorage = game:GetService("ReplicatedStorage")
+
+local player = Players.LocalPlayer
+
+local CONFIG_FARM = {
+    velocidade = 18,
+    alcance_maximo = 500,
+    raio_perigo_murder = 30
+}
+
+local AutoFarmAtivo = false
+local BolsaCheia = false
+local collectedCoins = {}
+local moedasIgnoradasInvisivel = {}
+
+local cachedCoinContainer = nil
+local ultimoCheckBolsa = 0
+local resultadoUltimoCheckBolsa = false
+
+local TPSafeAoEncher = false
+local SafePlatform = nil
+local SafePosition = Vector3.new(38013.93, 1101.06, -26257.38)
+
+local KillAllAoEncher = false
+local AutoResetAoEncher = false
+local AutoShootAtivo = false
+
 -- ==================================
 -- VARIÁVEIS DA ABA ESP
 -- ==================================
@@ -874,6 +908,255 @@ end
 
 
 
+-- ====================================================
+-- SISTEMA DA ABA AUTO FARM
+-- ====================================================
+
+local function ObterMurderer()
+    for _, p in ipairs(Players:GetPlayers()) do
+        if p ~= player and p.Character and p.Character:FindFirstChild("HumanoidRootPart") then
+            local char = p.Character
+            local hum = char:FindFirstChild("Humanoid")
+
+            if hum and hum.Health > 0 then
+                local temFaca = char:FindFirstChild("Knife") or (p:FindFirstChild("Backpack") and p.Backpack:FindFirstChild("Knife"))
+                local eMurder = p:GetAttribute("Role") == "Murderer" or temFaca
+
+                if eMurder then
+                    return char
+                end
+            end
+        end
+    end
+    return nil
+end
+
+local function ResetarEstadoFarm()
+    BolsaCheia = false
+    table.clear(collectedCoins)
+    table.clear(moedasIgnoradasInvisivel)
+    cachedCoinContainer = nil
+end
+
+player.CharacterAdded:Connect(ResetarEstadoFarm)
+
+player:GetAttributeChangedSignal("Alive"):Connect(function()
+    if player:GetAttribute("Alive") == true then
+        ResetarEstadoFarm()
+    end
+end)
+
+task.spawn(function()
+    while true do
+        task.wait(0.1)
+        if AutoFarmAtivo then
+            local char = player.Character
+            local hrp = char and char:FindFirstChild("HumanoidRootPart")
+            local charMurderer = ObterMurderer()
+            local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+            if hrp and hrpMurderer then
+                local distMurder = (hrp.Position - hrpMurderer.Position).Magnitude
+
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    if not InvisivelAtivo then
+                        InvisivelAtivo = true
+                    end
+                else
+                    if InvisivelAtivo then
+                        InvisivelAtivo = false
+                    end
+                end
+            end
+        end
+    end
+end)
+
+local function VerificarTextoBolsaCheia()
+    local agora = os.clock()
+    if agora - ultimoCheckBolsa < 0.5 then
+        return resultadoUltimoCheckBolsa
+    end
+    ultimoCheckBolsa = agora
+
+    local playerGui = player:FindFirstChild("PlayerGui")
+    if not playerGui then return false end
+
+    local mainGui = playerGui:FindFirstChild("MainGUI") or playerGui:FindFirstChild("GUI")
+    if not mainGui then return false end
+
+    for _, gui in ipairs(mainGui:GetDescendants()) do
+        if gui:IsA("TextLabel") and gui.Visible and gui.Text ~= "" then
+            local texto = string.lower(gui.Text)
+            if (string.find(texto, "saco") and string.find(texto, "cheio")) or
+               (string.find(texto, "bag") and string.find(texto, "full")) or
+               string.find(texto, "full coin") or string.find(texto, "max coins") then
+                resultadoUltimoCheckBolsa = true
+                return true
+            end
+        end
+    end
+
+    resultadoUltimoCheckBolsa = false
+    return false
+end
+
+task.spawn(function()
+    local Remotes = ReplicatedStorage:FindFirstChild("Remotes", true) or ReplicatedStorage:FindFirstChild("Gameplay", true)
+    if Remotes then
+        local coinCollectedRemote = Remotes:FindFirstChild("CoinCollected", true)
+        if coinCollectedRemote and coinCollectedRemote:IsA("RemoteEvent") then
+            coinCollectedRemote.OnClientEvent:Connect(function(coletador, atual, maximo)
+                if coletador == player or (typeof(coletador) == "string" and coletador == player.Name) then
+                    if tonumber(atual) and tonumber(maximo) then
+                        BolsaCheia = (tonumber(atual) >= tonumber(maximo))
+                    end
+                end
+            end)
+        end
+    end
+end)
+
+local function EmPartida()
+    local c = player.Character
+    if not c or not c:FindFirstChild("Humanoid") or c.Humanoid.Health <= 0 then return false end
+    if not c:FindFirstChild("HumanoidRootPart") then return false end
+
+    local aliveAttr = player:GetAttribute("Alive")
+    if aliveAttr ~= nil and aliveAttr == false then
+        return false
+    end
+
+    if Workspace:FindFirstChild("Lobby") then
+        local distLobby = (c.HumanoidRootPart.Position - Workspace.Lobby:GetPivot().Position).Magnitude
+        if distLobby < 100 then
+            return false
+        end
+    end
+
+    return true
+end
+
+local function getNearestCoin(minhaPos)
+    local melhorMoeda, menorDistancia = nil, math.huge
+
+    if not cachedCoinContainer or not cachedCoinContainer.Parent then
+        cachedCoinContainer = Workspace:FindFirstChild("CoinContainer", true)
+    end
+
+    if not cachedCoinContainer then return nil end
+
+    local charMurderer = ObterMurderer()
+    local hrpMurderer = charMurderer and charMurderer:FindFirstChild("HumanoidRootPart")
+
+    for _, moeda in ipairs(cachedCoinContainer:GetChildren()) do
+        if moeda:IsA("BasePart")
+        and moeda.Name == "Coin_Server"
+        and moeda:FindFirstChild("TouchInterest")
+        and not collectedCoins[moeda]
+        and not moeda:GetAttribute("Collected") then
+
+            if hrpMurderer then
+                local distMurder = (moeda.Position - hrpMurderer.Position).Magnitude
+                if distMurder <= CONFIG_FARM.raio_perigo_murder then
+                    continue
+                end
+            end
+
+            if moedasIgnoradasInvisivel[moeda] then
+                if not InvisivelAtivo then
+                    moedasIgnoradasInvisivel[moeda] = nil
+                else
+                    continue
+                end
+            end
+
+            local distancia = (minhaPos - moeda.Position).Magnitude
+            if distancia < CONFIG_FARM.alcance_maximo and distancia < menorDistancia then
+                menorDistancia = distancia
+                melhorMoeda = moeda
+            end
+        end
+    end
+
+    return melhorMoeda
+end
+
+task.spawn(function()
+    while true do
+        if AutoFarmAtivo then
+            local c = player.Character
+            local hrp = c and c:FindFirstChild("HumanoidRootPart")
+
+            if not EmPartida() or not hrp then
+                task.wait(0.5)
+                continue
+            end
+
+            if BolsaCheia or VerificarTextoBolsaCheia() then
+                BolsaCheia = true
+                task.wait(0.5)
+                continue
+            end
+
+            local alvo = getNearestCoin(hrp.Position)
+
+            if alvo then
+                local tempoPassadoNaMoeda = 0
+
+                while AutoFarmAtivo and EmPartida() and alvo and alvo.Parent
+                and not BolsaCheia and not VerificarTextoBolsaCheia()
+                and not alvo:GetAttribute("Collected")
+                and not collectedCoins[alvo] do
+
+                    local minhaPosAtual = hrp.Position
+
+                    local moedaMaisPertoAgora = getNearestCoin(minhaPosAtual)
+                    if moedaMaisPertoAgora and moedaMaisPertoAgora ~= alvo then
+                        alvo = moedaMaisPertoAgora
+                        tempoPassadoNaMoeda = 0
+                    end
+
+                    if not alvo:IsDescendantOf(Workspace) or alvo:GetAttribute("Collected") then
+                        break
+                    end
+
+                    local posAlvo = alvo.Position
+                    local direcao = (posAlvo - minhaPosAtual)
+                    local distancia = direcao.Magnitude
+
+                    if distancia <= 0.8 then
+                        if InvisivelAtivo then
+                            moedasIgnoradasInvisivel[alvo] = true
+                            break
+                        else
+                            collectedCoins[alvo] = true
+                            break
+                        end
+                    end
+
+                    local velAtual = math.clamp(CONFIG_FARM.velocidade, 16, 20)
+                    local dt = RunService.Heartbeat:Wait()
+                    local passo = math.min(velAtual * dt, distancia)
+                    local novaPos = minhaPosAtual + (direcao.Unit * passo)
+
+                    hrp.CFrame = CFrame.new(novaPos)
+                    hrp.AssemblyLinearVelocity = Vector3.new(0, 0, 0)
+
+                    tempoPassadoNaMoeda = tempoPassadoNaMoeda + dt
+                    if tempoPassadoNaMoeda > 1.5 and InvisivelAtivo then
+                        moedasIgnoradasInvisivel[alvo] = true
+                        break
+                    end
+                end
+            else
+                task.wait(0.2)
+            end
+        else
+            task.wait(0.5)
+        end
+    end
+end)
 
 -- ==================================
 -- SISTEMAS DA ABA ESP (OPTIMIZADO PARA MOBILE)
@@ -1206,6 +1489,98 @@ Aba_Murderer:Toggle({
 
         AtualizarCirculoAura()
 
+    end
+})
+
+-- ==================================
+-- BOTOES DA ABA AUTO FARM
+-- ==================================
+Aba_AutoFarm:Section({
+    Title = "AUTO FARM COIN",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Farm Coin Button",
+    Desc = "Adiciona um botão de Farm na tela",
+    Default = false,
+    Callback = function(Ativo)
+        if Ativo then
+            CreateAutoFarmButton()
+        else
+            RemoveAutoFarmButton()
+        end
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Farm Coin",
+    Desc = "Voa ate as moedas mas proxima e para ao coletar o max de moedas",
+    Default = false,
+    Callback = function(Ativo)
+        AutoFarmAtivo = Ativo
+    end
+})
+
+Aba_AutoFarm:Slider({
+    Title = "Speed Farm",
+    Desc = "Ajuate a velocidade do auto farm",
+    Value = {Min = 16, Max = 20, Default = 16, Step = 1},
+    Callback = function(Valor)
+        CONFIG_FARM.velocidade = Valor
+    end
+})
+
+Aba_AutoFarm:Button({
+    Title = "Anti-AFK",
+    Desc = "Executa um script de Anti-AFK",
+    Callback = function()
+        pcall(function()
+            loadstring(game:HttpGet("https://raw.githubusercontent.com/hassanxzayn-lua/Anti-afk/main/antiafkbyhassanxzyn"))()
+        end)
+    end
+})
+
+Aba_AutoFarm:Section({
+    Title = "SENTTINGS AUTO FARM",
+    Box = false,
+    TextSize = 18,
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Reset",
+    Desc = "Morre automaticando ao ter coletado o max de moedas",
+    Default = true,
+    Callback = function(estado)
+        AutoResetAoEncher = estado
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Auto Shoot Murderer",
+    Desc = "Apos ter coletado o max de moeda teleporta atras do assassino e fica atirando ater matar",
+    Default = false,
+    Callback = function(Ativo)
+        AutoShootAtivo = Ativo
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Kill All",
+    Desc = "Mata todo mundo apos ter coletado o max de moedas",
+    Default = false,
+    Callback = function(estado)
+        KillAllAoEncher = estado
+    end
+})
+
+Aba_AutoFarm:Toggle({
+    Title = "Safe TP",
+    Desc = "Apos ter coletado o max de moeda e teleprtado para um lugar seguro",
+    Default = false,
+    Callback = function(estado)
+        TPSafeAoEncher = estado
     end
 })
 
