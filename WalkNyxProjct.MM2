@@ -155,6 +155,9 @@ local UltimoPulo = 0
 local NoclipAtivo = false
 local NoclipCon = nil
 
+-- ANTI-FLING — VARIÁVEL
+getgenv().AntiFling = false
+local AntiFlingCon = nil
 
 
 --==================================================
@@ -298,6 +301,30 @@ player.CharacterAdded:Connect(function()
     task.wait(0.3)
     if NoclipAtivo then
         -- O Heartbeat já cuida de desativar a colisão
+    end
+end)
+
+-- ==================================
+-- 🛡️ SISTEMA DO ANTI-FLING (SEU CÓDIGO)
+-- ==================================
+task.spawn(function()
+    while true do
+        if getgenv().AntiFling then
+            pcall(function()
+                for _, OtherPlayer in ipairs(game:GetService("Players"):GetPlayers()) do
+                    if OtherPlayer ~= game:GetService("Players").LocalPlayer and OtherPlayer.Character then
+                        for _, Part in ipairs(OtherPlayer.Character:GetChildren()) do
+                            if Part:IsA("BasePart") then
+                                Part.CanCollide = false
+                                Part.AssemblyLinearVelocity = Vector3.zero
+                                Part.AssemblyAngularVelocity = Vector3.zero
+                            end
+                        end
+                    end
+                end
+            end)
+        end
+        game:GetService("RunService").Stepped:Wait()
     end
 end)
 
@@ -1938,6 +1965,87 @@ end
 NoclipToggle.MouseButton1Click:Connect(function()
     NoclipLigado = not NoclipLigado
     AtualizarNoclipToggle()
+end)
+
+-- ==================================
+-- 🛡️ BOTÃO ANTI-FLING
+-- ==================================
+
+-- SEÇÃO ANTI-FLING
+local Sec_AntiFling = Instance.new("Frame")
+Sec_AntiFling.Name = "Secao_AntiFling"
+Sec_AntiFling.Size = UDim2.new(1, -6, 0, 55)
+Sec_AntiFling.Position = UDim2.new(0, 0, 0, 355)
+Sec_AntiFling.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_AntiFling.BackgroundTransparency = 0.15
+Sec_AntiFling.Parent = Pages["Local Player"]
+Round(Sec_AntiFling, 9)
+AddStroke(Sec_AntiFling, 0.65, 1)
+
+-- BOTÃO ATIVAR ANTI-FLING
+local AntiFlingBtnContainer = Instance.new("Frame")
+AntiFlingBtnContainer.Name = "AntiFlingContainer"
+AntiFlingBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+AntiFlingBtnContainer.BackgroundTransparency = 1
+AntiFlingBtnContainer.Position = UDim2.new(0, 0, 0, 7)
+AntiFlingBtnContainer.Parent = Sec_AntiFling
+
+local AntiFlingLabel = Instance.new("TextLabel")
+AntiFlingLabel.Name = "Texto"
+AntiFlingLabel.BackgroundTransparency = 1
+AntiFlingLabel.Position = UDim2.new(0, 12, 0, 0)
+AntiFlingLabel.Size = UDim2.new(1, -55, 1, 0)
+AntiFlingLabel.Text = "Anti-Fling"
+AntiFlingLabel.TextColor3 = White
+AntiFlingLabel.TextSize = 13
+AntiFlingLabel.Font = Enum.Font.GothamMedium
+AntiFlingLabel.TextXAlignment = Enum.TextXAlignment.Left
+AntiFlingLabel.Parent = AntiFlingBtnContainer
+
+local AntiFlingToggle = Instance.new("TextButton")
+AntiFlingToggle.Name = "Toggle"
+AntiFlingToggle.Size = UDim2.fromOffset(32, 26)
+AntiFlingToggle.Position = UDim2.new(1, -40, 0.5, -13)
+AntiFlingToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+AntiFlingToggle.BorderSizePixel = 0
+AntiFlingToggle.Text = ""
+AntiFlingToggle.AutoButtonColor = false
+AntiFlingToggle.ZIndex = 7
+AntiFlingToggle.Parent = AntiFlingBtnContainer
+Round(AntiFlingToggle, 7)
+
+local AntiFlingIndic = Instance.new("Frame")
+AntiFlingIndic.Name = "Indicador"
+AntiFlingIndic.Size = UDim2.fromOffset(20, 20)
+AntiFlingIndic.Position = UDim2.new(0, 2, 0.5, -10)
+AntiFlingIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+AntiFlingIndic.BorderSizePixel = 0
+AntiFlingIndic.Parent = AntiFlingToggle
+Round(AntiFlingIndic, 5)
+
+local AntiFlingLigado = false
+
+local function AtualizarAntiFlingToggle()
+    if AntiFlingLigado then
+        TweenService:Create(AntiFlingIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        AntiFlingToggle.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        getgenv().AntiFling = true
+    else
+        TweenService:Create(AntiFlingIndic, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        AntiFlingToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        getgenv().AntiFling = false
+    end
+end
+
+AntiFlingToggle.MouseButton1Click:Connect(function()
+    AntiFlingLigado = not AntiFlingLigado
+    AtualizarAntiFlingToggle()
 end)
 
 --==================================================
