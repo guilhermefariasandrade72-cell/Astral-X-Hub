@@ -214,9 +214,9 @@ player.CharacterAdded:Connect(function()
 end)
 
 -- ==================================
--- 🦘 SISTEMA DO PULO INFINITO (CORRIGIDO)
+-- 🦘 SISTEMA DO PULO INFINITO (PERFEITO)
 -- ==================================
-local UserInputService = game:GetService("UserInputService")
+local ultimoEstadoNoChao = true
 local ultimoPulo = 0
 
 local function ToggleInfiniteJump(state)
@@ -228,7 +228,6 @@ local function ToggleInfiniteJump(state)
             InfiniteJumpConnection = nil
         end
 
-        -- ✅ Usa Heartbeat em vez de JumpRequest — evita o impulso para frente
         InfiniteJumpConnection = RunService.Heartbeat:Connect(function()
             if not InfiniteJumpEnabled then return end
 
@@ -236,12 +235,16 @@ local function ToggleInfiniteJump(state)
             local humanoid = character and character:FindFirstChildOfClass("Humanoid")
             if not humanoid then return end
 
-            -- Só pula quando estiver no chão E com um pequeno delay
+            local estaNoChao = humanoid.FloorMaterial ~= Enum.Material.Air
             local agora = os.clock()
-            if humanoid.FloorMaterial ~= Enum.Material.Air and agora - ultimoPulo > 0.15 then
+
+            -- ✅ Só pula NO MOMENTO que toca o chão + pequeno delay
+            if estaNoChao and not ultimoEstadoNoChao and agora - ultimoPulo > 0.1 then
                 humanoid.Jump = true
                 ultimoPulo = agora
             end
+
+            ultimoEstadoNoChao = estaNoChao
         end)
 
     else
@@ -252,13 +255,15 @@ local function ToggleInfiniteJump(state)
     end
 end
 
--- Reativa automaticamente ao respawnar
+-- Reativa ao respawnar
 player.CharacterAdded:Connect(function()
+    ultimoEstadoNoChao = true
     task.wait(0.5)
     if InfiniteJumpEnabled then
         ToggleInfiniteJump(true)
     end
 end)
+
 
 -- ==================================
 -- 🧱 SISTEMA DO NOCLIP
