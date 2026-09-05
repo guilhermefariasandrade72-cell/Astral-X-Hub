@@ -448,8 +448,51 @@ task.spawn(function()
     end
 end)
 
+-- ============================
+-- SISTEMA DO HIGHLIGHT MOEDAS
+-- ============================
+local function DestacarMoedas()
+    for _, Descendente in ipairs(workspace:GetDescendants()) do
+        if Descendente:IsA("BasePart") then
+            local Nome = Descendente.Name:lower()
+            
+            -- Encontra moedas
+            if string.find(Nome, "coin") or string.find(Nome, "Coin") then
+                if not MoedasDestacadas[Descendente] then
+                    local Highlight = Instance.new("Highlight")
+                    Highlight.Name = "Moeda_Highlight"
+                    Highlight.FillTransparency = 0.3
+                    Highlight.OutlineTransparency = 0
+                    Highlight.FillColor = Color3.fromRGB(255, 215, 0)  -- ðŸ’° AMARELO
+                    Highlight.OutlineColor = Color3.fromRGB(255, 255, 0)
+                    Highlight.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                    Highlight.Adornee = Descendente
+                    Highlight.Parent = Descendente
+                    MoedasDestacadas[Descendente] = Highlight
+                end
+            end
+        end
+    end
+end
 
+local function RemoverDestaqueMoedas()
+    for Parte, Highlight in pairs(MoedasDestacadas) do
+        if Highlight and Highlight.Parent then
+            Highlight:Destroy()
+        end
+    end
+    table.clear(MoedasDestacadas)
+end
 
+-- ðŸ”„ ATUALIZAÃ‡ÃƒO CONTÃNUA
+task.spawn(function()
+    while true do
+        task.wait(0.5)
+        if MoedasHighlightAtivo then
+            DestacarMoedas()
+        end
+    end
+end)
 
 -- ==================================
 -- 🦘 PULO INFINITO — VARIÁVEIS
