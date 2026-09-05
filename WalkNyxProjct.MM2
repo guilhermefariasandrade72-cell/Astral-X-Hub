@@ -121,8 +121,7 @@ local player =
 -- 06. VARIÁVEIS ESP
 --==================================================
 local HighlightAtivo = false
-local HighlightCon = nil
-local Murder, Sheriff, Hero
+local Mur, Xer, Her
 
 
 --==================================================
@@ -182,126 +181,91 @@ local FlingPower = 99999
 -- 08. SISTEMAS DO ESP
 --==================================================
 -- ==================================
--- 👁️ SISTEMA DE HIGHLIGHT — by SCRIPT-HUNTERS + AJUSTES
+-- 👁️ SISTEMA DE HIGHLIGHT — FUNCIONAL
 -- ==================================
 
-local function IsAlive(Player)
-    if not roles then return false end
-    for i, v in pairs(roles) do
-        if Player.Name == i then
-            return not v.Killed and not v.Dead
-        end
+-- Verifica se o jogador está vivo
+local function EstaVivo(p, dados)
+    if not dados or not p then return false end
+    local info = dados[p.Name]
+    return info and not info.Killed and not info.Dead
+end
+
+-- Pegar cor do jogador
+local function PegarCor(p, dados)
+    if not dados or not dados[p.Name] then
+        return Color3.fromRGB(255, 255, 255) -- ⚪ BRANCO = não joga
     end
-    return false
-end
-
-function CreateHighlight()
-	for i, v in pairs(Players:GetChildren()) do
-		if v ~= player and v.Character then
-            if not v.Character:FindFirstChild("ESP_Highlight") then
-                local H = Instance.new("Highlight")
-                H.Name = "ESP_Highlight"
-                H.Adornee = v.Character
-                H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
-                H.FillTransparency = 0.4  -- Mais visível
-                H.OutlineTransparency = 0  -- Sólido
-                H.OutlineColor = Color3.new(1, 1, 1)  -- Branco por padrão
-                H.Enabled = false
-                H.Parent = v.Character
-            end
-		end
-	end
-end
-
-function UpdateHighlights()
-	for _, v in pairs(Players:GetChildren()) do
-		if v ~= player and v.Character then
-			local Highlight = v.Character:FindFirstChild("ESP_Highlight")
-            if not Highlight then continue end
-
-            -- Quem não está participando = BRANCO
-            if not roles or not roles[v.Name] then
-                Highlight.FillColor = Color3.fromRGB(255, 255, 255)
-                Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
-                Highlight.Enabled = HighlightAtivo
-                continue
-            end
-
-            -- Jogadores na partida — cor por cargo
-            if v.Name == Sheriff and IsAlive(v) then
-                Highlight.FillColor = Color3.fromRGB(0, 50, 255)       -- 🔵 Xerife — MAIS FORTE
-                Highlight.OutlineColor = Color3.fromRGB(0, 80, 255)
-            elseif v.Name == Murder and IsAlive(v) then
-                Highlight.FillColor = Color3.fromRGB(255, 30, 30)      -- 🔴 Assassino — MAIS FORTE
-                Highlight.OutlineColor = Color3.fromRGB(255, 60, 60)
-            elseif v.Name == Hero and IsAlive(v) and not IsAlive(Players[Sheriff] or nil) then
-                Highlight.FillColor = Color3.fromRGB(255, 215, 0)       -- 🟡 Herói — MAIS FORTE
-                Highlight.OutlineColor = Color3.fromRGB(255, 230, 50)
-            elseif IsAlive(v) then
-                Highlight.FillColor = Color3.fromRGB(50, 255, 80)       -- 🟢 Inocente — MAIS FORTE
-                Highlight.OutlineColor = Color3.fromRGB(80, 255, 110)
-            else
-                Highlight.FillColor = Color3.fromRGB(150, 150, 150)     -- ⚪ Morto — Cinza
-                Highlight.OutlineColor = Color3.fromRGB(180, 180, 180)
-            end
-
-            Highlight.Enabled = HighlightAtivo
-		end
-	end
+    
+    if not EstaVivo(p, dados) then
+        return Color3.fromRGB(120, 120, 120) -- ⚫ CINZA = morto
+    end
+    
+    local cargo = dados[p.Name].Role
+    if cargo == "Murderer" then
+        return Color3.fromRGB(255, 40, 40) -- 🔴 Assassino
+    elseif cargo == "Sheriff" then
+        return Color3.fromRGB(0, 80, 255) -- 🔵 Xerife
+    elseif cargo == "Hero" then
+        return Color3.fromRGB(255, 200, 0) -- 🟡 Herói
+    else
+        return Color3.fromRGB(40, 255, 80) -- 🟢 Inocente
+    end
 end
 
 -- Loop principal
-local function LoopHighlight()
-	while HighlightAtivo do
-		task.wait(0.1)
-        if not HighlightAtivo then break end
-
-        roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
-        Murder, Sheriff, Hero = nil, nil, nil
-
-        for i, v in pairs(roles or {}) do
-            if v.Role == "Murderer" then
-                Murder = i
-            elseif v.Role == "Sheriff" then
-                Sheriff = i
-            elseif v.Role == "Hero" then
-                Hero = i
+task.spawn(function()
+    while true do
+        task.wait(0.15)
+        
+        if not HighlightAtivo then
+            -- Apaga todos quando desligado
+            for _, p in ipairs(Players:GetPlayers()) do
+                if p ~= player and p.Character then
+                    local h = p.Character:FindFirstChild("ESP_HL")
+                    if h then h:Destroy() end
+                end
             end
+            task.wait(0.2)
+            continue
         end
-
-        CreateHighlight()
-        UpdateHighlights()
-	end
-
-    -- Desligou = apaga todos
-    for _, v in pairs(Players:GetChildren()) do
-        if v.Character and v.Character:FindFirstChild("ESP_Highlight") then
-            v.Character.ESP_Highlight:Destroy()
+        
+        -- Pegar dados do servidor
+        local dados = nil
+        local R = ReplicatedStorage:FindFirstChild("GetPlayerData", true)
+        if R then
+            pcall(function() dados = R:InvokeServer() end)
+        end
+        
+        -- Atualizar todos os jogadores
+        for _, p in ipairs(Players:GetPlayers()) do
+            if p == player then continue end
+            if not p.Character then continue end
+            
+            -- Cria o highlight se não existir
+            local hl = p.Character:FindFirstChild("ESP_HL")
+            if not hl then
+                hl = Instance.new("Highlight")
+                hl.Name = "ESP_HL"
+                hl.Adornee = p.Character
+                hl.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                hl.FillTransparency = 0.3
+                hl.OutlineTransparency = 0
+                hl.Parent = p.Character
+            end
+            
+            -- Atualiza cor e ativa
+            hl.FillColor = PegarCor(p, dados)
+            hl.OutlineColor = hl.FillColor
+            hl.Enabled = true
         end
     end
+end)
+
+-- Função do botão
+function ToggleHighlight(ativo)
+    HighlightAtivo = ativo
 end
-
--- Toggle do botão
-local function ToggleHighlight(state)
-    HighlightAtivo = state
-    if state then
-        task.spawn(LoopHighlight)
-    end
-end
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
