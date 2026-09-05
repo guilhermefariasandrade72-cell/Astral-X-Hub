@@ -184,7 +184,8 @@ local FlingConnection = nil
 local FlingPower = 99999
 
 -- ⚡ SPEED GLITCH — VARIÁVEIS
-
+local VelocidadeNoPulo = 300
+_G.SpeedNoPulo = false
 
 
 --==================================================
@@ -482,7 +483,43 @@ end)
 -- ==========================================
 -- ⚡ SPEED GLITCH — VARIÁVEIS
 -- ==========================================
+-- IMPORTANTE:
+-- Esse sistema deve ficar dentro do Heartbeat
+-- principal de velocidade do seu Hub.
+--
+-- Não use outro RunService.Stepped separado,
+-- porque o sistema Speed normal pode sobrescrever
+-- a velocidade do Speed Glitch.
 
+if _G.SpeedNoPulo then
+
+    if hum.FloorMaterial == Enum.Material.Air then
+
+        if hum.WalkSpeed ~= VelocidadeNoPulo then
+            hum.WalkSpeed = VelocidadeNoPulo
+        end
+
+    else
+
+        if hum.WalkSpeed ~= WalkSpeedOriginal then
+            hum.WalkSpeed = WalkSpeedOriginal
+        end
+
+    end
+
+elseif SpeedAtivo then
+
+    if hum.WalkSpeed ~= SpeedValor then
+        hum.WalkSpeed = SpeedValor
+    end
+
+else
+
+    if hum.WalkSpeed ~= WalkSpeedOriginal then
+        hum.WalkSpeed = WalkSpeedOriginal
+    end
+
+end
 
 --==================================================
 -- 09. INTERFACE WALK NYX
@@ -2128,8 +2165,316 @@ UserInputService.InputChanged:Connect(function(Input)
 end)
 
 -- ==================================
--- ⚡ BOTÃO + SLIDER SPEED GLITCH
+-- ⚡ SPEED GLITCH — BOTÃO + SLIDER
 -- ==================================
+
+local Sec_SpeedGlitch = Instance.new("Frame")
+Sec_SpeedGlitch.Name = "Secao_SpeedGlitch"
+Sec_SpeedGlitch.Size = UDim2.new(1, -6, 0, 110)
+Sec_SpeedGlitch.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+Sec_SpeedGlitch.BackgroundTransparency = 0.15
+Sec_SpeedGlitch.Parent = Pages["Local Player"]
+
+Round(Sec_SpeedGlitch, 9)
+AddStroke(Sec_SpeedGlitch, 0.65, 1)
+
+
+-- ==================================
+-- 🔘 BOTÃO SPEED GLITCH
+-- ==================================
+
+local SpeedGlitchBtnContainer = Instance.new("Frame")
+SpeedGlitchBtnContainer.Name = "SpeedGlitchContainer"
+SpeedGlitchBtnContainer.Size = UDim2.new(1, 0, 0, 40)
+SpeedGlitchBtnContainer.BackgroundTransparency = 1
+SpeedGlitchBtnContainer.Parent = Sec_SpeedGlitch
+
+
+local SpeedGlitchLabel = Instance.new("TextLabel")
+SpeedGlitchLabel.Name = "Texto"
+SpeedGlitchLabel.BackgroundTransparency = 1
+SpeedGlitchLabel.Position = UDim2.new(0, 12, 0, 0)
+SpeedGlitchLabel.Size = UDim2.new(1, -55, 1, 0)
+SpeedGlitchLabel.Text = "Speed Glitch"
+SpeedGlitchLabel.TextColor3 = White
+SpeedGlitchLabel.TextSize = 13
+SpeedGlitchLabel.Font = Enum.Font.GothamMedium
+SpeedGlitchLabel.TextXAlignment = Enum.TextXAlignment.Left
+SpeedGlitchLabel.Parent = SpeedGlitchBtnContainer
+
+
+local SpeedGlitchToggle = Instance.new("TextButton")
+SpeedGlitchToggle.Name = "Toggle"
+SpeedGlitchToggle.Size = UDim2.fromOffset(32, 26)
+SpeedGlitchToggle.Position = UDim2.new(1, -40, 0.5, -13)
+SpeedGlitchToggle.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+SpeedGlitchToggle.BorderSizePixel = 0
+SpeedGlitchToggle.Text = ""
+SpeedGlitchToggle.AutoButtonColor = false
+SpeedGlitchToggle.ZIndex = 7
+SpeedGlitchToggle.Parent = SpeedGlitchBtnContainer
+
+Round(SpeedGlitchToggle, 7)
+
+
+local SpeedGlitchIndic = Instance.new("Frame")
+SpeedGlitchIndic.Name = "Indicador"
+SpeedGlitchIndic.Size = UDim2.fromOffset(20, 20)
+SpeedGlitchIndic.Position = UDim2.new(0, 2, 0.5, -10)
+SpeedGlitchIndic.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+SpeedGlitchIndic.BorderSizePixel = 0
+SpeedGlitchIndic.Parent = SpeedGlitchToggle
+
+Round(SpeedGlitchIndic, 5)
+
+
+local SpeedGlitchLigado = false
+
+
+local function AtualizarSpeedGlitchToggle()
+
+    if SpeedGlitchLigado then
+
+        TweenService:Create(
+            SpeedGlitchIndic,
+            TweenInfo.new(0.15),
+            {
+                Position = UDim2.new(1, -22, 0.5, -10),
+                BackgroundColor3 = White
+            }
+        ):Play()
+
+        SpeedGlitchToggle.BackgroundColor3 =
+            Color3.fromRGB(45, 120, 80)
+
+        _G.SpeedNoPulo = true
+
+    else
+
+        TweenService:Create(
+            SpeedGlitchIndic,
+            TweenInfo.new(0.15),
+            {
+                Position = UDim2.new(0, 2, 0.5, -10),
+                BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+            }
+        ):Play()
+
+        SpeedGlitchToggle.BackgroundColor3 =
+            Color3.fromRGB(50, 50, 60)
+
+        _G.SpeedNoPulo = false
+
+        -- Volta para a velocidade normal
+        local Char = player.Character
+
+        if Char and Char:FindFirstChild("Humanoid") then
+            Char.Humanoid.WalkSpeed = WalkSpeedOriginal
+        end
+
+    end
+
+end
+
+
+SpeedGlitchToggle.MouseButton1Click:Connect(function()
+
+    SpeedGlitchLigado = not SpeedGlitchLigado
+
+    AtualizarSpeedGlitchToggle()
+
+end)
+
+
+-- ==================================
+-- 🎚️ SLIDER SPEED NO PULO
+-- 20 → 500
+-- ==================================
+
+local SpeedGlitchSliderContainer = Instance.new("Frame")
+SpeedGlitchSliderContainer.Name = "SliderSpeedGlitch"
+SpeedGlitchSliderContainer.Size = UDim2.new(1, -12, 0, 60)
+SpeedGlitchSliderContainer.Position = UDim2.new(0, 6, 0, 45)
+SpeedGlitchSliderContainer.BackgroundTransparency = 1
+SpeedGlitchSliderContainer.Parent = Sec_SpeedGlitch
+
+
+local SpeedGlitchSliderTexto = Instance.new("TextLabel")
+SpeedGlitchSliderTexto.Name = "Texto"
+SpeedGlitchSliderTexto.BackgroundTransparency = 1
+SpeedGlitchSliderTexto.Position = UDim2.new(0, 6, 0, 0)
+SpeedGlitchSliderTexto.Size = UDim2.new(1, 0, 0, 20)
+SpeedGlitchSliderTexto.Text =
+    "Velocidade no Pulo: " .. VelocidadeNoPulo
+SpeedGlitchSliderTexto.TextColor3 = White
+SpeedGlitchSliderTexto.TextSize = 12
+SpeedGlitchSliderTexto.Font = Enum.Font.GothamMedium
+SpeedGlitchSliderTexto.TextXAlignment = Enum.TextXAlignment.Left
+SpeedGlitchSliderTexto.Parent = SpeedGlitchSliderContainer
+
+
+local SpeedGlitchBarraFundo = Instance.new("Frame")
+SpeedGlitchBarraFundo.Name = "Fundo"
+SpeedGlitchBarraFundo.Size = UDim2.new(1, -12, 0, 8)
+SpeedGlitchBarraFundo.Position = UDim2.new(0, 6, 0, 28)
+SpeedGlitchBarraFundo.BackgroundColor3 =
+    Color3.fromRGB(50, 50, 60)
+SpeedGlitchBarraFundo.Parent = SpeedGlitchSliderContainer
+
+Round(SpeedGlitchBarraFundo, 4)
+
+
+local SpeedGlitchBarraProg = Instance.new("Frame")
+SpeedGlitchBarraProg.Name = "Progresso"
+SpeedGlitchBarraProg.Size =
+    UDim2.new(
+        (VelocidadeNoPulo - 20) / 480,
+        0,
+        1,
+        0
+    )
+SpeedGlitchBarraProg.BackgroundColor3 =
+    Color3.fromRGB(90, 190, 120)
+SpeedGlitchBarraProg.Parent = SpeedGlitchBarraFundo
+
+Round(SpeedGlitchBarraProg, 4)
+
+
+local SpeedGlitchSliderBtn = Instance.new("TextButton")
+SpeedGlitchSliderBtn.Name = "Botao"
+SpeedGlitchSliderBtn.Size = UDim2.fromOffset(22, 22)
+SpeedGlitchSliderBtn.Position =
+    UDim2.new(
+        (VelocidadeNoPulo - 20) / 480,
+        -11,
+        0.5,
+        -11
+    )
+SpeedGlitchSliderBtn.BackgroundColor3 = White
+SpeedGlitchSliderBtn.BorderSizePixel = 0
+SpeedGlitchSliderBtn.Text = ""
+SpeedGlitchSliderBtn.AutoButtonColor = false
+SpeedGlitchSliderBtn.ZIndex = 10
+SpeedGlitchSliderBtn.Parent = SpeedGlitchBarraFundo
+
+Round(SpeedGlitchSliderBtn, 11)
+
+
+local SpeedGlitchArrastando = false
+
+
+local function AtualizarSpeedGlitchSlider(X)
+
+    local AbsPos =
+        SpeedGlitchBarraFundo.AbsolutePosition
+
+    local AbsSize =
+        SpeedGlitchBarraFundo.AbsoluteSize.X
+
+    if AbsSize <= 0 then
+        return
+    end
+
+    local PosX =
+        math.clamp(
+            X - AbsPos.X,
+            0,
+            AbsSize
+        )
+
+    local Valor =
+        20 + (PosX / AbsSize) * 480
+
+    Valor = math.floor(Valor + 0.5)
+
+    VelocidadeNoPulo = Valor
+
+    SpeedGlitchSliderTexto.Text =
+        "Velocidade no Pulo: " .. Valor
+
+    SpeedGlitchBarraProg.Size =
+        UDim2.new(
+            PosX / AbsSize,
+            0,
+            1,
+            0
+        )
+
+    SpeedGlitchSliderBtn.Position =
+        UDim2.new(
+            PosX / AbsSize,
+            -11,
+            0.5,
+            -11
+        )
+
+end
+
+
+SpeedGlitchSliderBtn.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or Input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        SpeedGlitchArrastando = true
+
+    end
+
+end)
+
+
+SpeedGlitchBarraFundo.InputBegan:Connect(function(Input)
+
+    if Input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or Input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        SpeedGlitchArrastando = true
+
+        AtualizarSpeedGlitchSlider(
+            Input.Position.X
+        )
+
+    end
+
+end)
+
+
+UserInputService.InputEnded:Connect(function(Input)
+
+    if Input.UserInputType ==
+        Enum.UserInputType.MouseButton1
+        or Input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        SpeedGlitchArrastando = false
+
+    end
+
+end)
+
+
+UserInputService.InputChanged:Connect(function(Input)
+
+    if not SpeedGlitchArrastando then
+        return
+    end
+
+    if Input.UserInputType ==
+        Enum.UserInputType.MouseMovement
+        or Input.UserInputType ==
+        Enum.UserInputType.Touch then
+
+        AtualizarSpeedGlitchSlider(
+            Input.Position.X
+        )
+
+    end
+
+end)
 
 -- ==================================
 -- 🦘 BOTÃO PULO INFINITO (ARRUMADO)
