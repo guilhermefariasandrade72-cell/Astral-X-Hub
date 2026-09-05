@@ -195,7 +195,6 @@ local FlingPower = 99999
 --==================================================
 -- 08. SISTEMAS DO ESP
 --==================================================
-
 local ReplicatedStorage = game:GetService("ReplicatedStorage")
 local Workspace = game:GetService("Workspace")
 local RunService = game:GetService("RunService")
@@ -355,7 +354,7 @@ task.spawn(function()
                     if Info and not Info.Killed and not Info.Dead then
                         if Info.Role == "Murderer" then Cor = Color3.fromRGB(220, 50, 50); CargoNome = "Assassino"
                         elseif Info.Role == "Sheriff" then Cor = Color3.fromRGB(0, 85, 255); CargoNome = "Xerife"
-                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0); CargoNome = "Herói"
+                        elseif Info.Role == "Hero" then Cor = Color3.fromRGB(255, 215, 0); CargoNome = "HerÃ³i"
                         elseif Info.Role == "Innocent" then Cor = Color3.fromRGB(60, 200, 80); CargoNome = "Inocente" end
                     end
                     local Distancia = math.floor((MinhaPos - HRP.Position).Magnitude)
