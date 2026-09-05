@@ -186,7 +186,9 @@ local FlingPower = 99999
 -- ⚡ SPEED GLITCH — VARIÁVEIS
 local VelocidadePadrao = 16
 local VelocidadeNoPulo = 300
+
 _G.SpeedNoPulo = false
+
 local SpeedCon = nil
 
 
@@ -482,52 +484,89 @@ task.spawn(function()
     end
 end)
 
--- ==================================
--- ⚡ SISTEMA DE SPEED GLITCH (CORRIGIDO)
--- ==================================
-SpeedCon = RunService.Stepped:Connect(function()
-    local Char = player.Character
+-- ==========================================
+-- ⚡ SPEED GLITCH — VARIÁVEIS
+-- ==========================================
 
-    if not Char or not Char:FindFirstChild("Humanoid") then
+
+
+-- ==========================================
+-- 🟢 SISTEMA SPEED GLITCH
+-- ==========================================
+
+if SpeedCon then
+    SpeedCon:Disconnect()
+    SpeedCon = nil
+end
+
+SpeedCon = RunService.Stepped:Connect(function()
+    if not _G.SpeedNoPulo then
         return
     end
 
-    local Hum = Char.Humanoid
+    local Char = player.Character
+    if not Char then
+        return
+    end
 
-    if _G.SpeedNoPulo then
-        if Hum.FloorMaterial == Enum.Material.Air then
-            Hum.WalkSpeed = VelocidadeNoPulo
-        else
-            Hum.WalkSpeed = VelocidadePadrao
-        end
+    local Hum = Char:FindFirstChildOfClass("Humanoid")
+    if not Hum then
+        return
+    end
+
+    -- NO AR = velocidade configurada
+    if Hum.FloorMaterial == Enum.Material.Air then
+        Hum.WalkSpeed = VelocidadeNoPulo
+
+    -- NO CHÃO = velocidade normal
+    else
+        Hum.WalkSpeed = VelocidadePadrao
     end
 end)
 
--- Função para desligar e voltar ao normal
+
+-- ==========================================
+-- 🟢 ATIVAR / DESATIVAR
+-- ==========================================
+
 local function ToggleSpeedGlitch(state)
+
     _G.SpeedNoPulo = state
-    if not state then
-        local Char = player.Character
-        if Char and Char:FindFirstChild("Humanoid") then
-            Char.Humanoid.WalkSpeed = VelocidadePadrao
-        end
+
+    local Char = player.Character
+    if not Char then
+        return
+    end
+
+    local Hum = Char:FindFirstChildOfClass("Humanoid")
+    if not Hum then
+        return
+    end
+
+    if state then
+        -- Começa normal.
+        -- Quando pular, o Stepped coloca a velocidade escolhida.
+        Hum.WalkSpeed = VelocidadePadrao
+    else
+        Hum.WalkSpeed = VelocidadePadrao
     end
 end
 
--- Restaura ao respawnar
-player.CharacterAdded:Connect(function()
-    task.wait(0.1)
-    if _G.SpeedNoPulo then
-        task.wait(0.3)
-        local Char = player.Character
-        if Char and Char:FindFirstChild("Humanoid") then
-            Char.Humanoid.WalkSpeed = VelocidadeNoPulo
-        end
-    end
+
+-- ==========================================
+-- 🟢 RESPAWN
+-- ==========================================
+
+player.CharacterAdded:Connect(function(Char)
+
+    local Hum = Char:WaitForChild("Humanoid")
+
+    task.wait(0.2)
+
+    -- Nunca começa com 300 no respawn.
+    -- O Speed Glitch só aplica 300 quando estiver no ar.
+    Hum.WalkSpeed = VelocidadePadrao
 end)
-
-
-
 
 --==================================================
 -- 09. INTERFACE WALK NYX
