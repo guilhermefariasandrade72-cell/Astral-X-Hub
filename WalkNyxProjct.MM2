@@ -1700,60 +1700,61 @@ LabelHighlight.Name = "Texto"
 LabelHighlight.BackgroundTransparency = 1
 LabelHighlight.Position = UDim2.new(0, 12, 0, 0)
 LabelHighlight.Size = UDim2.new(1, -55, 1, 0)
-LabelHighlight.Text = "Highlight ESP"
+LabelHighlight.Text = "🎨 Highlight ESP"
 LabelHighlight.TextColor3 = White
 LabelHighlight.TextSize = 13
 LabelHighlight.Font = Enum.Font.GothamMedium
 LabelHighlight.TextXAlignment = Enum.TextXAlignment.Left
 LabelHighlight.Parent = ContHighlight
 
-local ToggleHighlight = Instance.new("TextButton")
-ToggleHighlight.Name = "Toggle"
-ToggleHighlight.Size = UDim2.fromOffset(32, 26)
-ToggleHighlight.Position = UDim2.new(1, -40, 0.5, -13)
-ToggleHighlight.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-ToggleHighlight.BorderSizePixel = 0
-ToggleHighlight.Text = ""
-ToggleHighlight.AutoButtonColor = false
-ToggleHighlight.ZIndex = 7
-ToggleHighlight.Parent = ContHighlight
-Round(ToggleHighlight, 7)
+local ToggleBtn = Instance.new("TextButton")
+ToggleBtn.Name = "Toggle"
+ToggleBtn.Size = UDim2.fromOffset(32, 26)
+ToggleBtn.Position = UDim2.new(1, -40, 0.5, -13)
+ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+ToggleBtn.BorderSizePixel = 0
+ToggleBtn.Text = ""
+ToggleBtn.AutoButtonColor = false
+ToggleBtn.ZIndex = 7
+ToggleBtn.Parent = ContHighlight
+Round(ToggleBtn, 7)
 
-local IndicHighlight = Instance.new("Frame")
-IndicHighlight.Name = "Indicador"
-IndicHighlight.Size = UDim2.fromOffset(20, 20)
-IndicHighlight.Position = UDim2.new(0, 2, 0.5, -10)
-IndicHighlight.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
-IndicHighlight.BorderSizePixel = 0
-IndicHighlight.Parent = ToggleHighlight
-Round(IndicHighlight, 5)
+local Indicador = Instance.new("Frame")
+Indicador.Name = "Indicador"
+Indicador.Size = UDim2.fromOffset(20, 20)
+Indicador.Position = UDim2.new(0, 2, 0.5, -10)
+Indicador.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+Indicador.BorderSizePixel = 0
+Indicador.Parent = ToggleBtn
+Round(Indicador, 5)
 
-local HighlightLigado = false
+local Ligado = false
 
-local function AtualizarHighlightToggle()
-    HighlightLigado = not HighlightLigado
-    ToggleHighlight(HighlightLigado)
-    if HighlightLigado then
-        TweenService:Create(IndicHighlight, TweenInfo.new(0.15), {
+local function AtualizarBotao()
+    Ligado = not Ligado
+    ToggleHighlight(Ligado)  -- ✅ AQUI CHAMA O SISTEMA
+
+    if Ligado then
+        TweenService:Create(Indicador, TweenInfo.new(0.15), {
             Position = UDim2.new(1, -22, 0.5, -10),
             BackgroundColor3 = White
         }):Play()
-        ToggleHighlight.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
-        ToggleHighlight(true)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
     else
-        TweenService:Create(IndicHighlight, TweenInfo.new(0.15), {
+        TweenService:Create(Indicador, TweenInfo.new(0.15), {
             Position = UDim2.new(0, 2, 0.5, -10),
             BackgroundColor3 = Color3.fromRGB(140, 140, 145)
         }):Play()
-        ToggleHighlight.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
-        ToggleHighlight(false)
+        ToggleBtn.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
     end
 end
 
-ToggleHighlight.MouseButton1Click:Connect(AtualizarHighlightToggle)
+ToggleBtn.MouseButton1Click:Connect(AtualizarBotao)
+
+
 
 --==================================================
--- 14. BOTÕES LOCAL PLAYER
+-- 13. BOTÕES LOCAL PLAYER
 --==================================================
 
 -- ═══════════════ VELOCIDADE ═══════════════
