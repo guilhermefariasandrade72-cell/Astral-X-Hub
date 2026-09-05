@@ -2111,10 +2111,6 @@ UserInputService.InputChanged:Connect(function(Input)
 end)
 
 -- ==================================
--- ⚡ SPEED GLITCH — BOTÃO + SLIDER
--- ==================================
-
--- ==================================
 -- 🦘 BOTÃO PULO INFINITO (ARRUMADO)
 -- ==================================
 
@@ -2194,12 +2190,6 @@ PuloInfToggle.MouseButton1Click:Connect(function()
     PuloInfLigado = not PuloInfLigado
     AtualizarPuloInfToggle()
 end)
-
--- ==================================
--- ⚡ BOTÃO + SLIDER SPEED GLITCH
--- ==================================
-
-
 
 -- ==================================
 -- 🧱 BOTÃO NOCLIP
