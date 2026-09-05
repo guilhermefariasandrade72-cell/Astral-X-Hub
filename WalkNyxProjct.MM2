@@ -120,6 +120,9 @@ local player =
 --==================================================
 -- 06. VARIÁVEIS ESP
 --==================================================
+local HighlightAtivo = false
+local HighlightCon = nil
+local Murder, Sheriff, Hero
 
 
 --==================================================
@@ -178,6 +181,129 @@ local FlingPower = 99999
 --==================================================
 -- 08. SISTEMAS DO ESP
 --==================================================
+-- ==================================
+-- 👁️ SISTEMA DE HIGHLIGHT — by SCRIPT-HUNTERS + AJUSTES
+-- ==================================
+
+local function IsAlive(Player)
+    if not roles then return false end
+    for i, v in pairs(roles) do
+        if Player.Name == i then
+            return not v.Killed and not v.Dead
+        end
+    end
+    return false
+end
+
+function CreateHighlight()
+	for i, v in pairs(Players:GetChildren()) do
+		if v ~= player and v.Character then
+            if not v.Character:FindFirstChild("ESP_Highlight") then
+                local H = Instance.new("Highlight")
+                H.Name = "ESP_Highlight"
+                H.Adornee = v.Character
+                H.DepthMode = Enum.HighlightDepthMode.AlwaysOnTop
+                H.FillTransparency = 0.4  -- Mais visível
+                H.OutlineTransparency = 0  -- Sólido
+                H.OutlineColor = Color3.new(1, 1, 1)  -- Branco por padrão
+                H.Enabled = false
+                H.Parent = v.Character
+            end
+		end
+	end
+end
+
+function UpdateHighlights()
+	for _, v in pairs(Players:GetChildren()) do
+		if v ~= player and v.Character then
+			local Highlight = v.Character:FindFirstChild("ESP_Highlight")
+            if not Highlight then continue end
+
+            -- Quem não está participando = BRANCO
+            if not roles or not roles[v.Name] then
+                Highlight.FillColor = Color3.fromRGB(255, 255, 255)
+                Highlight.OutlineColor = Color3.fromRGB(255, 255, 255)
+                Highlight.Enabled = HighlightAtivo
+                continue
+            end
+
+            -- Jogadores na partida — cor por cargo
+            if v.Name == Sheriff and IsAlive(v) then
+                Highlight.FillColor = Color3.fromRGB(0, 50, 255)       -- 🔵 Xerife — MAIS FORTE
+                Highlight.OutlineColor = Color3.fromRGB(0, 80, 255)
+            elseif v.Name == Murder and IsAlive(v) then
+                Highlight.FillColor = Color3.fromRGB(255, 30, 30)      -- 🔴 Assassino — MAIS FORTE
+                Highlight.OutlineColor = Color3.fromRGB(255, 60, 60)
+            elseif v.Name == Hero and IsAlive(v) and not IsAlive(Players[Sheriff] or nil) then
+                Highlight.FillColor = Color3.fromRGB(255, 215, 0)       -- 🟡 Herói — MAIS FORTE
+                Highlight.OutlineColor = Color3.fromRGB(255, 230, 50)
+            elseif IsAlive(v) then
+                Highlight.FillColor = Color3.fromRGB(50, 255, 80)       -- 🟢 Inocente — MAIS FORTE
+                Highlight.OutlineColor = Color3.fromRGB(80, 255, 110)
+            else
+                Highlight.FillColor = Color3.fromRGB(150, 150, 150)     -- ⚪ Morto — Cinza
+                Highlight.OutlineColor = Color3.fromRGB(180, 180, 180)
+            end
+
+            Highlight.Enabled = HighlightAtivo
+		end
+	end
+end
+
+-- Loop principal
+local function LoopHighlight()
+	while HighlightAtivo do
+		task.wait(0.1)
+        if not HighlightAtivo then break end
+
+        roles = ReplicatedStorage:FindFirstChild("GetPlayerData", true):InvokeServer()
+        Murder, Sheriff, Hero = nil, nil, nil
+
+        for i, v in pairs(roles or {}) do
+            if v.Role == "Murderer" then
+                Murder = i
+            elseif v.Role == "Sheriff" then
+                Sheriff = i
+            elseif v.Role == "Hero" then
+                Hero = i
+            end
+        end
+
+        CreateHighlight()
+        UpdateHighlights()
+	end
+
+    -- Desligou = apaga todos
+    for _, v in pairs(Players:GetChildren()) do
+        if v.Character and v.Character:FindFirstChild("ESP_Highlight") then
+            v.Character.ESP_Highlight:Destroy()
+        end
+    end
+end
+
+-- Toggle do botão
+local function ToggleHighlight(state)
+    HighlightAtivo = state
+    if state then
+        task.spawn(LoopHighlight)
+    end
+end
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 -- ==================================
 -- 🦘 PULO INFINITO — VARIÁVEIS
@@ -1551,6 +1677,80 @@ end
 --==================================================
 -- 13. BOTÕES ESP
 --==================================================
+
+local CaixaHighlight = Instance.new("Frame")
+CaixaHighlight.Name = "Caixa_Highlight"
+CaixaHighlight.Size = UDim2.new(1, -6, 0, 55)
+CaixaHighlight.Position = UDim2.new(0, 0, 0, 10)
+CaixaHighlight.BackgroundColor3 = Color3.fromRGB(22, 22, 28)
+CaixaHighlight.BackgroundTransparency = 0.15
+CaixaHighlight.Parent = Pages["ESP"]
+Round(CaixaHighlight, 9)
+AddStroke(CaixaHighlight, 0.65, 1)
+
+local ContHighlight = Instance.new("Frame")
+ContHighlight.Name = "Container"
+ContHighlight.Size = UDim2.new(1, 0, 0, 40)
+ContHighlight.BackgroundTransparency = 1
+ContHighlight.Position = UDim2.new(0, 0, 0, 7)
+ContHighlight.Parent = CaixaHighlight
+
+local LabelHighlight = Instance.new("TextLabel")
+LabelHighlight.Name = "Texto"
+LabelHighlight.BackgroundTransparency = 1
+LabelHighlight.Position = UDim2.new(0, 12, 0, 0)
+LabelHighlight.Size = UDim2.new(1, -55, 1, 0)
+LabelHighlight.Text = "Highlight ESP"
+LabelHighlight.TextColor3 = White
+LabelHighlight.TextSize = 13
+LabelHighlight.Font = Enum.Font.GothamMedium
+LabelHighlight.TextXAlignment = Enum.TextXAlignment.Left
+LabelHighlight.Parent = ContHighlight
+
+local ToggleHighlight = Instance.new("TextButton")
+ToggleHighlight.Name = "Toggle"
+ToggleHighlight.Size = UDim2.fromOffset(32, 26)
+ToggleHighlight.Position = UDim2.new(1, -40, 0.5, -13)
+ToggleHighlight.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+ToggleHighlight.BorderSizePixel = 0
+ToggleHighlight.Text = ""
+ToggleHighlight.AutoButtonColor = false
+ToggleHighlight.ZIndex = 7
+ToggleHighlight.Parent = ContHighlight
+Round(ToggleHighlight, 7)
+
+local IndicHighlight = Instance.new("Frame")
+IndicHighlight.Name = "Indicador"
+IndicHighlight.Size = UDim2.fromOffset(20, 20)
+IndicHighlight.Position = UDim2.new(0, 2, 0.5, -10)
+IndicHighlight.BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+IndicHighlight.BorderSizePixel = 0
+IndicHighlight.Parent = ToggleHighlight
+Round(IndicHighlight, 5)
+
+local HighlightLigado = false
+
+local function AtualizarHighlightToggle()
+    HighlightLigado = not HighlightLigado
+    ToggleHighlight(HighlightLigado)
+    if HighlightLigado then
+        TweenService:Create(IndicHighlight, TweenInfo.new(0.15), {
+            Position = UDim2.new(1, -22, 0.5, -10),
+            BackgroundColor3 = White
+        }):Play()
+        ToggleHighlight.BackgroundColor3 = Color3.fromRGB(45, 120, 80)
+        ToggleHighlight(true)
+    else
+        TweenService:Create(IndicHighlight, TweenInfo.new(0.15), {
+            Position = UDim2.new(0, 2, 0.5, -10),
+            BackgroundColor3 = Color3.fromRGB(140, 140, 145)
+        }):Play()
+        ToggleHighlight.BackgroundColor3 = Color3.fromRGB(50, 50, 60)
+        ToggleHighlight(false)
+    end
+end
+
+ToggleHighlight.MouseButton1Click:Connect(AtualizarHighlightToggle)
 
 --==================================================
 -- 14. BOTÕES LOCAL PLAYER
